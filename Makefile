@@ -22,20 +22,6 @@ $(LIBFT):
 
 $(NAME): $(OBJ) $(LIBFT)
 	$(CC) $(OBJ) $(LIBFT) -o $(NAME)
-
-%.o: %.c
-	$(CC) $(CFLAG) -I$(LIBFT_DIR) $< $@
-
-clean:
-	rm -f $(OBJ)
-	$(MAKE) -C $(LIBFT_DIR) clean
-
-fclean: clean
-	rm -f $(NAME)
-	$(MAKE) -C $(LIBFT_DIR) fclean
-
-$(NAME): $(OBJ)
-	$(CC) $(CFLAG) $(OBJ) -o $(NAME)
 	@echo "\033[33m** Program created **\033[0m"
 
 $(O_DIR):
@@ -44,14 +30,18 @@ $(O_DIR):
 $(O_DIR)/%.o: %.c minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) $< $@
 
+%.o: %.c
+	$(CC) $(CFLAG) -I$(LIBFT_DIR) $< $@
+
 clean:
-	rm -f $(O_DIR)
+	rm -f $(OBJ)
+	$(MAKE) -C $(LIBFT_DIR) clean
 	@echo "\033[33m** Object files deleted **\033[0m"
 
 fclean: clean
 	rm -f $(NAME)
+	$(MAKE) -C $(LIBFT_DIR) fclean
 	@echo "\033[33m** Program deleted **\033[0m"
-
 
 re: fclean all
 

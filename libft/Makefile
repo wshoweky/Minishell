@@ -59,3 +59,7 @@ fclean: clean
 re: fclean all
 
 .PHONY: all bonus clean fclean re
+
+.SECONDARY: $(OBJ) $(OBJ_BONUS) $(OBJ_PRINTF) $(OBJ_GNL) $(OBJ_GNL_BONUS)
+
+.SILENT:

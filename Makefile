@@ -4,14 +4,13 @@ CC = cc
 
 CFLAG = -Wall -Wextra -Werror 
 
-SRC = 
+SRC = src/main.c
 
 O_DIR = objdir
 
 OBJ = $(addprefix $(O_DIR)/,$(SRC:.c=.o))
 
 LIBFT_DIR = ./libft
-
 
 LIBFT = $(LIBFT_DIR)/libft.a
 
@@ -21,20 +20,17 @@ $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
 $(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(OBJ) $(LIBFT) -o $(NAME)
+	$(CC) $(CFLAG) $(OBJ) $(LIBFT) -o $(NAME)
 	@echo "\033[33m** Program created **\033[0m"
 
 $(O_DIR):
 	mkdir -p $@
 
 $(O_DIR)/%.o: %.c minishell.h | $(O_DIR)
-	$(CC) $(CFLAG) $< $@
-
-%.o: %.c
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) $< $@
 
 clean:
-	rm -f $(OBJ)
+	rm -rf $(O_DIR)
 	$(MAKE) -C $(LIBFT_DIR) clean
 	@echo "\033[33m** Object files deleted **\033[0m"
 

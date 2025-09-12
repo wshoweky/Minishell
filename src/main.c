@@ -1,31 +1,46 @@
 #include "minishell.h"
 
+int	main(void)
+{
+	shelly();
+	return (0);
+}
+/*
 int	main(int ac, char **av, char **env)
 {
 	char	*input;
-	char	**split_command;
+	//char	**split_command;
 
-	while (not exit)
+	(void)ac;
+	(void)av;
+	(void)env;
+	while (1337)
 	{
-		//ft_printf("> "); //might not need to print this separately
-		input = readline("WGshell> "); //will print the prompt and get user input at the same time
-		//what if malloc in readline fail? what if EOF fund?
-		if (input != NULL) //if a valid user input or non empty string
+		input = readline("WGshell> ");
+		if (!input)
 		{
-			add_history(input); //readline stuff, remember strings itself
+			ft_printf("exit\n");
+			break;
 		}
+		if (*input)
+			add_history(input);
 		
-		split_command = ft_split(input, isspace());
-		tokenization_func(split_command);
-		command_identification(text fr tokenization);
-		pipex
-		free (input); //readline malloc -> needs to free
+		// TODO: Implement proper parsing and execution
+		// split_command = ft_split(input, ' ');
+		// tokenization_func(split_command);
+		// command_identification(split_command);
+		// pipex
+		
+		if (ft_strcmp(input, "exit") == 0)
+		{
+			free(input);
+			break;
+		}
+		ft_printf("You typed: %s\n", input);
+		free(input);		
 	}
-	
-
 	return (0);
 }
-
 
 tokenization_func
 {
@@ -33,3 +48,4 @@ tokenization_func
 	char *redirection = {<, >}
 	char *pipe = {|}
 }
+*/

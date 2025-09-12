@@ -4,15 +4,18 @@ CC = cc
 
 CFLAG = -Wall -Wextra -Werror 
 
-SRC = src/main.c src/shelly.c
+SRC = src/main.c src/parser/tokens.c src/parser/tokens_utils.c #src/shelly.c
 
 O_DIR = objdir
 
-OBJ = $(addprefix $(O_DIR)/,$(SRC:.c=.o))
+#OBJ = $(addprefix $(O_DIR)/,$(SRC:.c=.o))
+OBJS = $(SRCS:.c=.o)
 
 LIBFT_DIR = ./libft
 
 LIBFT = $(LIBFT_DIR)/libft.a
+
+READLINE = -lreadline
 
 all: $(NAME) $(LIBFT)
 
@@ -20,7 +23,7 @@ $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
 $(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(CFLAG) $(OBJ) $(LIBFT) -lreadline -o $(NAME)
+	$(CC) $(CFLAG) $(OBJ) $(LIBFT) $(READLINE) -o $(NAME)
 	@echo "\033[33m** Program created **\033[0m"
 
 $(O_DIR):

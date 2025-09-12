@@ -15,7 +15,21 @@
 # include <readline/history.h> // add_history()
 # include "../libft/libft.h"
 
+typedef struct s_tokens
+{
+	char	*value;
+	struct	s_tokens	*next;
+}	t_tokens;
+
 //test playground
-int	shelly(void);
+//int	shelly(void);
+
+//tokens
+int	list_size(t_tokens *head);
+void	free_split(char **words);
+void	free_list_nodes(t_tokens *head);
+void	add_to_end(t_tokens **head, t_tokens *new_node);
+t_tokens	*new_node(char *word);
+t_tokens	*split_commands(char *input);
 
 #endif

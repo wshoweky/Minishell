@@ -1,10 +1,10 @@
 NAME = minishell
 
-CC = cc
+CC = cc 
 
 CFLAG = -Wall -Wextra -Werror 
 
-SRC = src/main.c
+SRC = src/main.c src/shelly.c
 
 O_DIR = objdir
 
@@ -20,14 +20,14 @@ $(LIBFT):
 	$(MAKE) -C $(LIBFT_DIR)
 
 $(NAME): $(OBJ) $(LIBFT)
-	$(CC) $(CFLAG) $(OBJ) $(LIBFT) -o $(NAME)
+	$(CC) $(CFLAG) $(OBJ) $(LIBFT) -lreadline -o $(NAME)
 	@echo "\033[33m** Program created **\033[0m"
 
 $(O_DIR):
-	mkdir -p $@
+	mkdir -p $(O_DIR)/src
 
-$(O_DIR)/%.o: %.c minishell.h | $(O_DIR)
-	$(CC) $(CFLAG) -I$(LIBFT_DIR) $< $@
+$(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
+	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@
 
 clean:
 	rm -rf $(O_DIR)

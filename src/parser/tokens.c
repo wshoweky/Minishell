@@ -17,7 +17,7 @@ t_tokens	*split_commands(char *input)
 		new = new_node(words[i]);
 		if (!new)
 		{
-			free_list(head);
+			free_list_nodes(head);
 			free_split(words);
 			return (NULL);
 		}

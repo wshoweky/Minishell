@@ -1,5 +1,9 @@
 #include "minishell.h"
-
+// TODO: Implement proper parsing and execution
+// split_command = ft_split(input, ' ');
+// tokenization_func(split_command);
+// command_identification(split_command);
+// pipex	
 static  void	print_tokens(t_tokens *head)
 {
 	while (head)
@@ -26,13 +30,7 @@ int	main(int ac, char **av, char **env)
 			break;
 		}
 		if (*input)
-			add_history(input);
-		
-		// TODO: Implement proper parsing and execution
-		// split_command = ft_split(input, ' ');
-		// tokenization_func(split_command);
-		// command_identification(split_command);
-		// pipex		
+			add_history(input);	
 		if (ft_strcmp(input, "exit") == 0)
 		{
 			free(input);
@@ -50,8 +48,6 @@ int	main(int ac, char **av, char **env)
 			free_list_nodes(tokens);
 			free(input);
 		}
-		//ft_printf("You typed: %s\n", input);
-		//free(input);
 	}
 	return (0);
 }

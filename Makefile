@@ -8,8 +8,7 @@ SRC = src/main.c src/parser/tokens.c src/parser/tokens_utils.c #src/shelly.c
 
 O_DIR = objdir
 
-#OBJ = $(addprefix $(O_DIR)/,$(SRC:.c=.o))
-OBJS = $(SRCS:.c=.o)
+OBJ = $(addprefix $(O_DIR)/,$(SRC:.c=.o))
 
 LIBFT_DIR = ./libft
 
@@ -28,6 +27,7 @@ $(NAME): $(OBJ) $(LIBFT)
 
 $(O_DIR):
 	mkdir -p $(O_DIR)/src
+	mkdir -p $(O_DIR)/src/parser
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@

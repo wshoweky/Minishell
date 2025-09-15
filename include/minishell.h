@@ -15,21 +15,53 @@
 # include <readline/history.h> // add_history()
 # include "../libft/libft.h"
 
+typedef enum e_token_type
+{
+	TOKEN_WORD,        // Regular words: echo, hello, file.txt
+	TOKEN_PIPE,        // |
+	TOKEN_REDIRECT_IN, // <
+	TOKEN_REDIRECT_OUT,// >
+	TOKEN_APPEND,      // >>
+	TOKEN_HEREDOC,     // <<
+	TOKEN_EOF          // End of input
+}	t_token_type;
+
 typedef struct s_tokens
 {
-	char	*value;
-	struct	s_tokens	*next;
+	t_token_type	type;       // Type of token
+	char			*value;	
+	int				was_quoted;  // Track if token was in quotes
+	struct s_tokens	*next;
 }	t_tokens;
 
-//test playground
-//int	shelly(void);
+// Playground functions
+int	shelly(void);
 
-//tokens
-int	list_size(t_tokens *head);
-void	free_split(char **words);
-void	free_list_nodes(t_tokens *head);
-void	add_to_end(t_tokens **head, t_tokens *new_node);
+// List utility functions
+int			list_size(t_tokens *head);
+void		free_split(char **words);
+void		free_list_nodes(t_tokens *head);
+void		add_to_end(t_tokens **head, t_tokens *new_node);
 t_tokens	*new_node(char *word);
 t_tokens	*split_commands(char *input);
+
+// Tokenization functions
+t_tokens		*tokenize_input(char *input);
+t_tokens		*process_single_token(char *input, int *i, t_tokens **head);
+char			*extract_next_token(char *input, int *i, t_tokens **new_token);
+char			*extract_pipe_token(char *input, int *i);
+
+// Token extraction functions
+char			*extract_word_token(char *input, int *i);
+char			*extract_quoted_token(char *input, int *i, t_tokens **new_token);
+char			*extract_special_token(char *input, int *i);
+char			*extract_redirect_in_token(char *input, int *i);
+char			*extract_redirect_out_token(char *input, int *i);
+
+// Token utility functions
+t_token_type	get_token_type(char *str);
+char			*get_token_type_name(t_token_type type);
+int				is_special_char(char c);
+void			skip_whitespace(char *input, int *i);
 
 #endif

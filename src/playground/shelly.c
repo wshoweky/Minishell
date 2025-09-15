@@ -1,5 +1,10 @@
 #include "minishell.h"
 
+//cat file.txt << EOF >> output.txt
+//echo "hello world" | grep test > output.txt
+//ls -la | grep .c | sort > files.txt
+//cat < input.txt > output.txt
+//echo "This is a test" >> log.txt
 int	shelly(void)
 {
 	char	*line;

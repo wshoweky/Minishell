@@ -1,74 +1,58 @@
 #include "minishell.h"
 
-void	free_split(char **words)
+t_token_type	get_token_type(char *str)
 {
-	int	wc;
-
-	wc = 0;
-	if (!words)
-		return ;
-	while (words[wc])
-	{
-		free(words[wc]);
-		wc++;
-	}
-	free(words);
+	if (!str || !*str)
+		return (TOKEN_EOF);
+	if (ft_strcmp(str, "|") == 0)
+		return (TOKEN_PIPE);
+	if (ft_strcmp(str, "<") == 0)
+		return (TOKEN_REDIRECT_IN);
+	if (ft_strcmp(str, ">") == 0)
+		return (TOKEN_REDIRECT_OUT);
+	if (ft_strcmp(str, ">>") == 0)
+		return (TOKEN_APPEND);
+	if (ft_strcmp(str, "<<") == 0)
+		return (TOKEN_HEREDOC);
+	return (TOKEN_WORD);
+}
+// to be printed for debugging
+char	*get_token_type_name(t_token_type type)
+{
+	if (type == TOKEN_WORD)
+		return ("WORD");
+	if (type == TOKEN_PIPE)
+		return ("PIPE");
+	if (type == TOKEN_REDIRECT_IN)
+		return ("REDIRECT_IN");
+	if (type == TOKEN_REDIRECT_OUT)
+		return ("REDIRECT_OUT");
+	if (type == TOKEN_APPEND)
+		return ("APPEND");
+	if (type == TOKEN_HEREDOC)
+		return ("HEREDOC");
+	return ("EOF");
 }
 
-t_tokens	*new_node(char *word)
+int	is_special_char(char c)
 {
-	t_tokens	*node;
-
-	node = malloc(sizeof(t_tokens));
-	if (!node)
-		return (NULL);
-	node->value = ft_strdup(word);
-	if (!node->value)
-	{
-		free(node);
-		return (NULL);
-	}
-	node->next = NULL;
-	return (node);
+	return (c == '|' || c == '<' || c == '>' || c == ' ' || c == '\t' 
+		|| c == '\n' || c == '"' || c == '\'');
 }
 
-void	free_list_nodes(t_tokens *head)
+/*
+** skip_whitespace - Skip whitespace characters in input string
+**
+** DESCRIPTION:
+**   Advances the index pointer past any whitespace characters (space, tab).
+**   This helper function ensures tokens are properly separated.
+**
+** PARAMETERS:
+**   input - The input string to process
+**   i     - Pointer to current index (modified by reference)
+*/
+void	skip_whitespace(char *input, int *i)
 {
-	t_tokens	*tmp;
-
-	while (head)
-	{
-		tmp = head->next;
-		free(head->value);
-		free(head);
-		head = tmp;
-	}
-}
-
-int	list_size(t_tokens *head)
-{
-	int	size;
-
-	size = 0;
-	while (head)
-	{
-		size++;
-		head = head->next;
-	}
-	return (size);
-}
-
-void	add_to_end(t_tokens **head, t_tokens *new_node)
-{
-	t_tokens	*tmp;
-
-	if (!*head)
-	{
-		*head = new_node;
-		return ;
-	}
-	tmp = *head;
-	while (tmp->next)
-		tmp = tmp->next;
-	tmp->next = new_node;	
+	while (input[*i] && (input[*i] == ' ' || input[*i] == '\t'))
+		(*i)++;
 }

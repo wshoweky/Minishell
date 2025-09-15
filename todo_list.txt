@@ -1,0 +1,211 @@
+MINISHELL TODO LIST - Separated Concerns Architecture
+=======================================================
+
+🔤 LEXER (TOKENIZER) - "What are the symbols?"
+=====================================================
+✅ [COMPLETED] Basic token types (WORD, PIPE, REDIRECT_IN, REDIRECT_OUT, APPEND, HEREDOC)
+✅ [COMPLETED] Quote handling (single and double quotes)
+✅ [COMPLETED] Whitespace skipping
+✅ [COMPLETED] Multi-character operators (>>, <<)
+✅ [COMPLETED] Error handling for unclosed quotes
+
+🔧 [TODO] Arithmetic operators tokenization
+    - Add TOKEN_PLUS, TOKEN_MINUS, TOKEN_MULTIPLY, TOKEN_DIVIDE, TOKEN_MODULO
+    - Add TOKEN_LPAREN, TOKEN_RPAREN for grouping
+    - Update is_special_char() to include: + - * / % ( )
+
+🔧 [TODO] Variable expansion tokens
+    - Add TOKEN_DOLLAR for $ symbol
+    - Add TOKEN_NUMBER for numeric literals
+    - Handle $((arithmetic)) context detection
+
+🔧 [TODO] Logical operators
+    - Add TOKEN_AND (&&), TOKEN_OR (||)
+    - Handle multi-character operator detection
+
+🔧 [TODO] Enhanced error reporting
+    - Add line/column tracking for better error messages
+    - Add token position information
+
+🔧 [TODO] Wildcard detection
+    - Add TOKEN_WILDCARD for * symbol
+    - Mark tokens that contain wildcards for later expansion
+
+🌳 PARSER - "What's the command structure?"
+==========================================
+🔧 [TODO] Command structure creation
+    - Implement parse_commands() to convert tokens to t_command list
+    - Handle simple commands: cmd arg1 arg2
+    - Handle pipelines: cmd1 | cmd2 | cmd3
+
+🔧 [TODO] Redirection parsing
+    - Parse input redirection: < file
+    - Parse output redirection: > file  
+    - Parse append redirection: >> file
+    - Parse heredoc: << delimiter
+
+🔧 [TODO] Quote removal
+    - Remove quotes from WORD tokens that were quoted
+    - Preserve literal values inside quotes
+
+🔧 [TODO] Syntax validation
+    - Check for invalid pipe usage (pipe at start/end, double pipes)
+    - Check for invalid redirections (missing filenames)
+    - Check for proper command structure
+
+🔧 [TODO] Logical operators parsing
+    - Parse && (AND) and || (OR) operators
+    - Build command chains with conditional execution
+
+🔧 [TODO] Subshell parsing
+    - Parse parentheses for subshell execution: (cmd1; cmd2)
+    - Handle nested subshells
+
+🔧 [TODO] Arithmetic expression parsing
+    - Parse $((expression)) for arithmetic expansion
+    - Build expression trees for arithmetic evaluation
+
+🔧 [TODO] Error recovery
+    - Provide meaningful syntax error messages
+    - Implement error recovery strategies
+
+⚡ EXECUTOR - "How do I run this?"
+=================================
+🔧 [TODO] Built-in command recognition
+    - Implement is_builtin() function
+    - Create builtin dispatch table: echo, cd, pwd, export, unset, env, exit
+
+🔧 [TODO] Built-in implementations
+    - builtin_echo(): Handle -n flag, multiple arguments
+    - builtin_cd(): Handle relative/absolute paths, HOME, OLDPWD
+    - builtin_pwd(): Print current working directory
+    - builtin_export(): Set environment variables, handle invalid names
+    - builtin_unset(): Remove environment variables
+    - builtin_env(): Print all environment variables
+    - builtin_exit(): Handle exit codes, cleanup
+
+🔧 [TODO] External command execution
+    - PATH resolution for commands
+    - fork() and execve() for external programs
+    - Handle command not found errors
+
+🔧 [TODO] Pipeline execution
+    - Create pipes between commands
+    - Handle multiple processes in pipeline
+    - Wait for all processes and collect exit codes
+
+🔧 [TODO] Redirection handling
+    - Open files for input/output redirection
+    - Handle file permission errors
+    - Restore original stdin/stdout after redirection
+
+🔧 [TODO] Heredoc implementation
+    - Read input until delimiter is found
+    - Handle variable expansion in heredoc (if required)
+    - Create temporary files or use pipes
+
+🔧 [TODO] Variable expansion
+    - Expand $VAR and ${VAR} in arguments
+    - Handle special variables: $?, $$, $0
+    - Expand environment variables
+
+🔧 [TODO] Wildcard expansion
+    - Use glob() function for * expansion
+    - Handle no matches (return literal *)
+    - Sort expanded filenames
+
+🔧 [TODO] Arithmetic evaluation
+    - Evaluate $((expression)) 
+    - Handle basic arithmetic: +, -, *, /, %, ()
+    - Handle variables in arithmetic expressions
+
+🔧 [TODO] Logical operators execution
+    - Implement && (execute next only if current succeeds)
+    - Implement || (execute next only if current fails)
+    - Handle short-circuit evaluation
+
+🔧 [TODO] Signal handling
+    - Handle Ctrl+C (SIGINT) - interrupt current command
+    - Handle Ctrl+\ (SIGQUIT) - ignore in interactive mode
+    - Handle Ctrl+D (EOF) - exit shell gracefully
+
+🔧 [TODO] Subshell execution
+    - Create child process for subshell
+    - Execute commands in isolated environment
+    - Return subshell exit status
+
+🔧 [TODO] Error handling
+    - Set $? exit status correctly
+    - Handle command not found (127)
+    - Handle permission denied (126)
+    - Handle other execution errors
+
+🛠️ INFRASTRUCTURE & UTILITIES
+=============================
+🔧 [TODO] Memory management
+    - Implement proper cleanup functions
+    - Add memory leak detection
+    - Handle malloc failures gracefully
+
+🔧 [TODO] Environment management
+    - Create environment variable manipulation functions
+    - Handle environment variable inheritance
+    - Implement variable scoping for subshells
+
+🔧 [TODO] History management (bonus)
+    - Implement command history storage
+    - Add history expansion (!!, !n, !string)
+    - Save/load history from file
+
+🔧 [TODO] Job control (bonus)
+    - Implement background processes (&)
+    - Add job status tracking
+    - Implement jobs, fg, bg built-ins
+
+🔧 [TODO] Advanced features (bonus)
+    - Command line editing with readline
+    - Tab completion for commands/files
+    - Prompt customization
+
+🧪 TESTING & VALIDATION
+=======================
+🔧 [TODO] Unit tests
+    - Test tokenizer with various inputs
+    - Test parser with complex command structures
+    - Test each built-in command individually
+
+🔧 [TODO] Integration tests
+    - Test complete command execution flow
+    - Test error handling and edge cases
+    - Test memory management
+
+🔧 [TODO] Comparison testing
+    - Compare behavior with bash
+    - Test subject requirements compliance
+    - Test bonus features if implemented
+
+📋 CURRENT STATUS
+================
+✅ Tokenizer foundation complete
+⏳ Parser phase - NEXT PRIORITY
+⏳ Basic executor - After parser
+⏳ Advanced features - Final phase
+
+🎯 NEXT IMMEDIATE STEPS
+======================
+1. Implement parse_commands() function to convert tokens to command structures
+2. Add basic syntax validation during parsing
+3. Implement simple command execution (no pipes/redirections first)
+4. Add built-in command recognition and basic built-ins (echo, pwd, env)
+5. Gradually add complexity (pipes, redirections, variables, etc.)
+
+📝 NOTES
+========
+- Follow 42 Norm: functions ≤25 lines, ≤80 chars per line
+- Add comprehensive comments for learning
+- Test each component thoroughly before moving to next
+- Keep clean separation between lexer/parser/executor
+- Built-ins are recognized at EXECUTION time, not parsing time
+- All command names are WORD tokens regardless of type (built-in vs external)
+
+🚀 Remember: "Make it work, make it right, make it fast!"

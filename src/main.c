@@ -1,14 +1,15 @@
 #include "minishell.h"
-// TODO: Implement proper parsing and execution
-// split_command = ft_split(input, ' ');
-// tokenization_func(split_command);
-// command_identification(split_command);
-// pipex	
-static  void	print_tokens(t_tokens *head)
+
+// follow and update the todo_list.txt ✨
+
+static  void	print_tokens(t_tokens *head)// Debug function to print the token list
 {
 	while (head)
 	{
-		ft_printf("Token: %s\n", head->value);
+		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
+		if (head->was_quoted)
+			ft_printf(" | Quoted: Yes");
+		ft_printf("\n");
 		head = head->next;
 	}
 }
@@ -23,23 +24,23 @@ int	main(int ac, char **av, char **env)
 	(void)env;
 	while (1337)
 	{
-		input = readline("WGshell> ");
+		input = readline("WGshell> ");  // Allocates memory for input, must be freed
 		if (!input)
 		{
 			ft_printf("exit\n");
 			break;
 		}
 		if (*input)
-			add_history(input);	
+			add_history(input);	// History cleanup is readline's responsibility, no need to free manually
 		if (ft_strcmp(input, "exit") == 0)
 		{
 			free(input);
 			break;
 		}
-		tokens = split_commands(input);
+		tokens = tokenize_input(input);
 		if (!tokens)
 		{
-			ft_printf("Error!\n");
+			ft_printf("Error in tokenization!\n");
 			free(input);
 		}
 		else
@@ -51,19 +52,3 @@ int	main(int ac, char **av, char **env)
 	}
 	return (0);
 }
-/*
-tokenization_func
-{
-	char *text = {Makefile, cat, ls, -l, out}
-	char *redirection = {<, >}
-	char *pipe = {|}
-}
-*/
-//shelly test
-/*
-int	main(void)
-{
-	shelly();
-	return (0);
-}
-*/

@@ -4,7 +4,12 @@ CC = cc
 
 CFLAG = -Wall -Wextra -Werror 
 
-SRC = src/main.c src/parser/tokens.c src/parser/tokens_utils.c #src/shelly.c
+SRC = src/main.c \
+	  src/parser/tokens.c \
+	  src/parser/tokens_utils.c \
+	  src/parser/list_utils.c \
+	  src/parser/extract_tokens.c \
+	  src/playground/shelly.c
 
 O_DIR = objdir
 
@@ -28,6 +33,7 @@ $(NAME): $(OBJ) $(LIBFT)
 $(O_DIR):
 	mkdir -p $(O_DIR)/src
 	mkdir -p $(O_DIR)/src/parser
+	mkdir -p $(O_DIR)/src/playground
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@

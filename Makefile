@@ -2,13 +2,14 @@ NAME = minishell
 
 CC = cc 
 
-CFLAG = -Wall -Wextra -Werror 
+CFLAG = -Wall -Wextra -Werror
 
 SRC = src/main.c \
 	  src/parser/tokens.c \
 	  src/parser/tokens_utils.c \
 	  src/parser/list_utils.c \
 	  src/parser/extract_tokens.c \
+	  src/parser/build_cmd_table.c \
 	  src/playground/shelly.c
 
 O_DIR = objdir

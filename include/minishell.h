@@ -80,6 +80,10 @@ typedef struct s_cmd_table
 	t_cmd	*list_of_cmds;
 } t_cmd_table;
 
-t_cmd_table *register_to_table(t_tokens *list_of_toks);
+t_cmd_table	*register_to_table(t_tokens *list_of_toks);
+t_cmd		*new_cmd_alloc();
+int			is_redirection(t_token_type check);
+void		add_argv(t_cmd *command, char *expansion);
+void		**clean_free_double_pointers(void **trash);
 
 #endif

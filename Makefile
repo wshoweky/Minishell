@@ -2,7 +2,7 @@ NAME = minishell
 
 CC = cc 
 
-CFLAG = -Wall -Wextra -Werror 
+CFLAG = -Wall -Wextra -Werror -g
 
 SRC = src/main.c \
 	  src/parser/tokens.c \

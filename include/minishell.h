@@ -42,7 +42,7 @@ int			list_size(t_tokens *head);
 void		free_split(char **words);
 void		free_list_nodes(t_tokens *head);
 void		add_to_end(t_tokens **head, t_tokens *new_node);
-t_tokens	*new_node(char *word);
+t_tokens	*create_token(char *word);
 t_tokens	*split_commands(char *input);
 
 // Tokenization functions

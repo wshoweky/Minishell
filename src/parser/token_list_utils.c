@@ -15,7 +15,7 @@ void	free_split(char **words)
 	free(words);
 }
 
-t_tokens	*new_node(char *word)
+t_tokens	*create_token(char *word)
 {
 	t_tokens	*token;
 
@@ -87,7 +87,7 @@ t_tokens	*split_commands(char *input)
 	i = 0;
 	while (words[i])
 	{
-		new = new_node(words[i]);
+		new = create_token(words[i]);
 		if (!new)
 		{
 			free_list_nodes(head);

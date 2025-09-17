@@ -39,18 +39,6 @@ int	is_special_char(char c)
 	return (c == '|' || c == '<' || c == '>' || c == ' ' || c == '\t' 
 		|| c == '\n' || c == '"' || c == '\'');
 }
-
-/*
-** skip_whitespace - Skip whitespace characters in input string
-**
-** DESCRIPTION:
-**   Advances the index pointer past any whitespace characters (space, tab).
-**   This helper function ensures tokens are properly separated.
-**
-** PARAMETERS:
-**   input - The input string to process
-**   i     - Pointer to current index (modified by reference)
-*/
 void	skip_whitespace(char *input, int *i)
 {
 	while (input[*i] && (input[*i] == ' ' || input[*i] == '\t'))

@@ -7,7 +7,7 @@ CFLAG = -Wall -Wextra -Werror
 SRC = src/main.c \
 	  src/parser/tokens.c \
 	  src/parser/tokens_utils.c \
-	  src/parser/list_utils.c \
+	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
 	  src/playground/shelly.c
 

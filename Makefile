@@ -9,6 +9,7 @@ SRC = src/main.c \
 	  src/parser/tokens_utils.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
+  	  src/parser/build_cmd_table.c \
 	  src/playground/shelly.c
 
 O_DIR = objdir

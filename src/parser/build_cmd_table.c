@@ -14,8 +14,8 @@
     
 //     while (current_cmd)
 //     {
+//         printf("------------\n");
 //         printf("COMMAND #%d:\n", cmd_index);
-        
         
 //         // Print arguments
 //         printf("cmd_av: [");
@@ -34,18 +34,18 @@
 //             printf("Redirection no %i\n", current_cmd->redirection);
 //             printf("filename saved: %s\n", current_cmd->file_name);
 //         }
-//         printf("------------\n");
 //         current_cmd = current_cmd->next_cmd;
 //         cmd_index++;
 //     }
 // }
 
+
 /*
-- Free and assign as NULL each element the double pointer points to
-- Free the double pointer itself and assign it as NULL
+- Free and assign as NULL each element in the string array
+- Free the double pointer itself
 - Return NULL
 */
-void    **clean_free_double_pointers(void **trash)
+char    **clean_free_double_pointers(char **trash)
 {
     int i;
 
@@ -59,7 +59,6 @@ void    **clean_free_double_pointers(void **trash)
             i++;
         }
         free (trash);
-        trash = NULL;
     }
     return (NULL);
 }
@@ -85,19 +84,22 @@ void    add_argv(t_cmd *command, char *expansion)
     if (!new_cmd)
     {
         ft_printf("Allocation for command failed\n");
-        command->cmd_av = clean_free_double_pointers(command); //need to make cmv_av = NULL to check in outer function
+        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
         return ;
     }
     i = 0;
     if (command->cmd_av)
         while (command->cmd_av[i])
-            new_cmd[i++] = command->cmd_av[i++];
+        {
+            new_cmd[i] = command->cmd_av[i];
+            i++;
+        }
     new_cmd[i] = ft_strdup(expansion);
     if (!new_cmd[i])
     {
         ft_printf("strdup fail while building command\n");
         free(new_cmd);
-        command->cmd_av = clean_free_double_pointers(command); //need to make cmv_av = NULL to check in outer function
+        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
         return ;
     }
     new_cmd[i + 1] = NULL;
@@ -218,6 +220,6 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
         }
         current_tok = current_tok->next; //move to the next token
     }
-    //print_cmd_table(table);
+    // print_cmd_table(table);
     return (table);
 }

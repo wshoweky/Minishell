@@ -48,6 +48,8 @@ int	main(int ac, char **av, char **env)
 		{
 			print_tokens(tokens);
 			cmd_table = register_to_table(tokens); //Checking if command table works
+	       //need to free the cmd table as well to avoid memory leaks
+	       //TODO memory arena to make allocation and freeing easier to manage
 			free_list_nodes(tokens);
 			free(input);
 		}

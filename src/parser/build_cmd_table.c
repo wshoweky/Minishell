@@ -1,6 +1,5 @@
 #include "minishell.h"
 
-
 void    print_cmd_table(t_cmd_table *table) //for debugging purpose
 {
     if (!table)
@@ -33,12 +32,12 @@ void    print_cmd_table(t_cmd_table *table) //for debugging purpose
     }
 }
 
-
 /* Update the command array with tokens passed to it
 */
 void    add_argv(t_cmd *command, char *expansion)
 {
-	size_t  i;
+    size_t  i;
+    size_t  j; // FIX: Added separate counter 'j' to prevent infinite loop during copying
     char    **new_cmd;
 
     i = 0;
@@ -49,25 +48,26 @@ void    add_argv(t_cmd *command, char *expansion)
     if (!new_cmd)
     {
         ft_printf("Allocation for command failed\n");
-        free (command->cmd_av);
-        command->cmd_av = NULL;
-        return ;
+        return ; // FIX: Removed unnecessary free calls that could create dangling pointers
     }
-    i = 0;
+    j = 0; // FIX: Using separate counter for the copy loop
     if (command->cmd_av)
-        while (command->cmd_av[i])
-            new_cmd[i] = command->cmd_av[i];
-    new_cmd[i] = ft_strdup(expansion);
-    if (!new_cmd[i])
+    {
+        while (command->cmd_av[j]) // FIX: Using 'j' instead of 'i' for copying
+        {
+            new_cmd[j] = command->cmd_av[j];
+            j++; // FIX: Increment counter in the copy loop to prevent infinite loop
+        }
+    }
+    new_cmd[j] = ft_strdup(expansion);
+    if (!new_cmd[j])
     {
         ft_printf("strdup fail while building command\n");
-        free (new_cmd);
-        free (command->cmd_av);
-        command->cmd_av = NULL;
+        free(new_cmd); // FIX: Simplified error handling to prevent memory leaks
         return ;
     }
-    new_cmd[i + 1] = NULL;
-    free (command->cmd_av);
+    new_cmd[j + 1] = NULL;
+    free(command->cmd_av);
     command->cmd_av = new_cmd;
 }
 
@@ -109,8 +109,15 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
     if (list_of_toks == NULL)
         return (NULL);
     current_tok = list_of_toks;    
-    table = ft_calloc(1, sizeof(table));
+    table = ft_calloc(1, sizeof(t_cmd_table)); // FIX: Changed from sizeof(table) to sizeof(t_cmd_table) to allocate correct memory size
+    if (!table) // FIX: Added NULL check after memory allocation
+        return (NULL);
     current_cmd = new_cmd_alloc();
+    if (!current_cmd) // FIX: Added check to ensure memory allocation succeeded before using pointer
+    {
+        free(table);
+        return (NULL);
+    }
     table->list_of_cmds = current_cmd;
     table->cmd_count = 1;
     
@@ -125,6 +132,12 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
                 return (NULL);
             }
             current_cmd->next_cmd = new_cmd_alloc();
+            if (!current_cmd->next_cmd) // FIX: Added check for allocation failure
+            {
+                ft_printf("Memory allocation failed for new command\n");
+                //cleanup
+                return (NULL);
+            }
             current_cmd = current_cmd->next_cmd; //prev cmd done, onto new cmd
             table->cmd_count++;
         }
@@ -146,6 +159,12 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
             }
             current_tok = current_tok->next;
             current_cmd->file_name = ft_strdup(current_tok->value);
+            if (!current_cmd->file_name) // FIX: Added check to ensure strdup succeeded
+            {
+                ft_printf("Memory allocation failed for file name\n");
+                //cleanup
+                return (NULL);
+            }
         }
         else
         {
@@ -170,4 +189,3 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
     print_cmd_table(table);
     return (table);
 }
-

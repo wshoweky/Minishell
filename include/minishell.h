@@ -64,4 +64,22 @@ char			*get_token_type_name(t_token_type type);
 int				is_special_char(char c);
 void			skip_whitespace(char *input, int *i);
 
+
+// Command table structs
+typedef struct	s_cmd
+{
+	char			**cmd_av;
+	int				redirection;	//0 = no redirection, enum TOKEN_ for corresponding redirections
+	char			*file_name;		//to be used if there is redirection
+	struct s_cmd	*next_cmd;		//to be used if there is pipe
+} t_cmd;
+
+typedef struct s_cmd_table
+{
+	int		cmd_count;
+	t_cmd	*list_of_cmds;
+} t_cmd_table;
+
+t_cmd_table *register_to_table(t_tokens *list_of_toks);
+
 #endif

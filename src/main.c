@@ -18,7 +18,6 @@ int	main(int ac, char **av, char **env)
 {
 	char	*input;
 	t_tokens	*tokens;
-	t_cmd_table	*cmd_table;
 
 	(void)ac;
 	(void)av;
@@ -47,7 +46,6 @@ int	main(int ac, char **av, char **env)
 		else
 		{
 			print_tokens(tokens);
-			cmd_table = register_to_table(tokens); //Checking if command table works
 			free_list_nodes(tokens);
 			free(input);
 		}

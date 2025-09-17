@@ -66,7 +66,7 @@ t_tokens	*process_single_token(char *input, int *i, t_tokens **head)
 		return (NULL);
 	}
 	if (!new_token)	// Only create new node if not already created (quoted case)
-	    new_token = new_node(token_value);
+	    new_token = create_token(token_value);
 	if (!new_token)	// Error handling
 	{
 		free(token_value);
@@ -138,7 +138,7 @@ char	*extract_quoted_token(char *input, int *i, t_tokens **new_token)
 	// Extract content between quotes
 	token_value = ft_substr(input, start, *i - start);
 	(*i)++; // Skip closing quote
-	*new_token = new_node(token_value);
+	*new_token = create_token(token_value);
 	if (*new_token)
 	{
 		(*new_token)->type = TOKEN_WORD;

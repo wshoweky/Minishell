@@ -1,43 +1,49 @@
 #include "minishell.h"
 
-// static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
-// {
-//     if (!table)
-//     {
-//         ft_printf("Command table not found\n");
-//         return ;
-//     }
-//     ft_printf("\nPrinting command table\n");
-//     ft_printf("Number of commands: %i\n", table->cmd_count);
-//     t_cmd *current_cmd = table->list_of_cmds;
-//     int cmd_index = 1;
+static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
+{
+    if (!table)
+    {
+        ft_printf("Command table not found\n");
+        return ;
+    }
+    ft_printf("\nPrinting command table\n");
+    ft_printf("Number of commands: %i\n", table->cmd_count);
+    t_cmd *current_cmd = table->list_of_cmds;
+    int cmd_index = 1;
     
-//     while (current_cmd)
-//     {
-//         printf("------------\n");
-//         printf("COMMAND #%d:\n", cmd_index);
+    while (current_cmd)
+    {
+        printf("------------\n");
+        printf("COMMAND #%d:\n", cmd_index);
         
-//         // Print arguments
-//         printf("cmd_av: [");
-//         if (current_cmd->cmd_av)
-//         {
-//             for (int i = 0; current_cmd->cmd_av[i] != NULL; i++)
-//             {
-//                 printf("\"%s\"", current_cmd->cmd_av[i]);
-//                 if (current_cmd->cmd_av[i + 1] != NULL)
-//                     printf(", ");
-//             }
-//         }
-//         printf("]\n");
-//         if (current_cmd->file_name)
-//         {
-//             printf("Redirection no %i\n", current_cmd->redirection);
-//             printf("filename saved: %s\n", current_cmd->file_name);
-//         }
-//         current_cmd = current_cmd->next_cmd;
-//         cmd_index++;
-//     }
-// }
+        // Print arguments
+        printf("cmd_av: [");
+        if (current_cmd->cmd_av)
+        {
+            for (int i = 0; current_cmd->cmd_av[i] != NULL; i++)
+            {
+                printf("\"%s\"", current_cmd->cmd_av[i]);
+                if (current_cmd->cmd_av[i + 1] != NULL)
+                    printf(", ");
+            }
+        }
+        printf("]\n");
+        if (current_cmd->redirections)
+        {
+            printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+            printf("filename saved: %s\n", current_cmd->redirections->filename);
+            while (current_cmd->redirections->next)
+            {
+                current_cmd->redirections = current_cmd->redirections->next;
+                printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+                printf("filename saved: %s\n", current_cmd->redirections->filename);
+            }
+        }
+        current_cmd = current_cmd->next_cmd;
+        cmd_index++;
+    }
+}
 
 
 /*
@@ -129,6 +135,63 @@ t_cmd   *new_cmd_alloc()
     return (new);
 }
 
+/* Create and append a new redirection node to the command
+
+- Allocate memory for a new t_redir structure
+- Set redirection type from current token
+- Move to next token and ft_strdup the filename
+- Appends the new t_redir to the command's redirection list.
+    If no redirection exists, it becomes the first node; otherwise at the end.
+
+Returns: 0 on success, -1 on errors
+*/
+int    make_redir(t_tokens *curr_tok, t_cmd *curr_cmd)
+{
+    t_redir *new;
+    t_redir *find_tail;
+
+    new = ft_calloc(1, sizeof(t_redir));
+    if (!new)
+    {
+        ft_printf("Memory alloc failed for t_redir");
+        return (-1);
+    }
+    set_redir_type(curr_tok->type, &new->tok_type);
+    *curr_tok = *curr_tok->next;
+    new->filename = ft_strdup(curr_tok->value);
+    if (!new->filename)
+    {
+        ft_printf("Memory allocation failed for file name\n");
+        free (new);
+        return (-1);
+    }
+    if (!curr_cmd->redirections)
+        curr_cmd->redirections = new;
+    else
+    {
+        find_tail = curr_cmd->redirections;
+        while (find_tail->next)
+            find_tail = find_tail->next;
+        find_tail->next = new;
+    }
+    return (0);
+}
+
+/* Set the redirectional type to be the same with the token type
+(helper function of make_redir())
+*/
+void    set_redir_type(t_token_type tok_type, t_token_type *redir_type)
+{
+    if (tok_type == TOKEN_REDIRECT_IN)
+        *redir_type = TOKEN_REDIRECT_IN;
+    else if (tok_type == TOKEN_REDIRECT_OUT)
+        *redir_type = TOKEN_REDIRECT_OUT;
+    else if (tok_type == TOKEN_APPEND)
+        *redir_type = TOKEN_APPEND;
+    else if (tok_type == TOKEN_HEREDOC)
+        *redir_type = TOKEN_HEREDOC;
+}
+
 /* Parses a linked list of tokens into a command table structure.
 
 Builds a command table where:
@@ -151,20 +214,21 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
     current_cmd = new_cmd_alloc();
     if (!current_cmd)
     {
-        free(table);
+        printf("Memory alloc failed for t_cmd\n");
+        //cleanup free(table) and current_tok and list_of_toks?
         return (NULL);
     }
     table->list_of_cmds = current_cmd;
     table->cmd_count = 1;
-    
+
     while (current_tok)
     {
         if (current_tok->type == TOKEN_PIPE)
         {
-            if (!current_tok->next || current_tok->next->type != TOKEN_WORD)
+            if (!current_cmd->cmd_av || !current_tok->next)
             {
-                ft_printf("No command after pipe\n");
-                //cleanup list_of_toks, free table/token/command?
+                ft_printf("Syntax error around pipe\n");
+                //cleanup;
                 return (NULL);
             }
             current_cmd->next_cmd = new_cmd_alloc();
@@ -179,26 +243,15 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
         }
         else if (is_redirection(current_tok->type))
         {
-            if (current_tok->type == TOKEN_REDIRECT_IN)
-                current_cmd->redirection = TOKEN_REDIRECT_IN;
-            else if (current_tok->type == TOKEN_REDIRECT_OUT)
-                current_cmd->redirection = TOKEN_REDIRECT_OUT;
-            else if (current_tok->type == TOKEN_APPEND)
-                current_cmd->redirection = TOKEN_APPEND;
-            else if (current_tok->type == TOKEN_HEREDOC)
-                current_cmd->redirection = TOKEN_HEREDOC;
             if (!current_tok->next || current_tok->next->type != TOKEN_WORD)
             {
                 ft_printf("No valid name for redirection file\n");
                 //cleanup;
                 return (NULL);
             }
-            current_tok = current_tok->next;
-            current_cmd->file_name = ft_strdup(current_tok->value);
-            if (!current_cmd->file_name)
+            if (make_redir(current_tok, current_cmd) == -1)
             {
-                ft_printf("Memory allocation failed for file name\n");
-                //cleanup
+                //cleanup;
                 return (NULL);
             }
         }
@@ -220,6 +273,7 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
         }
         current_tok = current_tok->next; //move to the next token
     }
-    // print_cmd_table(table);
+    print_cmd_table(table);
     return (table);
 }
+

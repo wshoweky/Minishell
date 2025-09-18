@@ -66,12 +66,18 @@ void			skip_whitespace(char *input, int *i);
 
 
 // Command table structs
+typedef struct	s_redir
+{
+	t_token_type	tok_type;
+	char			*filename;		//to be used if there is redirection
+	struct s_redir	*next;
+} t_redir;
+
 typedef struct	s_cmd
 {
 	char			**cmd_av;
-	int				redirection; //0 = no redirection, enum TOKEN_ for corresponding redirections
-	char			*file_name;	 //to be used if there is redirection
-	struct s_cmd	*next_cmd;   //to be used if there is pipe
+	t_redir			*redirections;  //to be used if there is redirections
+	struct s_cmd	*next_cmd;		//to be used if there is pipe
 } t_cmd;
 
 typedef struct s_cmd_table
@@ -83,6 +89,8 @@ typedef struct s_cmd_table
 t_cmd_table	*register_to_table(t_tokens *list_of_toks);
 t_cmd		*new_cmd_alloc();
 int			is_redirection(t_token_type check);
+int			make_redir(t_tokens *curr_tok, t_cmd *curr_cmd);
+void		set_redir_type(t_token_type tok_type, t_token_type *redir_type);
 void		add_argv(t_cmd *command, char *expansion);
 char		**clean_free_double_pointers(char **trash);
 

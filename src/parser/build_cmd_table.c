@@ -1,72 +1,108 @@
 #include "minishell.h"
 
-void    print_cmd_table(t_cmd_table *table) //for debugging purpose
-{
-    if (!table)
-    {
-        ft_printf("Command table not found\n");
-        return ;
-    }
-    ft_printf("Number of commands: %i\n", table->cmd_count);
-    t_cmd *current_cmd = table->list_of_cmds;
-    int cmd_index = 1;
+// static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
+// {
+//     if (!table)
+//     {
+//         ft_printf("Command table not found\n");
+//         return ;
+//     }
+//     ft_printf("\nPrinting command table\n");
+//     ft_printf("Number of commands: %i\n", table->cmd_count);
+//     t_cmd *current_cmd = table->list_of_cmds;
+//     int cmd_index = 1;
     
-    while (current_cmd)
-    {
-        printf("COMMAND #%d:\n", cmd_index);
-        printf("------------\n");
+//     while (current_cmd)
+//     {
+//         printf("------------\n");
+//         printf("COMMAND #%d:\n", cmd_index);
         
-        // Print arguments
-        printf("Arguments: [");
-        if (current_cmd->cmd_av) {
-            for (int i = 0; current_cmd->cmd_av[i] != NULL; i++) {
-                printf("\"%s\"", current_cmd->cmd_av[i]);
-                if (current_cmd->cmd_av[i + 1] != NULL) {
-                    printf(", ");
-                }
-            }
+//         // Print arguments
+//         printf("cmd_av: [");
+//         if (current_cmd->cmd_av)
+//         {
+//             for (int i = 0; current_cmd->cmd_av[i] != NULL; i++)
+//             {
+//                 printf("\"%s\"", current_cmd->cmd_av[i]);
+//                 if (current_cmd->cmd_av[i + 1] != NULL)
+//                     printf(", ");
+//             }
+//         }
+//         printf("]\n");
+//         if (current_cmd->file_name)
+//         {
+//             printf("Redirection no %i\n", current_cmd->redirection);
+//             printf("filename saved: %s\n", current_cmd->file_name);
+//         }
+//         current_cmd = current_cmd->next_cmd;
+//         cmd_index++;
+//     }
+// }
+
+
+/*
+- Free and assign as NULL each element in the string array
+- Free the double pointer itself
+- Return NULL
+*/
+char    **clean_free_double_pointers(char **trash)
+{
+    int i;
+
+    i = 0;
+    if (trash)
+    {
+        while (trash[i])
+        {
+            free (trash[i]);
+            trash[i] = NULL;
+            i++;
         }
-        printf("]\n");
-        current_cmd = current_cmd->next_cmd;
-        cmd_index++;
+        free (trash);
     }
+    return (NULL);
 }
 
-/* Update the command array with tokens passed to it
+/* Expand command array to include a new token value:
+ - Allocating new array with space for existing arguments + new argument + NULL
+ - Give existing string pointers to new array
+ - Use ft_strdup() to duplicate the new token value into the array
+ - Add NULL terminator to the expanded array
+ - Update the old command array with the new allocation
 */
 void    add_argv(t_cmd *command, char *expansion)
 {
+    size_t  quantity;
     size_t  i;
-    size_t  j; // FIX: Added separate counter 'j' to prevent infinite loop during copying
     char    **new_cmd;
 
-    i = 0;
+    quantity = 0;
     if (command->cmd_av)
-        while (command->cmd_av[i])
-            i++;
-    new_cmd = ft_calloc(i + 2, sizeof(char *));
+        while (command->cmd_av[quantity])
+            quantity++;
+    new_cmd = ft_calloc(quantity + 2, sizeof(char *));
     if (!new_cmd)
     {
         ft_printf("Allocation for command failed\n");
-        return ; // FIX: Removed unnecessary free calls that could create dangling pointers
-    }
-    j = 0; // FIX: Using separate counter for the copy loop
-    if (command->cmd_av)
-    {
-        while (command->cmd_av[j]) // FIX: Using 'j' instead of 'i' for copying
-        {
-            new_cmd[j] = command->cmd_av[j];
-            j++; // FIX: Increment counter in the copy loop to prevent infinite loop
-        }
-    }
-    new_cmd[j] = ft_strdup(expansion);
-    if (!new_cmd[j])
-    {
-        ft_printf("strdup fail while building command\n");
-        free(new_cmd); // FIX: Simplified error handling to prevent memory leaks
+        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
         return ;
     }
-    new_cmd[j + 1] = NULL;
+    i = 0;
+    if (command->cmd_av)
+        while (command->cmd_av[i])
+        {
+            new_cmd[i] = command->cmd_av[i];
+            i++;
+        }
+    new_cmd[i] = ft_strdup(expansion);
+    if (!new_cmd[i])
+    {
+        ft_printf("strdup fail while building command\n");
+        free(new_cmd);
+        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
+        return ;
+    }
+    new_cmd[i + 1] = NULL;
     free(command->cmd_av);
     command->cmd_av = new_cmd;
 }
@@ -93,12 +129,12 @@ t_cmd   *new_cmd_alloc()
     return (new);
 }
 
-/* Make a command table while going through the tokens linked list:
-- Count how many commands there are and erase the pipe with helper function
-- Allocate memory for as many t_cmd structs;
-- 
-- If token value is a redirection -> save next token value as file name
-- 
+/* Parses a linked list of tokens into a command table structure.
+
+Builds a command table where:
+- Pipes (|) separate commands and increment the command count
+- Redirections (<, >, >>, <<) set redirection type and capture filename
+- Regular word tokens are added as command arguments
 */
 t_cmd_table *register_to_table(t_tokens *list_of_toks)
 {
@@ -109,11 +145,11 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
     if (list_of_toks == NULL)
         return (NULL);
     current_tok = list_of_toks;    
-    table = ft_calloc(1, sizeof(t_cmd_table)); // FIX: Changed from sizeof(table) to sizeof(t_cmd_table) to allocate correct memory size
-    if (!table) // FIX: Added NULL check after memory allocation
+    table = ft_calloc(1, sizeof(t_cmd_table));
+    if (!table)
         return (NULL);
     current_cmd = new_cmd_alloc();
-    if (!current_cmd) // FIX: Added check to ensure memory allocation succeeded before using pointer
+    if (!current_cmd)
     {
         free(table);
         return (NULL);
@@ -132,7 +168,7 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
                 return (NULL);
             }
             current_cmd->next_cmd = new_cmd_alloc();
-            if (!current_cmd->next_cmd) // FIX: Added check for allocation failure
+            if (!current_cmd->next_cmd)
             {
                 ft_printf("Memory allocation failed for new command\n");
                 //cleanup
@@ -159,7 +195,7 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
             }
             current_tok = current_tok->next;
             current_cmd->file_name = ft_strdup(current_tok->value);
-            if (!current_cmd->file_name) // FIX: Added check to ensure strdup succeeded
+            if (!current_cmd->file_name)
             {
                 ft_printf("Memory allocation failed for file name\n");
                 //cleanup
@@ -181,11 +217,9 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
                 //cleanup;
                 return (NULL);
             }
-            ft_printf("got here after add_argv\n");
         }
         current_tok = current_tok->next; //move to the next token
     }
-    ft_printf("got here before print table\n");
-    print_cmd_table(table);
+    // print_cmd_table(table);
     return (table);
 }

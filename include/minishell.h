@@ -13,6 +13,7 @@
 # include <sys/stat.h> // stat lstat fstat
 # include <readline/readline.h> // readline()
 # include <readline/history.h> // add_history()
+# include "arena.h"
 # include "../libft/libft.h"
 
 typedef enum e_token_type

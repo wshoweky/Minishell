@@ -87,6 +87,9 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 🔧 [TODO] External command execution
     - PATH resolution for commands
     - fork() and execve() for external programs
+    - Fr Giang: in pipex exec_cmd, if cmd_av == NULL, just exit but not error, 
+    since a command like "cat file | > out.txt" will still create outfile although no command is executed, 
+    no error appears in bash and exit code is 0;
     - Handle command not found errors
 
 🔧 [TODO] Pipeline execution

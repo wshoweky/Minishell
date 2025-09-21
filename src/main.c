@@ -7,8 +7,10 @@ static  void	print_tokens(t_tokens *head)// Debug function to print the token li
 	while (head)
 	{
 		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
-		if (head->was_quoted)
-			ft_printf(" | Quoted: Yes");
+		if (head->was_quoted == 1)
+			ft_printf(" | Quoted: Single ('') - No expansion");
+		else if (head->was_quoted == 2)
+			ft_printf(" | Quoted: Double (\"\") - With expansion");
 		ft_printf("\n");
 		head = head->next;
 	}
@@ -16,13 +18,21 @@ static  void	print_tokens(t_tokens *head)// Debug function to print the token li
 
 int	main(int ac, char **av, char **env)
 {
-	char	*input;
+	char		*input;
 	t_tokens	*tokens;
+	t_arena	*arena;
 	t_cmd_table	*cmd_table;
 
 	(void)ac;
 	(void)av;
 	(void)env;
+	(void)cmd_table; // Prevent unused variable warning
+	arena = ar_init();
+	if (!arena)
+	{
+		ft_printf("Failed to initialize memory arena\n");
+		return (1);
+	}
 	while (1337)
 	{
 		input = readline("WGshell> ");  // Allocates memory for input, must be freed
@@ -38,7 +48,7 @@ int	main(int ac, char **av, char **env)
 			free(input);
 			break;
 		}
-		tokens = tokenize_input(input);
+		tokens = tokenize_input(arena, input);
 		if (!tokens)
 		{
 			ft_printf("Error in tokenization!\n");
@@ -47,12 +57,14 @@ int	main(int ac, char **av, char **env)
 		else
 		{
 			print_tokens(tokens);
-			cmd_table = register_to_table(tokens); //Checking if command table works
-	       //need to free the cmd table as well to avoid memory leaks
-	       //TODO memory arena to make allocation and freeing easier to manage
-			free_list_nodes(tokens);
+			cmd_table = register_to_table(arena, tokens); //Checking if command table works
+			// No need to free tokens or cmd_table as they're in the arena
 			free(input);
 		}
+		// Reset arena for next command
+		ar_reset(arena);
 	}
+	// Cleanup arena before exit
+	free_arena(arena);
 	return (0);
 }

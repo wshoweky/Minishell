@@ -72,11 +72,11 @@ char    **clean_free_double_pointers(char **trash)
 /* Expand command array to include a new token value:
  - Allocating new array with space for existing arguments + new argument + NULL
  - Give existing string pointers to new array
- - Use ft_strdup() to duplicate the new token value into the array
+ - Use ar_strdup() to duplicate the new token value into the array
  - Add NULL terminator to the expanded array
  - Update the old command array with the new allocation
 */
-void    add_argv(t_cmd *command, char *expansion)
+void    add_argv(t_arena *arena, t_cmd *command, char *expansion)
 {
     size_t  quantity;
     size_t  i;
@@ -86,11 +86,11 @@ void    add_argv(t_cmd *command, char *expansion)
     if (command->cmd_av)
         while (command->cmd_av[quantity])
             quantity++;
-    new_cmd = ft_calloc(quantity + 2, sizeof(char *));
+    new_cmd = ar_alloc(arena, (quantity + 2) * sizeof(char *));
     if (!new_cmd)
     {
         ft_printf("Allocation for command failed\n");
-        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
+        command->cmd_av = NULL; // No need to free as it's in the arena
         return ;
     }
     i = 0;
@@ -100,16 +100,14 @@ void    add_argv(t_cmd *command, char *expansion)
             new_cmd[i] = command->cmd_av[i];
             i++;
         }
-    new_cmd[i] = ft_strdup(expansion);
+    new_cmd[i] = ar_strdup(arena, expansion);
     if (!new_cmd[i])
     {
         ft_printf("strdup fail while building command\n");
-        free(new_cmd);
-        command->cmd_av = clean_free_double_pointers(command->cmd_av); //need to make cmv_av = NULL to check in outer function
+        command->cmd_av = NULL; // No need to free as it's in the arena
         return ;
     }
     new_cmd[i + 1] = NULL;
-    free(command->cmd_av);
     command->cmd_av = new_cmd;
 }
 
@@ -123,15 +121,18 @@ int is_redirection(t_token_type check)
     return (0);
 }
 
-/* Create space with ft_calloc for a t_cmd struct so all values are 0
+/* Create space with ar_alloc for a t_cmd struct so all values are 0
 */
-t_cmd   *new_cmd_alloc()
+t_cmd   *new_cmd_alloc(t_arena *arena)
 {
     t_cmd   *new;
 
-    new = ft_calloc(1, sizeof(t_cmd));
+    new = ar_alloc(arena, sizeof(t_cmd));
     if (!new)
         return (NULL);
+    new->cmd_av = NULL;
+    new->redirections = NULL;
+    new->next_cmd = NULL;
     return (new);
 }
 
@@ -139,30 +140,30 @@ t_cmd   *new_cmd_alloc()
 
 - Allocate memory for a new t_redir structure
 - Set redirection type from current token
-- Move to next token and ft_strdup the filename
+- Move to next token and ar_strdup the filename
 - Appends the new t_redir to the command's redirection list.
     If no redirection exists, it becomes the first node; otherwise at the end.
 
 Returns: 0 on success, -1 on errors
 */
-int    make_redir(t_tokens *curr_tok, t_cmd *curr_cmd)
+int    make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd)
 {
     t_redir *new;
     t_redir *find_tail;
 
-    new = ft_calloc(1, sizeof(t_redir));
+    new = ar_alloc(arena, sizeof(t_redir));
     if (!new)
     {
         ft_printf("Memory alloc failed for t_redir");
         return (-1);
     }
     set_redir_type(curr_tok->type, &new->tok_type);
+    new->next = NULL;
     *curr_tok = *curr_tok->next;
-    new->filename = ft_strdup(curr_tok->value);
+    new->filename = ar_strdup(arena, curr_tok->value);
     if (!new->filename)
     {
         ft_printf("Memory allocation failed for file name\n");
-        free (new);
         return (-1);
     }
     if (!curr_cmd->redirections)
@@ -199,7 +200,7 @@ Builds a command table where:
 - Redirections (<, >, >>, <<) set redirection type and capture filename
 - Regular word tokens are added as command arguments
 */
-t_cmd_table *register_to_table(t_tokens *list_of_toks)
+t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
 {
     t_cmd_table *table;
     t_tokens    *current_tok;
@@ -208,14 +209,14 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
     if (list_of_toks == NULL)
         return (NULL);
     current_tok = list_of_toks;    
-    table = ft_calloc(1, sizeof(t_cmd_table));
+    table = ar_alloc(arena, sizeof(t_cmd_table));
     if (!table)
         return (NULL);
-    current_cmd = new_cmd_alloc();
+    current_cmd = new_cmd_alloc(arena);
     if (!current_cmd)
     {
         printf("Memory alloc failed for t_cmd\n");
-        //cleanup free(table) and current_tok and list_of_toks?
+        // No need to clean up as it's in the arena
         return (NULL);
     }
     table->list_of_cmds = current_cmd;
@@ -228,14 +229,14 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
             if (!current_cmd->cmd_av || !current_tok->next)
             {
                 ft_printf("Syntax error around pipe\n");
-                //cleanup;
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
-            current_cmd->next_cmd = new_cmd_alloc();
+            current_cmd->next_cmd = new_cmd_alloc(arena);
             if (!current_cmd->next_cmd)
             {
                 ft_printf("Memory allocation failed for new command\n");
-                //cleanup
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
             current_cmd = current_cmd->next_cmd; //prev cmd done, onto new cmd
@@ -246,12 +247,12 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
             if (!current_tok->next || current_tok->next->type != TOKEN_WORD)
             {
                 ft_printf("No valid name for redirection file\n");
-                //cleanup;
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
-            if (make_redir(current_tok, current_cmd) == -1)
+            if (make_redir(arena, current_tok, current_cmd) == -1)
             {
-                //cleanup;
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
         }
@@ -260,14 +261,14 @@ t_cmd_table *register_to_table(t_tokens *list_of_toks)
             if (current_tok->type != TOKEN_WORD)
             {
                 ft_printf("Not a word token\n");
-                //cleanup;
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
-            add_argv(current_cmd, current_tok->value);
+            add_argv(arena, current_cmd, current_tok->value);
             if (!current_cmd->cmd_av)
             {
                 ft_printf("Adding command argv unsuccessful\n");
-                //cleanup;
+                // No need to clean up as it's in the arena
                 return (NULL);
             }
         }

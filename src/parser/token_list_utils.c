@@ -15,20 +15,19 @@ void	free_split(char **words)
 	free(words);
 }
 
-t_tokens	*create_token(char *word)
+t_tokens	*create_token(t_arena *arena, char *word)
 {
 	t_tokens	*token;
 
-	token = ft_calloc(1, sizeof(t_tokens));
+	token = ar_alloc(arena, sizeof(t_tokens));
 	if (!token)
 		return (NULL);
-	token->value = ft_strdup(word);
+	token->value = ar_strdup(arena, word);
 	if (!token->value)
-	{
-		free(token);
 		return (NULL);
-	}
 	token->type = get_token_type(word);
+	token->was_quoted = 0;
+	token->next = NULL;
 	return (token);
 }
 
@@ -73,30 +72,29 @@ void	add_to_end(t_tokens **head, t_tokens *new_node)
 	tmp->next = new_node;	
 }
 
-t_tokens	*split_commands(char *input)
+t_tokens	*split_commands(t_arena *arena, char *input)
 {
 	int	i;
 	char	**words;
 	t_tokens	*head;
 	t_tokens	*new;
 
-	words = ft_split(input, ' ');
+	words = ar_split(arena, input, ' ');
 	if (!words)
 		return (NULL);
 	head = NULL;
 	i = 0;
 	while (words[i])
 	{
-		new = create_token(words[i]);
+		new = create_token(arena, words[i]);
 		if (!new)
 		{
-			free_list_nodes(head);
-			free_split(words);
+			// No need to free tokens or words as they're in the arena
 			return (NULL);
 		}
 		add_to_end(&head, new);
 		i++;
 	}
-	free_split(words);
+	// No need to free words as they're in the arena
 	return (head);
 }

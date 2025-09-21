@@ -1,14 +1,14 @@
 #include "minishell.h"
-#include "arena.h"
 
-char	ar_strdup(t_mem_arena *arena, const char *str)
+char	*ar_strdup(t_arena *arena, const char *str)
 {
 	char	*dest;
 	size_t	i;
 
 	if (!str)
 		return (NULL);
-	dest = arena_alloc(arena, ft_strlen(str) + 1);
+	i = 0;
+	dest = ar_alloc(arena, ft_strlen(str) + 1);
 	if (!dest)
 		return (NULL);
 	while (str[i])
@@ -23,7 +23,7 @@ char	ar_strdup(t_mem_arena *arena, const char *str)
     //    position with the given length (or smaller if the length of the
     //    original string is less than start + length, or length is bigger
     //    than MAXSTRINGLEN).
-char	*ar_substr(t_mem_arena *arena, const char *s, unsigned int start, size_t len)
+char	*ar_substr(t_arena *arena, const char *s, unsigned int start, size_t len)
 {
 	size_t	i;
 	size_t	n;
@@ -34,10 +34,10 @@ char	*ar_substr(t_mem_arena *arena, const char *s, unsigned int start, size_t le
 		return (NULL);
 	strlen = ft_strlen(s);
 	if (start >= strlen)
-		return (ar_strdup(arena, "")) //return empty line as it should
+		return (ar_strdup(arena, "")); //return empty line as it should
 	if (len > strlen - start)
 		len = strlen - start;	// recorrect the string length
-	substr = (char *)arena_alloc(arena, len + 1);
+	substr = (char *)ar_alloc(arena, len + 1);
 	if (!substr)
 		return (NULL);
 	i = start;
@@ -48,7 +48,7 @@ char	*ar_substr(t_mem_arena *arena, const char *s, unsigned int start, size_t le
 	return (substr);
 }
 
-char	*ar_strjoin(t_mem_arena *arena, const char *s1, const char *s2)
+char	*ar_strjoin(t_arena *arena, const char *s1, const char *s2)
 {
 	char	*str;
 	size_t	i;
@@ -57,10 +57,10 @@ char	*ar_strjoin(t_mem_arena *arena, const char *s1, const char *s2)
 	if (!s1 && !s2)
 		return (NULL);
 	if (!s1)
-		return (arena_alloc(arena, s2));
+		return (ar_strdup(arena, s2));
 	if (!s2)
-		return (arena_alloc(arena, s1));
-	str = (char *)arena_alloc(arena, ft_strlen(s1) + ft_strlen(s2) + 1);
+		return (ar_strdup(arena, s1));
+	str = (char *)ar_alloc(arena, ft_strlen(s1) + ft_strlen(s2) + 1);
 	if (!str)
 		return (NULL);
 	i = 0;
@@ -72,5 +72,66 @@ char	*ar_strjoin(t_mem_arena *arena, const char *s1, const char *s2)
 		str[n++] = s2[i++];
 	str[n] = '\0';
 	return (str);
+}
+
+char	**ar_split(t_arena *arena, const char *s, char c)
+{
+	char	**result;
+	size_t	i;
+	size_t	j;
+	size_t	start;
+	size_t	count;
+
+	if (!s)
+		return (NULL);
+	count = 0;
+	i = 0;
+	while (s[i])
+	{
+		while (s[i] && s[i] == c)
+			i++;
+		if (s[i] && s[i] != c)
+		{
+			count++;
+			while (s[i] && s[i] != c)
+				i++;
+		}
+	}
+	result = (char **)ar_alloc(arena, (count + 1) * sizeof(char *));
+	if (!result)
+		return (NULL);
+	i = 0;
+	j = 0;
+	while (s[i] && j < count)
+	{
+		while (s[i] && s[i] == c)
+			i++;
+		start = i;
+		while (s[i] && s[i] != c)
+			i++;
+		if (i > start)
+			result[j++] = ar_substr(arena, s, start, i - start);
+	}
+	result[j] = NULL;
+	return (result);
+}
+
+char	*ar_add_char_to_str(t_arena *arena, char *s, char c)
+{
+	size_t	len;
+	char	*result;
+
+	if (!s)
+		len = 0;
+	else
+		len = ft_strlen(s);
+	result = (char *)ar_alloc(arena, len + 2);
+	if (!result)
+		return (NULL);
+	if (s)
+		ft_memcpy(result, s, len);
+	result[len] = c;
+	result[len + 1] = '\0';
+	return (result);
 }
 

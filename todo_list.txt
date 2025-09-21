@@ -4,24 +4,11 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 🔤 LEXER (TOKENIZER) - "What are the symbols?"
 =====================================================
 ✅ [COMPLETED] Basic token types (WORD, PIPE, REDIRECT_IN, REDIRECT_OUT, APPEND, HEREDOC)
-✅ [COMPLETED] Quote handling (single and double quotes)
+✅ [COMPLETED] Quote handling (single and double quotes) with type differentiation
 ✅ [COMPLETED] Whitespace skipping
 ✅ [COMPLETED] Multi-character operators (>>, <<)
 ✅ [COMPLETED] Error handling for unclosed quotes
-
-🔧 [TODO] Arithmetic operators tokenization
-    - Add TOKEN_PLUS, TOKEN_MINUS, TOKEN_MULTIPLY, TOKEN_DIVIDE, TOKEN_MODULO
-    - Add TOKEN_LPAREN, TOKEN_RPAREN for grouping
-    - Update is_special_char() to include: + - * / % ( )
-
-🔧 [TODO] Variable expansion tokens
-    - Add TOKEN_DOLLAR for $ symbol
-    - Add TOKEN_NUMBER for numeric literals
-    - Handle $((arithmetic)) context detection
-
-🔧 [TODO] Logical operators
-    - Add TOKEN_AND (&&), TOKEN_OR (||)
-    - Handle multi-character operator detection
+✅ [COMPLETED] Arena-based memory management for tokenization
 
 🔧 [TODO] Enhanced error reporting
     - Add line/column tracking for better error messages
@@ -37,6 +24,9 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Implement parse_commands() to convert tokens to t_command list
     - Handle simple commands: cmd arg1 arg2
     - Handle pipelines: cmd1 | cmd2 | cmd3
+✅ [COMPLETED] Arena-based memory for command tables
+    - Command table built using arena allocation
+    - Reset between commands for memory efficiency
 
 ✅ [COMPLETED] Redirection parsing
     - Parse input redirection: < file
@@ -44,9 +34,12 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Parse append redirection: >> file
     - Parse heredoc: << delimiter
 
-🔧 [TODO] Quote removal
+🔧 [TODO] Quote removal and variable expansion
     - Remove quotes from WORD tokens that were quoted
     - Preserve literal values inside quotes
+    - Expand variables ($VAR) based on quote context
+    - Handle special variables: $?, $$, $0
+    - Different behavior for single vs double quotes
 
 🔧 [TODO] Syntax validation
     - Check for invalid pipe usage (pipe at start/end, double pipes)
@@ -60,10 +53,6 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 🔧 [TODO] Subshell parsing
     - Parse parentheses for subshell execution: (cmd1; cmd2)
     - Handle nested subshells
-
-🔧 [TODO] Arithmetic expression parsing
-    - Parse $((expression)) for arithmetic expansion
-    - Build expression trees for arithmetic evaluation
 
 🔧 [TODO] Error recovery
     - Provide meaningful syntax error messages
@@ -107,20 +96,10 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Handle variable expansion in heredoc (if required)
     - Create temporary files or use pipes
 
-🔧 [TODO] Variable expansion
-    - Expand $VAR and ${VAR} in arguments
-    - Handle special variables: $?, $$, $0
-    - Expand environment variables
-
 🔧 [TODO] Wildcard expansion
     - Use glob() function for * expansion
     - Handle no matches (return literal *)
     - Sort expanded filenames
-
-🔧 [TODO] Arithmetic evaluation
-    - Evaluate $((expression)) 
-    - Handle basic arithmetic: +, -, *, /, %, ()
-    - Handle variables in arithmetic expressions
 
 🔧 [TODO] Logical operators execution
     - Implement && (execute next only if current succeeds)
@@ -145,10 +124,12 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 
 🛠️ INFRASTRUCTURE & UTILITIES
 =============================
-🔧 [TODO] Memory management
-    - Implement proper cleanup functions
-    - Add memory leak detection
-    - Handle malloc failures gracefully
+✅ [COMPLETED] Memory management
+    - Implemented memory arena for efficient allocation
+    - Arena-based string functions (ar_strdup, ar_substr, ar_strjoin, ar_split)
+    - Auto-extending arena when needed
+    - Memory alignment for optimal performance
+    - Reset functionality for command-by-command reuse
 
 🔧 [TODO] Environment management
     - Create environment variable manipulation functions
@@ -189,18 +170,21 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 
 📋 CURRENT STATUS
 ================
-✅ Tokenizer foundation complete
-⏳ Parser phase - NEXT PRIORITY
-⏳ Basic executor - After parser
+✅ Tokenizer complete with arena memory management
+✅ Quote handling with type differentiation implemented
+✅ Parser base functionality complete with arena memory
+✅ Memory arena infrastructure complete and integrated
+⏳ Variable expansion - NEXT PRIORITY
+⏳ Basic executor - After variable expansion
 ⏳ Advanced features - Final phase
 
 🎯 NEXT IMMEDIATE STEPS
 ======================
-1. Implement parse_commands() function to convert tokens to command structures
-2. Add basic syntax validation during parsing
+1. Implement variable expansion in the parser with quote context awareness
+2. Add syntax validation during parsing
 3. Implement simple command execution (no pipes/redirections first)
 4. Add built-in command recognition and basic built-ins (echo, pwd, env)
-5. Gradually add complexity (pipes, redirections, variables, etc.)
+5. Gradually add complexity (pipes, redirections, etc.)
 
 📝 NOTES
 ========

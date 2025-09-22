@@ -31,6 +31,8 @@ char	*get_token_type_name(t_token_type type)
 		return ("APPEND");
 	if (type == TOKEN_HEREDOC)
 		return ("HEREDOC");
+	if (type == TOKEN_VAR)
+		return ("VAR");
 	return ("EOF");
 }
 

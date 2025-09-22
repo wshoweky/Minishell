@@ -20,7 +20,7 @@ int	main(int ac, char **av, char **env)
 {
 	char		*input;
 	t_tokens	*tokens;
-	t_arena	*arena;
+	t_arena		*arena;
 	t_cmd_table	*cmd_table;
 
 	(void)ac;
@@ -57,8 +57,7 @@ int	main(int ac, char **av, char **env)
 		else
 		{
 			print_tokens(tokens);
-			cmd_table = register_to_table(arena, tokens); //Checking if command table works
-			// No need to free tokens or cmd_table as they're in the arena
+			cmd_table = register_to_table(arena, tokens);
 			free(input);
 		}
 		// Reset arena for next command

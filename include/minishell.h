@@ -4,7 +4,6 @@
 //# include <string.h>   // strlen, strcpy, strdup, etc.
 # include <unistd.h>   // write, read, close, fork, execve, pipe
 # include <stdlib.h>   // malloc, free, exit
-#include <stddef.h>	   // for size_t
 # include <stdio.h>    // printf, perror
 # include <fcntl.h>    // open
 # include <signal.h>   // signals
@@ -25,6 +24,7 @@ typedef enum e_token_type
 	TOKEN_REDIRECT_OUT,// >
 	TOKEN_APPEND,      // >>
 	TOKEN_HEREDOC,     // <<
+	TOKEN_VAR,		   // Variable $
 	TOKEN_EOF          // End of input
 }	t_token_type;
 
@@ -41,7 +41,6 @@ int	shelly(void);
 
 // List utility functions
 int			list_size(t_tokens *head);
-void		free_split(char **words);
 void		free_list_nodes(t_tokens *head);
 void		add_to_end(t_tokens **head, t_tokens *new_node);
 t_tokens	*create_token(t_arena *arena, char *word);
@@ -59,6 +58,7 @@ char			*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new
 char			*extract_special_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_in_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_out_token(t_arena *arena, char *input, int *i);
+char			*extract_variable_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
 
 // Token utility functions
 t_token_type	get_token_type(char *str);
@@ -93,7 +93,7 @@ t_cmd		*new_cmd_alloc(t_arena *arena);
 int			is_redirection(t_token_type check);
 int			make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd);
 void		set_redir_type(t_token_type tok_type, t_token_type *redir_type);
-void		add_argv(t_arena *arena, t_cmd *command, char *expansion);
-char		**clean_free_double_pointers(char **trash);
+int			add_argv(t_arena *arena, t_cmd *command, char *expansion);
+void	    *err_msg_n_return_null(char *msg);
 
 #endif

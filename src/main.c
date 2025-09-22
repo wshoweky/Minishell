@@ -27,6 +27,11 @@ int	main(int ac, char **av, char **env)
 	(void)av;
 	(void)env;
 	(void)cmd_table; // Prevent unused variable warning
+	if (ac > 1)
+	{
+		ft_printf("Please do not run our shell with arguments ^^\n");
+		return (-1);
+	}
 	arena = ar_init();
 	if (!arena)
 	{

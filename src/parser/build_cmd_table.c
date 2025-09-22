@@ -31,12 +31,12 @@ static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
         printf("]\n");
         if (current_cmd->redirections)
         {
-            printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+            printf("Redir: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
             printf("filename saved: %s\n", current_cmd->redirections->filename);
             while (current_cmd->redirections->next)
             {
                 current_cmd->redirections = current_cmd->redirections->next;
-                printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+                printf("Redir: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
                 printf("filename saved: %s\n", current_cmd->redirections->filename);
             }
         }
@@ -88,13 +88,12 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
             if (make_redir(arena, current_tok, current_cmd) == -1)
                 return (NULL);
         }
-        else if (current_tok->type == TOKEN_VAR)
+        else if (current_tok->type == TOKEN_WORD)
         {
-            printf("VAR name: %s\n", current_tok->value);
-        }
-        else
-        {
-
+            if (ft_strchr(current_tok->value, '$'))
+                if (current_tok->was_quoted != 1)
+                    if (expand_variable_name(arena, current_tok) == -1)
+                        return (NULL);
             if (add_argv(arena, current_cmd, current_tok->value) == -1)
                 return (NULL);
         }
@@ -141,7 +140,7 @@ int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
     new_cmd = ar_alloc(arena, (quantity + 2) * sizeof(char *));
     if (!new_cmd)
     {
-        ft_printf("Allocation for command failed\n");
+        ft_putstr_fd("Allocation for command failed\n", 2);
         return (-1);
     }
     i = 0;
@@ -154,7 +153,7 @@ int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
     new_cmd[i] = ar_strdup(arena, expansion);
     if (!new_cmd[i])
     {
-        ft_printf("strdup fail while building command\n");
+        ft_putstr_fd("strdup fail while building command\n", 2);
         return (-1);
     }
     new_cmd[i + 1] = NULL;
@@ -162,33 +161,75 @@ int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
     return (0);
 }
 
+
+/* Early stage variable name expansion
+*/
+int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
+{
+    char    *var_name;
+    char    *var_value;
+    char    *normal_word;
+    size_t  normal_word_len;
+
+    var_name = ft_strchr(word_tok->value, '$');
+    normal_word = NULL;
+    normal_word_len = ft_strlen(word_tok->value) - ft_strlen(var_name);
+    if (normal_word_len > 0)
+    {
+        normal_word = ar_substr(arena, word_tok->value, 0, normal_word_len);
+        if (!normal_word)
+        {
+            ft_putstr_fd("Allocation for normal text failed \n", 2);
+            return (-1);
+        }
+    }
+    var_value = find_var_value(var_name + 1); //skip the $
+    if (!var_value)
+        return (-1);
+    word_tok->value = ar_strjoin(arena, normal_word, var_value);
+    if (!word_tok->value)
+    {
+        ft_putstr_fd("Cannot update token value after variable expansion\n", 2);
+        return (-1);
+    }
+    return (0);
+}
+
+/* Return the value of the variable name passed to the function,
+or NULL if there is no such variable name in the system
+(helper function of expand_variable_name)
+*/
+char    *find_var_value(char *name)
+{
+    char    *value;
+    size_t  i;
+
+    if (ft_isdigit(name[0]))
+        return (err_msg_n_return_null("Bad environment name - starts with digit\n"));
+    // if (name[0] == '?')
+    // {
+    //     if (name[1])
+    //         return (err_msg_n_return_null("Bad environment name - more character after ?\n"));
+    //     // get exit_status of the most recently executed foreground pipeline
+    //     // value = ft_itoa(exit_status);
+    //     // return (value);
+    // }
+    i = 0;
+    while (name[i])
+    {
+        if (!ft_isalnum(name[i]) && name[i] != '_')
+            return (err_msg_n_return_null("Bad environment name - forbidden characters\n"));
+        i++;
+    }
+    value = getenv(name);
+    if (!value)
+        return(err_msg_n_return_null("Environment variable not found\n"));
+    return (value);
+}
+
 void    *err_msg_n_return_null(char *msg)
 {
     if (msg)
-        ft_printf("%s", msg);
+        ft_putstr_fd(msg, 2);
     return (NULL);
-}
-
-
-/* Early stage variable token extraction
-*/
-char	*extract_variable_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
-{
-	char	*tok_value;
-	int		start;
-
-	(*i)++;
-	start = *i;
-	while (input[*i] && !(input[*i] == ' ' || input[*i] == '\t'))
-		(*i)++;
-	tok_value = ar_substr(arena, input, start, *i - start);
-	if (!tok_value)
-	{
-		ft_printf("Cannot get VAR token value\n");
-		return (NULL);
-	}
-	*new_token = create_token(arena, tok_value);
-	if (*new_token)
-		(*new_token)->type = TOKEN_VAR;
-	return (tok_value);
 }

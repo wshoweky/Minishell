@@ -99,8 +99,6 @@ char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_tok
 		return (extract_special_token(arena, input, i));
 	else if (current_char == '"' || current_char == '\'') // Escape the single quote \'#39 "#34 ASCII
 		return (extract_quoted_token(arena, input, i, new_token));
-	else if (current_char == '$')
-		return (extract_variable_token(arena, input, i, new_token));
 	else
 		return (extract_word_token(arena, input, i));
 }

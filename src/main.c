@@ -20,13 +20,18 @@ int	main(int ac, char **av, char **env)
 {
 	char		*input;
 	t_tokens	*tokens;
-	t_arena	*arena;
+	t_arena		*arena;
 	t_cmd_table	*cmd_table;
 
 	(void)ac;
 	(void)av;
 	(void)env;
 	(void)cmd_table; // Prevent unused variable warning
+	if (ac > 1)
+	{
+		ft_printf("Please do not run our shell with arguments ^^\n");
+		return (-1);
+	}
 	arena = ar_init();
 	if (!arena)
 	{
@@ -57,8 +62,7 @@ int	main(int ac, char **av, char **env)
 		else
 		{
 			print_tokens(tokens);
-			cmd_table = register_to_table(arena, tokens); //Checking if command table works
-			// No need to free tokens or cmd_table as they're in the arena
+			cmd_table = register_to_table(arena, tokens);
 			free(input);
 		}
 		// Reset arena for next command

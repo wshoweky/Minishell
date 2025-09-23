@@ -10,6 +10,7 @@ SRC = src/main.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
   	  src/parser/build_cmd_table.c \
+	  src/parser/build_cmd_table_redir.c \
 	  src/parser/arena.c \
 	  src/parser/arena_utils.c \
 	  src/playground/shelly.c

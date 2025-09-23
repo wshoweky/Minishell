@@ -1,19 +1,19 @@
 #include "minishell.h"
 
-void	free_split(char **words)
-{
-	int	wc;
+// void	free_split(char **words)
+// {
+// 	int	wc;
 
-	wc = 0;
-	if (!words)
-		return ;
-	while (words[wc])
-	{
-		free(words[wc]);
-		wc++;
-	}
-	free(words);
-}
+// 	wc = 0;
+// 	if (!words)
+// 		return ;
+// 	while (words[wc])
+// 	{
+// 		free(words[wc]);
+// 		wc++;
+// 	}
+// 	free(words);
+// }
 
 t_tokens	*create_token(t_arena *arena, char *word)
 {
@@ -31,18 +31,18 @@ t_tokens	*create_token(t_arena *arena, char *word)
 	return (token);
 }
 
-void	free_list_nodes(t_tokens *head)
-{
-	t_tokens	*tmp;
+// void	free_list_nodes(t_tokens *head)
+// {
+// 	t_tokens	*tmp;
 
-	while (head)
-	{
-		tmp = head->next;
-		free(head->value);
-		free(head);
-		head = tmp;
-	}
-}
+// 	while (head)
+// 	{
+// 		tmp = head->next;
+// 		free(head->value);
+// 		free(head);
+// 		head = tmp;
+// 	}
+// }
 
 int	list_size(t_tokens *head)
 {
@@ -72,29 +72,29 @@ void	add_to_end(t_tokens **head, t_tokens *new_node)
 	tmp->next = new_node;	
 }
 
-t_tokens	*split_commands(t_arena *arena, char *input)
-{
-	int	i;
-	char	**words;
-	t_tokens	*head;
-	t_tokens	*new;
+// t_tokens	*split_commands(t_arena *arena, char *input)
+// {
+// 	int	i;
+// 	char	**words;
+// 	t_tokens	*head;
+// 	t_tokens	*new;
 
-	words = ar_split(arena, input, ' ');
-	if (!words)
-		return (NULL);
-	head = NULL;
-	i = 0;
-	while (words[i])
-	{
-		new = create_token(arena, words[i]);
-		if (!new)
-		{
-			// No need to free tokens or words as they're in the arena
-			return (NULL);
-		}
-		add_to_end(&head, new);
-		i++;
-	}
-	// No need to free words as they're in the arena
-	return (head);
-}
+// 	words = ar_split(arena, input, ' ');
+// 	if (!words)
+// 		return (NULL);
+// 	head = NULL;
+// 	i = 0;
+// 	while (words[i])
+// 	{
+// 		new = create_token(arena, words[i]);
+// 		if (!new)
+// 		{
+// 			// No need to free tokens or words as they're in the arena
+// 			return (NULL);
+// 		}
+// 		add_to_end(&head, new);
+// 		i++;
+// 	}
+// 	// No need to free words as they're in the arena
+// 	return (head);
+// }

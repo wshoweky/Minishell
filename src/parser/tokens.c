@@ -91,16 +91,42 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 */
 char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
 {
-	char	current_char;
-
 	*new_token = NULL;
-	current_char = input[*i];
-	if (current_char == '|' || current_char == '<' || current_char == '>')
-		return (extract_special_token(arena, input, i));
-	else if (current_char == '"' || current_char == '\'') // Escape the single quote \'#39 "#34 ASCII
-		return (extract_quoted_token(arena, input, i, new_token));
+	int	in_quotes = 0;
+	char quote;
+	int	start_quote;
+	char *string = NULL;
+
+	while (input[*i])
+	{
+		if (in_quotes)
+		{
+			string = ar_add_char_to_str(arena, string, input[*i]);
+			if (input[*i] == quote)
+				in_quotes = 0;
+		}
+		else
+		{
+			if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
+				return (extract_special_token(arena, input, i));
+			else if (input[*i] == '"' || input[*i] == '\'')
+			{
+				in_quotes = 1;
+				quote = input[*i];
+				start_quote = *i;
+				string = ar_add_char_to_str(arena, string, input[*i]);
+			}
+			else if (input[*i] == ' ' || input[*i] == '\t' || input[*i] == '\n')
+				return (string);
+			else
+				string = ar_add_char_to_str(arena, string, input[*i]);
+		}
+		(*i)++;
+	}
+	if (!(ft_strchr(string, '"') || ft_strchr(string, '\'')))
+		return (string);
 	else
-		return (extract_word_token(arena, input, i));
+		return (extract_quoted_token(arena, string, &start_quote, new_token));
 }
 /*
 ** extract_quoted_token - Extract quoted string tokens
@@ -123,18 +149,20 @@ char	*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_t
 {
 	char	quote;
 	int		start;
-	char	*token_value;
+	char	*token_value = NULL;
 
-	quote = input[*i]; // Remember which quote type (" or ')
-	(*i)++;
 	start = *i;
-	while (input[*i] && input[*i] != quote)
-		(*i)++;
-	if (input[*i] != quote) // Error: no matching quote
+	while (!(input[*i] == '"' || input[*i] == '\''))
+		start++;
+	quote = input[start]; // Remember which quote type (" or ')
+	start++;
+	while (input[start] && input[start] != quote)
+		start++;
+	if (input[start] != quote) // Error: no matching quote
 		return (NULL);
-	// Extract content between quotes
-	token_value = ar_substr(arena, input, start, *i - start);
-	(*i)++; // Skip closing quote
+	while (input[start])
+		start++;
+	token_value = ar_substr(arena, input, 0, start);
 	*new_token = create_token(arena, token_value);
 	if (*new_token)
 	{
@@ -145,5 +173,6 @@ char	*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_t
 		else if (quote == '"')
 			(*new_token)->was_quoted = 2; // Double quotes - with expansion
 	}
+	*i += start;
 	return (token_value);
 }

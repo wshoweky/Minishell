@@ -91,6 +91,7 @@ t_cmd_table	*register_to_table(t_arena *arena, t_tokens *list_of_toks);
 t_cmd		*new_cmd_alloc(t_arena *arena);
 int			add_argv(t_arena *arena, t_cmd *command, char *expansion);
 int	    	expand_variable_name(t_arena *arena, t_tokens *word_tok);
+int 		expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok);
 char    	*find_var_value(char *name);
 void	    *err_msg_n_return_null(char *msg);
 

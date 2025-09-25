@@ -170,28 +170,88 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
     char    *var_value;
     char    *normal_word;
     size_t  normal_word_len;
+    size_t  i;
 
-    var_name = ft_strchr(word_tok->value, '$');
-    normal_word = NULL;
-    normal_word_len = ft_strlen(word_tok->value) - ft_strlen(var_name);
-    if (normal_word_len > 0)
+    if (word_tok->was_quoted == 0)
     {
-        normal_word = ar_substr(arena, word_tok->value, 0, normal_word_len);
-        if (!normal_word)
+        i = 0;
+        var_name = ft_strchr(word_tok->value, '$');
+        while (var_name[i] && var_name[i] != '"')
+            i++;
+        var_name = ar_substr(arena, var_name, var_name[0], i);
+        if (!var_name)
         {
-            ft_putstr_fd("Allocation for normal text failed \n", 2);
+            ft_putstr_fd("Could not get variable name", 2);
             return (-1);
         }
+        normal_word = NULL;
+        normal_word_len = ft_strlen(word_tok->value) - ft_strlen(var_name);
+        if (normal_word_len > 0)
+        {
+            normal_word = ar_substr(arena, word_tok->value, 0, normal_word_len);
+            if (!normal_word)
+            {
+                ft_putstr_fd("Allocation for normal text failed \n", 2);
+                return (-1);
+            }
+        }
+        var_value = find_var_value(var_name + 1); //skip the $
+        if (!var_value)
+            return (-1);
+        word_tok->value = ar_strjoin(arena, normal_word, var_value);
+        if (!word_tok->value)
+        {
+            ft_putstr_fd("Cannot update token value after variable expansion\n", 2);
+            return (-1);
+        }
+        return (0);
     }
-    var_value = find_var_value(var_name + 1); //skip the $
-    if (!var_value)
-        return (-1);
-    word_tok->value = ar_strjoin(arena, normal_word, var_value);
-    if (!word_tok->value)
+    else
     {
-        ft_putstr_fd("Cannot update token value after variable expansion\n", 2);
-        return (-1);
+        if (expand_var_name_2quotes(arena, word_tok) == -1)
+        {
+            ft_putstr_fd("Error in expanding variable name in double quotes\n", 2);
+            return (-1);
+        }
+        return (0);
     }
+}
+
+int expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok)
+{
+    size_t  i;
+    char    *plain_text;
+    char    *var_name;
+    size_t  var_len;
+
+    i = 0;
+    plain_text = NULL;
+    var_name = NULL;
+    var_len = 0;
+    while (word_tok->value[i])
+    {
+        if (word_tok->value[i] == '"')
+            i++;
+        else if (word_tok->value[i] == '$')
+        {
+            i++; //skip $ sign
+            while (ft_isalnum(word_tok->value[i]) && word_tok->value[i] != '_')
+                var_len++;
+            if (var_len)
+            {
+                var_name = find_var_value(var_name);
+                plain_text = ar_strjoin(arena, plain_text, var_name);
+                if (!plain_text)
+                    return (-1);
+            }
+            else
+                plain_text = ar_strjoin(arena, plain_text, "$");
+        }
+        else
+            plain_text = ar_add_char_to_str(arena, plain_text, word_tok->value[i]);
+        i++;
+    }
+    word_tok->value = plain_text;
     return (0);
 }
 

@@ -90,10 +90,11 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
         }
         else if (current_tok->type == TOKEN_WORD)
         {
+            if (ft_strchr(current_tok->value, '&') && ft_strlen(current_tok->value) == 1)
+                return (err_msg_n_return_null("Syntax error (lonely &)\n"));
             if (ft_strchr(current_tok->value, '$'))
-                if (current_tok->was_quoted != 1)
-                    if (expand_variable_name(arena, current_tok) == -1)
-                        return (NULL);
+                if (expand_variable_name(arena, current_tok) == -1)
+                    return (NULL);
             if (add_argv(arena, current_cmd, current_tok->value) == -1)
                 return (NULL);
         }
@@ -176,14 +177,6 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
     {
         i = 0;
         var_name = ft_strchr(word_tok->value, '$');
-        while (var_name[i] && var_name[i] != '"')
-            i++;
-        var_name = ar_substr(arena, var_name, var_name[0], i);
-        if (!var_name)
-        {
-            ft_putstr_fd("Could not get variable name", 2);
-            return (-1);
-        }
         normal_word = NULL;
         normal_word_len = ft_strlen(word_tok->value) - ft_strlen(var_name);
         if (normal_word_len > 0)
@@ -196,8 +189,6 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
             }
         }
         var_value = find_var_value(var_name + 1); //skip the $
-        if (!var_value)
-            return (-1);
         word_tok->value = ar_strjoin(arena, normal_word, var_value);
         if (!word_tok->value)
         {
@@ -206,6 +197,15 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
         }
         return (0);
     }
+    // else if (word_tok->was_quoted == 1)
+    // {
+    //     if (expand_var_name_1quotes(arena, word_tok) == -1)
+    //     {
+    //         ft_putstr_fd("Error in expanding variable name in single quotes\n", 2);
+    //         return (-1);
+    //     }
+    //     return (0);
+    // }
     else
     {
         if (expand_var_name_2quotes(arena, word_tok) == -1)
@@ -228,17 +228,22 @@ int expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok)
     plain_text = NULL;
     var_name = NULL;
     var_len = 0;
+    
     while (word_tok->value[i])
     {
-        if (word_tok->value[i] == '"')
-            i++;
-        else if (word_tok->value[i] == '$')
+        if (word_tok->value[i] == '$')
         {
             i++; //skip $ sign
             while (ft_isalnum(word_tok->value[i]) && word_tok->value[i] != '_')
+            {
+                var_name = ar_add_char_to_str(arena, var_name, word_tok->value[i]);
                 var_len++;
+                i++;
+            }
+            ft_printf("varlen = %i; varname = %s\n", var_len, var_name);
             if (var_len)
             {
+                ft_printf("varlen = %i; varname = %s\n", var_len, var_name);
                 var_name = find_var_value(var_name);
                 plain_text = ar_strjoin(arena, plain_text, var_name);
                 if (!plain_text)
@@ -247,10 +252,10 @@ int expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok)
             else
                 plain_text = ar_strjoin(arena, plain_text, "$");
         }
-        else
+        if (word_tok->value[i] != '"')
             plain_text = ar_add_char_to_str(arena, plain_text, word_tok->value[i]);
         i++;
-    }
+    }ft_printf("Here expand 2quotes\n");
     word_tok->value = plain_text;
     return (0);
 }
@@ -283,7 +288,7 @@ char    *find_var_value(char *name)
     }
     value = getenv(name);
     if (!value)
-        return(err_msg_n_return_null("Environment variable not found\n"));
+        return(NULL);
     return (value);
 }
 

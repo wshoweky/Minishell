@@ -30,7 +30,7 @@ int	main(int ac, char **av, char **env)
 	if (ac > 1)
 	{
 		ft_printf("Please do not run our shell with arguments ^^\n");
-		return (-1);
+		return (1);
 	}
 	arena = ar_init();
 	if (!arena)
@@ -40,7 +40,7 @@ int	main(int ac, char **av, char **env)
 	}
 	while (1337)
 	{
-		input = readline("WGshell> ");  // Allocates memory for input, must be freed
+		input = readline("_.~\"~._ WGshell _.~\"~._ ");  // Allocates memory for input, must be freed
 		if (!input)
 		{
 			ft_printf("exit\n");

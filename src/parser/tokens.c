@@ -1,9 +1,5 @@
 #include "minishell.h"
 
-t_tokens	*tokenize_input(t_arena *arena, char *input);
-t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
-char		*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
-char		*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
 /*
 ** tokenize_input - Enhanced tokenizer for shell input parsing
 **
@@ -108,7 +104,12 @@ char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_tok
 		else
 		{
 			if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
-				return (extract_special_token(arena, input, i));
+			{
+				if (string)
+					break ;
+				else
+					return (extract_special_token(arena, input, i));
+			}
 			else if (input[*i] == '"' || input[*i] == '\'')
 			{
 				in_quotes = 1;
@@ -117,17 +118,67 @@ char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_tok
 				string = ar_add_char_to_str(arena, string, input[*i]);
 			}
 			else if (input[*i] == ' ' || input[*i] == '\t' || input[*i] == '\n')
-				return (string);
+				break ;
 			else
 				string = ar_add_char_to_str(arena, string, input[*i]);
 		}
 		(*i)++;
 	}
-	if (!(ft_strchr(string, '"') || ft_strchr(string, '\'')))
-		return (string);
-	else
-		return (extract_quoted_token(arena, string, &start_quote, new_token));
+	string = check_quoted_string(arena, string);
+	return (string);
 }
+
+char	*check_quoted_string(t_arena *arena, char *str)
+{
+	size_t	i;
+	char	*output;
+	char	quote;
+	int		in_quote;
+
+	i = 0;
+	output = NULL;
+	in_quote = 0;
+	quote = 0;
+
+	while (str[i])
+	{
+		if (!in_quote && (str[i] == '"' || str[i] == '\''))
+		{
+			quote = str[i];
+			in_quote = 1;
+		}
+		else if (in_quote && str[i] == quote)
+			in_quote = 0;
+		i++;
+	}
+	if (in_quote)
+		return (err_msg_n_return_null("Unclosed quote\n"));
+	if (!ft_strchr(str, '$'))
+	{
+		i = 0;
+		while (str[i])
+		{
+			if (!in_quote && (str[i] == '"' || str[i] == '\''))
+			{
+				quote = str[i];
+				in_quote = 1;
+			}
+			else if (in_quote && str[i] == quote)
+				in_quote = 0;
+			else
+			{
+				output = ar_add_char_to_str(arena, output, str[i]);
+				if (!output)
+					return (err_msg_n_return_null("Failed making string not quoted anymore\n"));
+			}
+			i++;
+		}
+		return (output);
+	}
+	else
+		return (str);
+}
+
 /*
 ** extract_quoted_token - Extract quoted string tokens
 **
@@ -145,34 +196,34 @@ char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_tok
 ** RETURN VALUE:
 **   Returns allocated string with quote contents or NULL on error
 */
-char	*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
-{
-	char	quote;
-	int		start;
-	char	*token_value = NULL;
+// char	*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
+// {
+// 	char	quote;
+// 	int		start;
+// 	char	*token_value = NULL;
 
-	start = *i;
-	while (!(input[*i] == '"' || input[*i] == '\''))
-		start++;
-	quote = input[start]; // Remember which quote type (" or ')
-	start++;
-	while (input[start] && input[start] != quote)
-		start++;
-	if (input[start] != quote) // Error: no matching quote
-		return (NULL);
-	while (input[start])
-		start++;
-	token_value = ar_substr(arena, input, 0, start);
-	*new_token = create_token(arena, token_value);
-	if (*new_token)
-	{
-		(*new_token)->type = TOKEN_WORD;
-		// Set different values for single and double quotes
-		if (quote == '\'')
-			(*new_token)->was_quoted = 1; // Single quotes - no expansion
-		else if (quote == '"')
-			(*new_token)->was_quoted = 2; // Double quotes - with expansion
-	}
-	*i += start;
-	return (token_value);
-}
+// 	start = *i;
+// 	while (!(input[*i] == '"' || input[*i] == '\''))
+// 		start++;
+// 	quote = input[start]; // Remember which quote type (" or ')
+// 	start++;
+// 	while (input[start] && input[start] != quote)
+// 		start++;
+// 	if (input[start] != quote) // Error: no matching quote
+// 		return (NULL);
+// 	while (input[start])
+// 		start++;
+// 	token_value = ar_substr(arena, input, 0, start);
+// 	*new_token = create_token(arena, token_value);
+// 	if (*new_token)
+// 	{
+// 		(*new_token)->type = TOKEN_WORD;
+// 		// Set different values for single and double quotes
+// 		if (quote == '\'')
+// 			(*new_token)->was_quoted = 1; // Single quotes - no expansion
+// 		else if (quote == '"')
+// 			(*new_token)->was_quoted = 2; // Double quotes - with expansion
+// 	}
+// 	*i += start;
+// 	return (token_value);
+// }

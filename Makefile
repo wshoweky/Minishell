@@ -2,6 +2,7 @@ NAME = minishell
 
 CC = cc 
 
+
 CFLAG = -Wall -Wextra -Werror #-g3 -O0 -ggdb3 -fno-omit-frame-pointer -fsanitize=address
 
 # Colors for output
@@ -12,17 +13,19 @@ PURPLE = \033[35m
 ORANGE = \033[38;5;208m
 RESET = \033[0m
 
+
 SRC = src/main.c \
 	  src/parser/tokens.c \
 	  src/parser/tokens_utils.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
-  	  src/parser/build_cmd_table.c \
+ 	  src/parser/build_cmd_table.c \
 	  src/parser/arena.c \
 	  src/parser/arena_utils.c \
 	  src/exe/exe.c \
 	  src/exe/builtins.c \
 	  src/exe/path_utils.c \
+
 	  src/playground/shelly.c
 
 O_DIR = objdir
@@ -45,12 +48,12 @@ $(NAME): $(OBJ) $(LIBFT)
 	@$(MAKE) success_message
 	@$(MAKE) art
 
+
 $(O_DIR):
 	mkdir -p $(O_DIR)/src
 	mkdir -p $(O_DIR)/src/parser
 	mkdir -p $(O_DIR)/src/exe
 	mkdir -p $(O_DIR)/src/playground
-	
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@

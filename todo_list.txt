@@ -1,0 +1,229 @@
+MINISHELL TODO LIST - Separated Concerns Architecture
+=======================================================
+
+🔤 LEXER (TOKENIZER) - "What are the symbols?"
+=====================================================
+✅ [COMPLETED] Basic token types (WORD, PIPE, REDIRECT_IN, REDIRECT_OUT, APPEND, HEREDOC)
+✅ [COMPLETED] Quote handling (single and double quotes) with type differentiation
+✅ [COMPLETED] Whitespace skipping
+✅ [COMPLETED] Multi-character operators (>>, <<)
+✅ [COMPLETED] Error handling for unclosed quotes
+✅ [COMPLETED] Arena-based memory management for tokenization
+
+🔧 [TODO] Enhanced error reporting
+    - Add line/column tracking for better error messages
+    - Add token position information
+
+🔧 [TODO] Wildcard detection
+    - Add TOKEN_WILDCARD for * symbol
+    - Mark tokens that contain wildcards for later expansion
+
+🌳 PARSER - "What's the command structure?"
+==========================================
+✅ [COMPLETED] Command structure creation
+    - Implement parse_commands() to convert tokens to t_command list
+    - Handle simple commands: cmd arg1 arg2
+    - Handle pipelines: cmd1 | cmd2 | cmd3
+✅ [COMPLETED] Arena-based memory for command tables
+    - Command table built using arena allocation
+    - Reset between commands for memory efficiency
+
+✅ [COMPLETED] Redirection parsing
+    - Parse input redirection: < file
+    - Parse output redirection: > file  
+    - Parse append redirection: >> file
+    - Parse heredoc: << delimiter
+
+🔧 [TODO] Quote removal and variable expansion
+    - Remove quotes from WORD tokens that were quoted
+    - Preserve literal values inside quotes
+    - Expand variables ($VAR) based on quote context
+    - Handle special variables: $?, $$, $0
+    - Different behavior for single vs double quotes
+
+🔧 [TODO] Syntax validation
+    - Check for invalid pipe usage (pipe at start/end, double pipes)
+    - Check for invalid redirections (missing filenames)
+    - Check for proper command structure
+
+🔧 [TODO] Logical operators parsing
+    - Parse && (AND) and || (OR) operators
+    - Build command chains with conditional execution
+
+🔧 [TODO] Subshell parsing
+    - Parse parentheses for subshell execution: (cmd1; cmd2)
+    - Handle nested subshells
+
+🔧 [TODO] Error recovery
+    - Provide meaningful syntax error messages
+    - Implement error recovery strategies
+
+⚡ EXECUTOR - "How do I run this?"
+=================================
+✅ [COMPLETED] Built-in command recognition
+    - Basic is_builtin() function implemented
+    - Builtin dispatch system working
+
+🔧 [CRITICAL] Built-in implementations - NEEDS MAJOR FIXES (See builtins.txt)
+    ❌ builtin_echo(): PARTIAL - Fix -n flag parsing for multiple flags
+    ❌ builtin_cd(): BROKEN - Missing HOME support, no OLDPWD, no PWD updates
+    ✅ builtin_pwd(): GOOD - Working correctly, minor portability issues
+    ❌ builtin_env(): INCOMPLETE - Wrong signature, missing functionality  
+    ❌ builtin_exit(): UNSAFE - No exit code validation, missing error handling
+    🔧 [TODO] builtin_export(): Not implemented yet
+    🔧 [TODO] builtin_unset(): Not implemented yet
+
+🔧 [TODO] External command execution
+    - PATH resolution for commands
+    - fork() and execve() for external programs
+    - Fr Giang: in pipex exec_cmd, if cmd_av == NULL, just exit but not error, 
+    since a command like "cat file | > out.txt" will still create outfile although no command is executed, 
+    no error appears in bash and exit code is 0;
+    - Handle command not found errors
+
+🔧 [TODO] Pipeline execution
+    - Create pipes between commands
+    - Handle multiple processes in pipeline
+    - Wait for all processes and collect exit codes
+
+🔧 [TODO] Redirection handling
+    - Open files for input/output redirection
+    - Handle file permission errors
+    - Restore original stdin/stdout after redirection
+
+🔧 [TODO] Heredoc implementation
+    - Read input until delimiter is found
+    - Handle variable expansion in heredoc (if required)
+    - Create temporary files or use pipes
+
+🔧 [TODO] Wildcard expansion
+    - Use glob() function for * expansion
+    - Handle no matches (return literal *)
+    - Sort expanded filenames
+
+🔧 [TODO] Logical operators execution
+    - Implement && (execute next only if current succeeds)
+    - Implement || (execute next only if current fails)
+    - Handle short-circuit evaluation
+
+🔧 [TODO] Signal handling
+    - Handle Ctrl+C (SIGINT) - interrupt current command
+    - Handle Ctrl+\ (SIGQUIT) - ignore in interactive mode
+    - Handle Ctrl+D (EOF) - exit shell gracefully
+
+🔧 [TODO] Subshell execution
+    - Create child process for subshell
+    - Execute commands in isolated environment
+    - Return subshell exit status
+
+🔧 [TODO] Error handling
+    - Set $? exit status correctly
+    - Handle command not found (127)
+    - Handle permission denied (126)
+    - Handle other execution errors
+
+🛠️ INFRASTRUCTURE & UTILITIES
+=============================
+✅ [COMPLETED] Memory management
+    - Implemented memory arena for efficient allocation
+    - Arena-based string functions (ar_strdup, ar_substr, ar_strjoin, ar_split)
+    - Auto-extending arena when needed
+    - Memory alignment for optimal performance
+    - Reset functionality for command-by-command reuse
+
+🔧 [TODO] Environment management
+    - Create environment variable manipulation functions
+    - Handle environment variable inheritance
+    - Implement variable scoping for subshells
+
+🔧 [TODO] History management (bonus)
+    - Implement command history storage
+    - Add history expansion (!!, !n, !string)
+    - Save/load history from file
+
+🔧 [TODO] Job control (bonus)
+    - Implement background processes (&)
+    - Add job status tracking
+    - Implement jobs, fg, bg built-ins
+
+🔧 [TODO] Advanced features (bonus)
+    - Command line editing with readline
+    - Tab completion for commands/files
+    - Prompt customization
+
+🧪 TESTING & VALIDATION
+=======================
+🔧 [TODO] Unit tests
+    - Test tokenizer with various inputs
+    - Test parser with complex command structures
+    - Test each built-in command individually
+
+🔧 [TODO] Integration tests
+    - Test complete command execution flow
+    - Test error handling and edge cases
+    - Test memory management
+
+🔧 [TODO] Comparison testing
+    - Compare behavior with bash
+    - Test subject requirements compliance
+    - Test bonus features if implemented
+
+📋 CURRENT STATUS
+================
+✅ Tokenizer complete with arena memory management
+✅ Quote handling with type differentiation implemented  
+✅ Parser base functionality complete with arena memory
+✅ Memory arena infrastructure complete and integrated
+✅ Basic executor framework implemented
+✅ Path resolution system working (exe/path_utils.c)
+✅ Development tooling enhanced (Makefile with valgrind/cppcheck)
+❌ Built-in commands need major fixes (see builtins.txt analysis)
+⏳ Variable expansion - STILL NEEDED
+⏳ Advanced executor features (pipes, redirections)
+⏳ Advanced features - Final phase
+
+🎯 NEXT IMMEDIATE STEPS - UPDATED PRIORITIES
+============================================
+🚨 CRITICAL (Fix Now):
+1. Fix builtin_cd() - Add HOME directory support (cd with no args)
+2. Fix builtin_exit() - Add exit code validation and error handling  
+3. Fix builtin_echo() - Proper -n flag parsing for multiple flags
+
+🔥 HIGH PRIORITY:
+4. Complete builtin_cd() - Add OLDPWD support (cd -) and PWD updates
+5. Fix builtin_env() - Correct function signature and add functionality
+6. Implement builtin_export() and builtin_unset()
+
+⭐ MEDIUM PRIORITY:
+7. Implement variable expansion in parser with quote context awareness
+8. Add syntax validation during parsing
+9. Enhance pipeline execution system
+
+🎯 LATER:
+10. Add redirections and heredoc support
+11. Add logical operators (&& and ||)
+12. Advanced features and optimizations
+
+📝 NOTES & INSIGHTS
+===================
+- Follow 42 Norm: functions ≤25 lines, ≤80 chars per line
+- Add comprehensive comments for learning
+- Test each component thoroughly before moving to next
+- Keep clean separation between lexer/parser/executor
+- Built-ins are recognized at EXECUTION time, not parsing time
+- All command names are WORD tokens regardless of type (built-in vs external)
+
+🔧 DEVELOPMENT TOOLS READY:
+- Enhanced Makefile with Halloween theme and colored output
+- Valgrind integration with file descriptor tracking (--track-fds=yes)
+- Comprehensive cppcheck static analysis (--enable=all --inconclusive)
+- Professional development workflow established
+
+🧪 QUALITY ASSURANCE:
+- Detailed builtin analysis completed (see builtins.txt)
+- Code quality issues identified and prioritized
+- Security assessment performed for all current functions
+- Memory management validated (no leaks detected)
+
+🚀 Remember: "Make it work, make it right, make it fast!"
+💡 Current Focus: Fix critical builtin issues before adding new features!

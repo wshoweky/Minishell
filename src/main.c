@@ -29,17 +29,7 @@ int	main(int ac, char **av, char **env)
 
 	(void)ac;
 	(void)av;
-<<<<<<< HEAD
 	exit_status = 0;
-=======
-	(void)env;
-	(void)cmd_table; // Prevent unused variable warning
-	if (ac > 1)
-	{
-		ft_printf("Please do not run our shell with arguments ^^\n");
-		return (1);
-	}
->>>>>>> 9bea3a9 (Tokenizer kinda works?)
 	arena = ar_init();
 	if (!arena)
 	{
@@ -48,11 +38,7 @@ int	main(int ac, char **av, char **env)
 	}
 	while (1337)
 	{
-<<<<<<< HEAD
 		input = readline(get_colored_prompt());  // Allocates memory for input, must be freed
-=======
-		input = readline("_.~\"~._ WGshell _.~\"~._ ");  // Allocates memory for input, must be freed
->>>>>>> 9bea3a9 (Tokenizer kinda works?)
 		if (!input)
 		{
 			ft_printf("exit\n");

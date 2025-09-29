@@ -103,7 +103,6 @@ void	    *err_msg_n_return_null(char *msg);
 int			is_redirection(t_token_type check);
 int			make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd);
 void		set_redir_type(t_token_type tok_type, t_token_type *redir_type);
-void		add_argv(t_arena *arena, t_cmd *command, char *expansion);
 char		**clean_free_double_pointers(char **trash);
 
 #endif

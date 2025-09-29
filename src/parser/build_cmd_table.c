@@ -75,8 +75,10 @@ char    **clean_free_double_pointers(char **trash)
  - Use ar_strdup() to duplicate the new token value into the array
  - Add NULL terminator to the expanded array
  - Update the old command array with the new allocation
+
+ Returns: 0 on success, -1 on errors
 */
-void    add_argv(t_arena *arena, t_cmd *command, char *expansion)
+int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
 {
     size_t  quantity;
     size_t  i;
@@ -89,9 +91,8 @@ void    add_argv(t_arena *arena, t_cmd *command, char *expansion)
     new_cmd = ar_alloc(arena, (quantity + 2) * sizeof(char *));
     if (!new_cmd)
     {
-        ft_printf("Allocation for command failed\n");
-        command->cmd_av = NULL; // No need to free as it's in the arena
-        return ;
+        ft_putstr_fd("Allocation for command failed\n", 2);
+        return (-1);
     }
     i = 0;
     if (command->cmd_av)
@@ -103,12 +104,12 @@ void    add_argv(t_arena *arena, t_cmd *command, char *expansion)
     new_cmd[i] = ar_strdup(arena, expansion);
     if (!new_cmd[i])
     {
-        ft_printf("strdup fail while building command\n");
-        command->cmd_av = NULL; // No need to free as it's in the arena
-        return ;
+        ft_putstr_fd("strdup fail while building command\n", 2);
+        return (-1);
     }
     new_cmd[i + 1] = NULL;
     command->cmd_av = new_cmd;
+    return (0);
 }
 
 /* Check if token is a redirectional token.
@@ -258,19 +259,16 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
         }
         else
         {
-<<<<<<< HEAD
             if (current_tok->type != TOKEN_WORD)
             {
                 ft_printf("Not a word token\n");
                 // No need to clean up as it's in the arena
-=======
             if (ft_strchr(current_tok->value, '&') && ft_strlen(current_tok->value) == 1)
                 return (err_msg_n_return_null("Syntax error (lonely &)\n"));
             if (ft_strchr(current_tok->value, '$'))
                 if (expand_variable_name(arena, current_tok) == -1)
                     return (NULL);
             if (add_argv(arena, current_cmd, current_tok->value) == -1)
->>>>>>> 9bea3a9 (Tokenizer kinda works?)
                 return (NULL);
             }
             add_argv(arena, current_cmd, current_tok->value);
@@ -287,8 +285,6 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
     return (table);
 }
 
-<<<<<<< HEAD
-=======
 /* Create space with ar_alloc() for a t_cmd struct
 */
 t_cmd   *new_cmd_alloc(t_arena *arena)
@@ -483,4 +479,3 @@ void    *err_msg_n_return_null(char *msg)
         ft_putstr_fd(msg, 2);
     return (NULL);
 }
->>>>>>> 9bea3a9 (Tokenizer kinda works?)

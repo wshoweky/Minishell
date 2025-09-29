@@ -17,7 +17,6 @@ typedef struct s_tokens
 {
 	t_token_type	type;       // Type of token
 	char			*value;	
-	int				was_quoted;  // 0: not quoted, 1: single quotes, 2: double quotes
 	struct s_tokens	*next;
 }	t_tokens;
 
@@ -73,13 +72,12 @@ t_tokens	*split_commands(t_arena *arena, char *input);
 // Tokenization functions
 t_tokens		*tokenize_input(t_arena *arena, char *input);
 t_tokens		*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
-char			*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
-char			*check_quoted_string(t_arena *arena, char *str);
+char			*extract_next_token(t_arena *arena, char *input, int *i);
+char			*check_for_quoted_string(t_arena *arena, char *str);
 char			*extract_pipe_token(t_arena *arena, char *input, int *i);
 
 // Token extraction functions
 char			*extract_word_token(t_arena *arena, char *input, int *i);
-// char			*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
 char			*extract_special_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_in_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_out_token(t_arena *arena, char *input, int *i);
@@ -95,7 +93,6 @@ t_cmd_table	*register_to_table(t_arena *arena, t_tokens *list_of_toks);
 t_cmd		*new_cmd_alloc(t_arena *arena);
 int			add_argv(t_arena *arena, t_cmd *command, char *expansion);
 int	    	expand_variable_name(t_arena *arena, t_tokens *word_tok);
-int 		expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok);
 char    	*find_var_value(char *name);
 void	    *err_msg_n_return_null(char *msg);
 
@@ -103,6 +100,5 @@ void	    *err_msg_n_return_null(char *msg);
 int			is_redirection(t_token_type check);
 int			make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd);
 void		set_redir_type(t_token_type tok_type, t_token_type *redir_type);
-char		**clean_free_double_pointers(char **trash);
 
 #endif

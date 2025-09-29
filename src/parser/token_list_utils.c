@@ -26,12 +26,6 @@ t_tokens	*create_token(t_arena *arena, char *word)
 	if (!token->value)
 		return (NULL);
 	token->type = get_token_type(word);
-	if (ft_strchr(word, '"'))
-		token->was_quoted = 2;
-	else if (ft_strchr(word, '\''))
-		token->was_quoted = 1;
-	else
-		token->was_quoted = 0;
 	token->next = NULL;
 	return (token);
 }

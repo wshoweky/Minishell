@@ -31,167 +31,18 @@ static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
         printf("]\n");
         if (current_cmd->redirections)
         {
-            printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+            printf("Redirection: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
             printf("filename saved: %s\n", current_cmd->redirections->filename);
             while (current_cmd->redirections->next)
             {
                 current_cmd->redirections = current_cmd->redirections->next;
-                printf("Redirection no %i\n", current_cmd->redirections->tok_type);
+                printf("Redirection: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
                 printf("filename saved: %s\n", current_cmd->redirections->filename);
             }
         }
         current_cmd = current_cmd->next_cmd;
         cmd_index++;
     }
-}
-
-
-/*
-- Free and assign as NULL each element in the string array
-- Free the double pointer itself
-- Return NULL
-*/
-char    **clean_free_double_pointers(char **trash)
-{
-    int i;
-
-    i = 0;
-    if (trash)
-    {
-        while (trash[i])
-        {
-            free (trash[i]);
-            trash[i] = NULL;
-            i++;
-        }
-        free (trash);
-    }
-    return (NULL);
-}
-
-/* Expand command array to include a new token value:
- - Allocating new array with space for existing arguments + new argument + NULL
- - Give existing string pointers to new array
- - Use ar_strdup() to duplicate the new token value into the array
- - Add NULL terminator to the expanded array
- - Update the old command array with the new allocation
-
- Returns: 0 on success, -1 on errors
-*/
-int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
-{
-    size_t  quantity;
-    size_t  i;
-    char    **new_cmd;
-
-    quantity = 0;
-    if (command->cmd_av)
-        while (command->cmd_av[quantity])
-            quantity++;
-    new_cmd = ar_alloc(arena, (quantity + 2) * sizeof(char *));
-    if (!new_cmd)
-    {
-        ft_putstr_fd("Allocation for command failed\n", 2);
-        return (-1);
-    }
-    i = 0;
-    if (command->cmd_av)
-        while (command->cmd_av[i])
-        {
-            new_cmd[i] = command->cmd_av[i];
-            i++;
-        }
-    new_cmd[i] = ar_strdup(arena, expansion);
-    if (!new_cmd[i])
-    {
-        ft_putstr_fd("strdup fail while building command\n", 2);
-        return (-1);
-    }
-    new_cmd[i + 1] = NULL;
-    command->cmd_av = new_cmd;
-    return (0);
-}
-
-/* Check if token is a redirectional token.
-*/
-int is_redirection(t_token_type check)
-{
-    if (check == TOKEN_REDIRECT_IN || check == TOKEN_REDIRECT_OUT
-        || check == TOKEN_APPEND || check == TOKEN_HEREDOC)
-        return (8);
-    return (0);
-}
-
-/* Create space with ar_alloc for a t_cmd struct so all values are 0
-*/
-t_cmd   *new_cmd_alloc(t_arena *arena)
-{
-    t_cmd   *new;
-
-    new = ar_alloc(arena, sizeof(t_cmd));
-    if (!new)
-        return (NULL);
-    new->cmd_av = NULL;
-    new->redirections = NULL;
-    new->next_cmd = NULL;
-    return (new);
-}
-
-/* Create and append a new redirection node to the command
-
-- Allocate memory for a new t_redir structure
-- Set redirection type from current token
-- Move to next token and ar_strdup the filename
-- Appends the new t_redir to the command's redirection list.
-    If no redirection exists, it becomes the first node; otherwise at the end.
-
-Returns: 0 on success, -1 on errors
-*/
-int    make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd)
-{
-    t_redir *new;
-    t_redir *find_tail;
-
-    new = ar_alloc(arena, sizeof(t_redir));
-    if (!new)
-    {
-        ft_printf("Memory alloc failed for t_redir");
-        return (-1);
-    }
-    set_redir_type(curr_tok->type, &new->tok_type);
-    new->next = NULL;
-    *curr_tok = *curr_tok->next;
-    new->filename = ar_strdup(arena, curr_tok->value);
-    if (!new->filename)
-    {
-        ft_printf("Memory allocation failed for file name\n");
-        return (-1);
-    }
-    if (!curr_cmd->redirections)
-        curr_cmd->redirections = new;
-    else
-    {
-        find_tail = curr_cmd->redirections;
-        while (find_tail->next)
-            find_tail = find_tail->next;
-        find_tail->next = new;
-    }
-    return (0);
-}
-
-/* Set the redirectional type to be the same with the token type
-(helper function of make_redir())
-*/
-void    set_redir_type(t_token_type tok_type, t_token_type *redir_type)
-{
-    if (tok_type == TOKEN_REDIRECT_IN)
-        *redir_type = TOKEN_REDIRECT_IN;
-    else if (tok_type == TOKEN_REDIRECT_OUT)
-        *redir_type = TOKEN_REDIRECT_OUT;
-    else if (tok_type == TOKEN_APPEND)
-        *redir_type = TOKEN_APPEND;
-    else if (tok_type == TOKEN_HEREDOC)
-        *redir_type = TOKEN_HEREDOC;
 }
 
 /* Parses a linked list of tokens into a command table structure.
@@ -260,9 +111,7 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
         else
         {
             if (current_tok->type != TOKEN_WORD)
-            {
-                ft_printf("Not a word token\n");
-                // No need to clean up as it's in the arena
+                return(err_msg_n_return_null("Not a word token\n"));
             if (ft_strchr(current_tok->value, '&') && ft_strlen(current_tok->value) == 1)
                 return (err_msg_n_return_null("Syntax error (lonely &)\n"));
             if (ft_strchr(current_tok->value, '$'))
@@ -270,17 +119,10 @@ t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
                     return (NULL);
             if (add_argv(arena, current_cmd, current_tok->value) == -1)
                 return (NULL);
-            }
-            add_argv(arena, current_cmd, current_tok->value);
-            if (!current_cmd->cmd_av)
-            {
-                ft_printf("Adding command argv unsuccessful\n");
-                // No need to clean up as it's in the arena
-                return (NULL);
-            }
         }
         current_tok = current_tok->next; //move to the next token
     }
+    
     print_cmd_table(table);
     return (table);
 }
@@ -344,100 +186,79 @@ int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
 }
 
 
-/* Early stage variable name expansion
+/* Remove quotes and expand variable name
+- Iterate through the token value to check each character
+- Enter single/double quote mode and exit only when seeing the same quote
+- Variable expansion according to the mode (in single quote or other modes)
+- Other characters are added to the final string
 */
 int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
 {
-    char    *var_name;
-    char    *var_value;
-    char    *normal_word;
-    size_t  normal_word_len;
     size_t  i;
-
-    if (word_tok->was_quoted == 0)
-    {
-        i = 0;
-        var_name = ft_strchr(word_tok->value, '$');
-        normal_word = NULL;
-        normal_word_len = ft_strlen(word_tok->value) - ft_strlen(var_name);
-        if (normal_word_len > 0)
-        {
-            normal_word = ar_substr(arena, word_tok->value, 0, normal_word_len);
-            if (!normal_word)
-            {
-                ft_putstr_fd("Allocation for normal text failed \n", 2);
-                return (-1);
-            }
-        }
-        var_value = find_var_value(var_name + 1); //skip the $
-        word_tok->value = ar_strjoin(arena, normal_word, var_value);
-        if (!word_tok->value)
-        {
-            ft_putstr_fd("Cannot update token value after variable expansion\n", 2);
-            return (-1);
-        }
-        return (0);
-    }
-    // else if (word_tok->was_quoted == 1)
-    // {
-    //     if (expand_var_name_1quotes(arena, word_tok) == -1)
-    //     {
-    //         ft_putstr_fd("Error in expanding variable name in single quotes\n", 2);
-    //         return (-1);
-    //     }
-    //     return (0);
-    // }
-    else
-    {
-        if (expand_var_name_2quotes(arena, word_tok) == -1)
-        {
-            ft_putstr_fd("Error in expanding variable name in double quotes\n", 2);
-            return (-1);
-        }
-        return (0);
-    }
-}
-
-int expand_var_name_2quotes(t_arena *arena, t_tokens *word_tok)
-{
-    size_t  i;
-    char    *plain_text;
+    int     in_2xquote;
+    int     in_1xquote;
     char    *var_name;
-    size_t  var_len;
+    char    *expanded_text;
 
     i = 0;
-    plain_text = NULL;
+    in_2xquote = 0;
+    in_1xquote = 0;
     var_name = NULL;
-    var_len = 0;
-    
+    expanded_text = NULL;
+
     while (word_tok->value[i])
     {
         if (word_tok->value[i] == '$')
         {
-            i++; //skip $ sign
-            while (ft_isalnum(word_tok->value[i]) && word_tok->value[i] != '_')
+            if (in_1xquote)
             {
-                var_name = ar_add_char_to_str(arena, var_name, word_tok->value[i]);
-                var_len++;
-                i++;
-            }
-            ft_printf("varlen = %i; varname = %s\n", var_len, var_name);
-            if (var_len)
-            {
-                ft_printf("varlen = %i; varname = %s\n", var_len, var_name);
-                var_name = find_var_value(var_name);
-                plain_text = ar_strjoin(arena, plain_text, var_name);
-                if (!plain_text)
-                    return (-1);
+                expanded_text = ar_add_char_to_str(arena, expanded_text, word_tok->value[i]);
+                if (!expanded_text)
+                    break ;
             }
             else
-                plain_text = ar_strjoin(arena, plain_text, "$");
+            {
+                while (ft_isalnum(word_tok->value[i + 1]) || word_tok->value[i + 1] == '_')
+                {
+                    var_name = ar_add_char_to_str(arena, var_name, word_tok->value[i + 1]);
+                    if (!var_name)
+                        return (-1);
+                    i++;
+                }
+                if (var_name)
+                {
+                    var_name = find_var_value(var_name);
+                    expanded_text = ar_strjoin(arena, expanded_text, var_name);
+                    if (!expanded_text)
+                        return (-1);
+                }
+                else
+                    expanded_text = ar_add_char_to_str(arena, expanded_text, '$');
+            }
         }
-        if (word_tok->value[i] != '"')
-            plain_text = ar_add_char_to_str(arena, plain_text, word_tok->value[i]);
+        else if ((word_tok->value[i] == '\"' || word_tok->value[i] == '\'')
+            && (!(in_2xquote || in_1xquote)))
+        {
+            if (word_tok->value[i] == '\"')
+                in_2xquote = 1;
+            if (word_tok->value[i] == '\'')
+                in_1xquote = 1;
+        }
+        else if (word_tok->value[i] == '\"' && in_2xquote)
+            in_2xquote = 0;
+        else if (word_tok->value[i] == '\'' && in_1xquote)
+            in_1xquote = 0;
+        else
+        {
+            expanded_text = ar_add_char_to_str(arena, expanded_text, word_tok->value[i]);
+            if (!expanded_text)
+                break ;
+        }
         i++;
-    }ft_printf("Here expand 2quotes\n");
-    word_tok->value = plain_text;
+    }
+    if (!expanded_text)
+        return (-1);
+    word_tok->value = expanded_text;
     return (0);
 }
 
@@ -463,7 +284,7 @@ char    *find_var_value(char *name)
     i = 0;
     while (name[i])
     {
-        if (!ft_isalnum(name[i]) && name[i] != '_')
+        if (!(ft_isalnum(name[i]) || name[i] == '_'))
             return (err_msg_n_return_null("Bad environment name - forbidden characters\n"));
         i++;
     }

@@ -41,10 +41,11 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Handle special variables: $?, $$, $0
     - Different behavior for single vs double quotes
 
-🔧 [TODO] Syntax validation
+✅ [COMPLETED] Syntax validation
     - Check for invalid pipe usage (pipe at start/end, double pipes)
     - Check for invalid redirections (missing filenames)
-    - Check for proper command structure
+    - Check for proper command structure (maybe in built-ins, otherwise let's leave it to execve :D)
+    - Check for & standalone
 
 🔧 [TODO] Logical operators parsing
     - Parse && (AND) and || (OR) operators

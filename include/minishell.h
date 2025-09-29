@@ -74,11 +74,12 @@ t_tokens	*split_commands(t_arena *arena, char *input);
 t_tokens		*tokenize_input(t_arena *arena, char *input);
 t_tokens		*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
 char			*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
+char			*check_quoted_string(t_arena *arena, char *str);
 char			*extract_pipe_token(t_arena *arena, char *input, int *i);
 
 // Token extraction functions
 char			*extract_word_token(t_arena *arena, char *input, int *i);
-char			*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
+// char			*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
 char			*extract_special_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_in_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_out_token(t_arena *arena, char *input, int *i);

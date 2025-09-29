@@ -1,6 +1,9 @@
 #include "minishell.h"
+//#include "exe.h"
 
 // follow and update the todo_list.txt ✨
+
+static const char	*get_colored_prompt(void);
 
 static  void	print_tokens(t_tokens *head)// Debug function to print the token list
 {
@@ -22,16 +25,11 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_arena		*arena;
 	t_cmd_table	*cmd_table;
+	int			exit_status;
 
 	(void)ac;
 	(void)av;
-	(void)env;
-	(void)cmd_table; // Prevent unused variable warning
-	if (ac > 1)
-	{
-		ft_printf("Please do not run our shell with arguments ^^\n");
-		return (-1);
-	}
+	exit_status = 0;
 	arena = ar_init();
 	if (!arena)
 	{
@@ -40,7 +38,7 @@ int	main(int ac, char **av, char **env)
 	}
 	while (1337)
 	{
-		input = readline("WGshell> ");  // Allocates memory for input, must be freed
+		input = readline(get_colored_prompt());  // Allocates memory for input, must be freed
 		if (!input)
 		{
 			ft_printf("exit\n");
@@ -63,6 +61,13 @@ int	main(int ac, char **av, char **env)
 		{
 			print_tokens(tokens);
 			cmd_table = register_to_table(arena, tokens);
+			if (cmd_table)
+			{
+				// Execute the commands
+				exit_status = exe_cmd(arena, cmd_table, env);
+				ft_printf("Command executed with exit status: %d\n", exit_status);
+			}
+			// No need to free tokens or cmd_table as they're in the arena
 			free(input);
 		}
 		// Reset arena for next command
@@ -71,4 +76,37 @@ int	main(int ac, char **av, char **env)
 	// Cleanup arena before exit
 	free_arena(arena);
 	return (0);
+}
+
+
+/*
+** get_colored_prompt - Create a colorful shell prompt
+**   Returns static string with ANSI color codes
+*/
+static const char	*get_colored_prompt(void)
+{
+	// Halloween SpookyShell with emojis! 🎃👻
+	// \033[31m - Red text for "SpookyShell"
+	// \033[0m - Reset colors after text
+	
+	// Option 1: SpookyShell
+	// return ("🎃\033[31mSpookyShell\033[0m👻> ");
+	
+	// Option 6: BLINKING SpookyShell
+	//return ("🎃\033[31;5mSpookyShell\033[0m👻> ");
+	
+	// Option 7: BOLD BLINKING SpookyShell (SUPER SPOOKY!)
+	// return ("🎃\033[31;1;5mSpookyShell\033[0m👻> ");
+		
+	// Option 9: BOTH BLINKING (ULTIMATE SPOOKY!)
+	return ("🎃\033[31;5mSpookyShell\033[0m\033[5m👻\033[0m> ");
+	
+	// Option 2: More spooky with skull and wizard
+	// return ("💀\033[31mSpookyShell\033[0m🧙‍♂️> ");
+	
+	// Option 3: Classic Halloween with bat
+	// return ("🎃\033[31mSpookyShell\033[0m🦇> ");
+	
+	// Option 4: Spooky with brackets
+	// return ("\033[31m[💀SpookyShell💀]\033[0m$ ");
 }

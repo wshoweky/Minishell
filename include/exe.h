@@ -1,0 +1,55 @@
+#ifndef EXE_H
+# define EXE_H
+
+// # include <sys/stat.h>  // For struct stat
+// # include <sys/wait.h>  // For pid_t and wait functions
+// # include <unistd.h>    // For fork, execve, etc.
+
+// Type aliases for 42 norm compliance
+typedef struct stat	t_stat;
+
+// Main execution dispatcher
+int			exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env);
+int			exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env);
+int			exe_external_cmd(t_arena *arena, t_cmd *cmd, char **env);
+
+// Built-in command detection and dispatch
+int			is_builtin(char *cmd);
+int			exe_builtin(t_cmd *cmd, char **env);
+
+// Individual built-in implementations
+int			builtin_echo(t_cmd *cmd);
+int			builtin_pwd(t_cmd *cmd);
+int			builtin_cd(t_cmd *cmd);
+int			builtin_env(char **env);
+int			builtin_export(t_cmd *cmd, char ***env);
+int			builtin_unset(t_cmd *cmd, char ***env);
+int			builtin_exit(t_cmd *cmd);
+
+// Executable path resolution
+char		*find_executable(t_arena *arena, char *cmd, char **env);
+int			is_executable(char *path);
+char		*build_path(t_arena *arena, char *dir, char *file);
+
+// Environment variable utilities
+char		*get_env_value(char **env, char *name);
+int			set_env_value(char ***env, char *name, char *value);
+int			unset_env_value(char ***env, char *name);
+
+// Process creation and management
+pid_t		create_child_process(void);
+int			wait_for_child(pid_t pid);
+void		setup_child_process(t_cmd *cmd, char **env);
+
+// Redirection handling
+int			setup_redirections(t_cmd *cmd);
+int			handle_input_redirection(char *filename);
+int			handle_output_redirection(char *filename, int append);
+int			handle_heredoc(char *delimiter);
+
+// Pipeline management
+int			execute_pipeline(t_cmd *cmd_list, char **env);
+int			create_pipe_chain(t_cmd *cmd_list, char **env);
+void		connect_pipes(int *pipe_fds, int cmd_index, int total_cmds);
+
+#endif

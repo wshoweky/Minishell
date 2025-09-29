@@ -1,5 +1,10 @@
 #include "minishell.h"
 
+char	*extract_word_token(t_arena *arena, char *input, int *i);
+char	*extract_pipe_token(t_arena *arena, char *input, int *i);
+char	*extract_special_token(t_arena *arena, char *input, int *i);
+char	*extract_redirect_in_token(t_arena *arena, char *input, int *i);
+char	*extract_redirect_out_token(t_arena *arena, char *input, int *i);
 /*
 ** extract_word_token - Extract regular word tokens
 **

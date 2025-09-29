@@ -115,6 +115,8 @@ char	*extract_next_token(t_arena *arena, char *input, int *i)
 				quote = input[*i];
 				start_quote = *i;
 				string = ar_add_char_to_str(arena, string, input[*i]);
+				if (!string)
+					return (err_msg_n_return_null("Memory alloc fail for quote"));
 			}
 			else if (input[*i] == ' ' || input[*i] == '\t' || input[*i] == '\n')
 				break ;

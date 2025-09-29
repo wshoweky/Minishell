@@ -34,11 +34,11 @@ char	*get_token_type_name(t_token_type type)
 	return ("EOF");
 }
 
-int	is_special_char(char c)
-{
-	return (c == '|' || c == '<' || c == '>' || c == ' ' || c == '\t' 
-		|| c == '\n' || c == '"' || c == '\'');
-}
+// int	is_special_char(char c)
+// {
+// 	return (c == '|' || c == '<' || c == '>' || c == ' ' || c == '\t' 
+// 		|| c == '\n' || c == '"' || c == '\'');
+// }
 void	skip_whitespace(char *input, int *i)
 {
 	while (input[*i] && (input[*i] == ' ' || input[*i] == '\t'))

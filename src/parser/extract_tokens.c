@@ -1,36 +1,5 @@
 #include "minishell.h"
 
-char	*extract_word_token(t_arena *arena, char *input, int *i);
-char	*extract_pipe_token(t_arena *arena, char *input, int *i);
-char	*extract_special_token(t_arena *arena, char *input, int *i);
-char	*extract_redirect_in_token(t_arena *arena, char *input, int *i);
-char	*extract_redirect_out_token(t_arena *arena, char *input, int *i);
-/*
-** extract_word_token - Extract regular word tokens
-**
-** DESCRIPTION:
-**   Handles extraction of regular words (commands, arguments, filenames).
-**   Continues until a special character is encountered.
-**
-** PARAMETERS:
-**   arena - Memory arena for allocations
-**   input - The input string
-**   i     - Pointer to current index (modified by reference)
-**
-** RETURN VALUE:
-**   Returns allocated string containing the word token
-*/
-char	*extract_word_token(t_arena *arena, char *input, int *i)
-{
-	int		start;
-	char	*token_value;
-
-	start = *i;
-	while (input[*i] && !is_special_char(input[*i]))
-		(*i)++;
-	token_value = ar_substr(arena, input, start, *i - start);
-	return (token_value);
-}
 /*
 ** extract_special_token - Main dispatcher for special tokens
 **

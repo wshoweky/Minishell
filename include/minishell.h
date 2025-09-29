@@ -62,30 +62,30 @@ typedef struct	s_cmd_table
 //int	shelly(void);
 
 // List utility functions
-int			list_size(t_tokens *head);
-void		free_split(char **words);
-void		free_list_nodes(t_tokens *head);
+// int			list_size(t_tokens *head);
+// void		free_split(char **words);
+// void		free_list_nodes(t_tokens *head);
 void		add_to_end(t_tokens **head, t_tokens *new_node);
 t_tokens	*create_token(t_arena *arena, char *word);
-t_tokens	*split_commands(t_arena *arena, char *input);
+// t_tokens	*split_commands(t_arena *arena, char *input);
 
 // Tokenization functions
 t_tokens		*tokenize_input(t_arena *arena, char *input);
 t_tokens		*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
 char			*extract_next_token(t_arena *arena, char *input, int *i);
 char			*check_for_quoted_string(t_arena *arena, char *str);
-char			*extract_pipe_token(t_arena *arena, char *input, int *i);
+
 
 // Token extraction functions
-char			*extract_word_token(t_arena *arena, char *input, int *i);
 char			*extract_special_token(t_arena *arena, char *input, int *i);
+char			*extract_pipe_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_in_token(t_arena *arena, char *input, int *i);
 char			*extract_redirect_out_token(t_arena *arena, char *input, int *i);
 
 // Token utility functions
 t_token_type	get_token_type(char *str);
 char			*get_token_type_name(t_token_type type);
-int				is_special_char(char c);
+// int				is_special_char(char c);
 void			skip_whitespace(char *input, int *i);
 
 // Parsing functions
@@ -95,6 +95,7 @@ int			add_argv(t_arena *arena, t_cmd *command, char *expansion);
 int	    	expand_variable_name(t_arena *arena, t_tokens *word_tok);
 char    	*find_var_value(char *name);
 void	    *err_msg_n_return_null(char *msg);
+int		    err_msg_n_return_value(char *msg, int value);
 
 //	Redirection functions
 int			is_redirection(t_token_type check);

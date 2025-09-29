@@ -34,11 +34,10 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Parse append redirection: >> file
     - Parse heredoc: << delimiter
 
-🔧 [TODO] Quote removal and variable expansion
+✅ [COMPLETED] Quote removal and variable expansion
     - Remove quotes from WORD tokens that were quoted
     - Preserve literal values inside quotes
     - Expand variables ($VAR) based on quote context
-    - Handle special variables: $?, $$, $0
     - Different behavior for single vs double quotes
 
 ✅ [COMPLETED] Syntax validation
@@ -179,7 +178,7 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 ✅ Path resolution system working (exe/path_utils.c)
 ✅ Development tooling enhanced (Makefile with valgrind/cppcheck)
 ❌ Built-in commands need major fixes (see builtins.txt analysis)
-⏳ Variable expansion - STILL NEEDED
+✅ Variable expansion
 ⏳ Advanced executor features (pipes, redirections)
 ⏳ Advanced features - Final phase
 
@@ -196,7 +195,7 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 6. Implement builtin_export() and builtin_unset()
 
 ⭐ MEDIUM PRIORITY:
-7. Implement variable expansion in parser with quote context awareness
+7. Implement variable expansion for $? (needs exit status in t_shell struct), later on if needed also $$ and $0
 8. Add syntax validation during parsing
 9. Enhance pipeline execution system
 

@@ -10,10 +10,6 @@ static  void	print_tokens(t_tokens *head)// Debug function to print the token li
 	while (head)
 	{
 		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
-		if (head->was_quoted == 1)
-			ft_printf(" | Quoted: Single ('') - No expansion");
-		else if (head->was_quoted == 2)
-			ft_printf(" | Quoted: Double (\"\") - With expansion");
 		ft_printf("\n");
 		head = head->next;
 	}

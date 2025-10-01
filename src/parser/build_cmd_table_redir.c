@@ -27,19 +27,13 @@ int    make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd)
 
     new = ar_alloc(arena, sizeof(t_redir));
     if (!new)
-    {
-        ft_printf("Memory alloc failed for t_redir\n");
-        return (-1);
-    }
+        return (err_msg_n_return_value("Memory alloc failed for t_redir\n", -1));
     set_redir_type(curr_tok->type, &new->tok_type);
     new->next = NULL;
     *curr_tok = *curr_tok->next;
     new->filename = ar_strdup(arena, curr_tok->value);
     if (!new->filename)
-    {
-        ft_printf("Memory allocation failed for file name\n");
-        return (-1);
-    }
+        return (err_msg_n_return_value("Memory alloc failed for file name\n", -1));
     if (!curr_cmd->redirections)
         curr_cmd->redirections = new;
     else

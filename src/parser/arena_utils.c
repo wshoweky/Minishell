@@ -5,12 +5,13 @@ char	*ar_strdup(t_arena *arena, const char *str)
 	char	*dest;
 	size_t	i;
 
+	// Normalize NULL input to empty string - eliminates ambiguity
 	if (!str)
-		return (NULL);
+		str = ""; // points to null terminator - empty string ['\0'] to prevent segmentation fault
 	i = 0;
 	dest = ar_alloc(arena, ft_strlen(str) + 1);
 	if (!dest)
-		return (NULL);
+		return (NULL);  // Only possible cause: allocation failure
 	while (str[i])
 	{
 		dest[i] = str[i];
@@ -30,8 +31,9 @@ char	*ar_substr(t_arena *arena, const char *s, unsigned int start, size_t len)
 	size_t	strlen;
 	char	*substr;
 
+	// Normalize NULL input to empty string - eliminates ambiguity
 	if (!s)
-		return (NULL);
+		s = "";
 	strlen = ft_strlen(s);
 	if (start >= strlen)
 		return (ar_strdup(arena, "")); //return empty line as it should
@@ -39,7 +41,7 @@ char	*ar_substr(t_arena *arena, const char *s, unsigned int start, size_t len)
 		len = strlen - start;	// recorrect the string length
 	substr = (char *)ar_alloc(arena, len + 1);
 	if (!substr)
-		return (NULL);
+		return (NULL);  // Only possible cause: allocation failure
 	i = start;
 	n = 0;
 	while (s[i] && n < len)
@@ -54,15 +56,14 @@ char	*ar_strjoin(t_arena *arena, const char *s1, const char *s2)
 	size_t	i;
 	size_t	n;
 
-	if (!s1 && !s2)
-		return (NULL);
+	// Normalize NULL inputs to empty strings - eliminates ambiguity
 	if (!s1)
-		return (ar_strdup(arena, s2));
+		s1 = "";
 	if (!s2)
-		return (ar_strdup(arena, s1));
+		s2 = "";
 	str = (char *)ar_alloc(arena, ft_strlen(s1) + ft_strlen(s2) + 1);
 	if (!str)
-		return (NULL);
+		return (NULL);  // Only possible cause: allocation failure
 	i = 0;
 	n = 0;
 	while (s1[i])
@@ -74,47 +75,6 @@ char	*ar_strjoin(t_arena *arena, const char *s1, const char *s2)
 	return (str);
 }
 
-char	**ar_split(t_arena *arena, const char *s, char c)
-{
-	char	**result;
-	size_t	i;
-	size_t	j;
-	size_t	start;
-	size_t	count;
-
-	if (!s)
-		return (NULL);
-	count = 0;
-	i = 0;
-	while (s[i])
-	{
-		while (s[i] && s[i] == c)
-			i++;
-		if (s[i] && s[i] != c)
-		{
-			count++;
-			while (s[i] && s[i] != c)
-				i++;
-		}
-	}
-	result = (char **)ar_alloc(arena, (count + 1) * sizeof(char *));
-	if (!result)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (s[i] && j < count)
-	{
-		while (s[i] && s[i] == c)
-			i++;
-		start = i;
-		while (s[i] && s[i] != c)
-			i++;
-		if (i > start)
-			result[j++] = ar_substr(arena, s, start, i - start);
-	}
-	result[j] = NULL;
-	return (result);
-}
 
 char	*ar_add_char_to_str(t_arena *arena, char *s, char c)
 {

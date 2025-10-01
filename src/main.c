@@ -10,10 +10,6 @@ static  void	print_tokens(t_tokens *head)// Debug function to print the token li
 	while (head)
 	{
 		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
-		if (head->was_quoted == 1)
-			ft_printf(" | Quoted: Single ('') - No expansion");
-		else if (head->was_quoted == 2)
-			ft_printf(" | Quoted: Double (\"\") - With expansion");
 		ft_printf("\n");
 		head = head->next;
 	}
@@ -25,11 +21,13 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_arena		*arena;
 	t_cmd_table	*cmd_table;
+	//t_shell		*shell;
 	int			exit_status;
 
 	(void)ac;
 	(void)av;
 	exit_status = 0;
+	//shell = shell_init();
 	arena = ar_init();
 	if (!arena)
 	{
@@ -85,28 +83,17 @@ int	main(int ac, char **av, char **env)
 */
 static const char	*get_colored_prompt(void)
 {
-	// Halloween SpookyShell with emojis! 🎃👻
-	// \033[31m - Red text for "SpookyShell"
-	// \033[0m - Reset colors after text
+	// Halloween SpookyShell with readline-compatible ANSI codes! 🎃👻
+	// \001 and \002 tell readline which parts are non-printable
+	// This fixes cursor positioning and line wrapping issues
 	
-	// Option 1: SpookyShell
-	// return ("🎃\033[31mSpookyShell\033[0m👻> ");
+	// FIXED: Readline-compatible blinking SpookyShell prompt
+	// \001 = RL_PROMPT_START_IGNORE, \002 = RL_PROMPT_END_IGNORE
+	return ("🎃\001\033[31;5m\002SpookyShell\001\033[0m\002"
+			"\001\033[5m\002👻\001\033[0m\002> ");
 	
-	// Option 6: BLINKING SpookyShell
-	//return ("🎃\033[31;5mSpookyShell\033[0m👻> ");
-	
-	// Option 7: BOLD BLINKING SpookyShell (SUPER SPOOKY!)
-	// return ("🎃\033[31;1;5mSpookyShell\033[0m👻> ");
-		
-	// Option 9: BOTH BLINKING (ULTIMATE SPOOKY!)
-	return ("🎃\033[31;5mSpookyShell\033[0m\033[5m👻\033[0m> ");
-	
-	// Option 2: More spooky with skull and wizard
-	// return ("💀\033[31mSpookyShell\033[0m🧙‍♂️> ");
-	
-	// Option 3: Classic Halloween with bat
-	// return ("🎃\033[31mSpookyShell\033[0m🦇> ");
-	
-	// Option 4: Spooky with brackets
-	// return ("\033[31m[💀SpookyShell💀]\033[0m$ ");
+	// Alternative options (all readline-compatible):
+	// Simple colored: "🎃\001\033[31m\002SpookyShell\001\033[0m\002👻> "
+	// With skull: "💀\001\033[31m\002SpookyShell\001\033[0m\002🧙‍♂️> "
+	// With bat: "🎃\001\033[31m\002SpookyShell\001\033[0m\002🦇> "
 }

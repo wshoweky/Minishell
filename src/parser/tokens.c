@@ -1,9 +1,5 @@
 #include "minishell.h"
 
-t_tokens	*tokenize_input(t_arena *arena, char *input);
-t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
-char		*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
-char		*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token);
 /*
 ** tokenize_input - Enhanced tokenizer for shell input parsing
 **
@@ -61,11 +57,10 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 	char		*token_value;
 
 	new_token = NULL;
-	token_value = extract_next_token(arena, input, i, &new_token);
+	token_value = extract_next_token(arena, input, i);
 	if (!token_value) // Error handling
 		return (NULL);
-	if (!new_token)	// Only create new node if not already created (quoted case)
-	    new_token = create_token(arena, token_value);
+    new_token = create_token(arena, token_value);
 	if (!new_token)	// Error handling
 		return (NULL);
 	add_to_end(head, new_token);
@@ -84,66 +79,109 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 **   arena     - Memory arena for allocations
 **   input     - The input string
 **   i         - Pointer to current index (modified by reference)
-**   new_token - Pointer to token pointer (for quoted strings)
 **
 ** RETURN VALUE:
 **   Returns allocated string containing the token value or NULL on error
 */
-char	*extract_next_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
+char	*extract_next_token(t_arena *arena, char *input, int *i)
 {
-	char	current_char;
+	int	in_quotes;
+	char quote;
+	int	start_quote;
+	char *string;
 
-	*new_token = NULL;
-	current_char = input[*i];
-	if (current_char == '|' || current_char == '<' || current_char == '>')
-		return (extract_special_token(arena, input, i));
-	else if (current_char == '"' || current_char == '\'') // Escape the single quote \'#39 "#34 ASCII
-		return (extract_quoted_token(arena, input, i, new_token));
-	else
-		return (extract_word_token(arena, input, i));
-}
-/*
-** extract_quoted_token - Extract quoted string tokens
-**
-** DESCRIPTION:
-**   Handles extraction of quoted strings (single or double quotes).
-**   Preserves spaces within quotes and sets the was_quoted flag.
-**   Returns NULL if quotes are unclosed (syntax error).
-**
-** PARAMETERS:
-**   arena     - Memory arena for allocations
-**   input     - The input string
-**   i         - Pointer to current index (modified by reference)
-**   new_token - Pointer to token pointer (sets was_quoted flag)
-**
-** RETURN VALUE:
-**   Returns allocated string with quote contents or NULL on error
-*/
-char	*extract_quoted_token(t_arena *arena, char *input, int *i, t_tokens **new_token)
-{
-	char	quote;
-	int		start;
-	char	*token_value;
-
-	quote = input[*i]; // Remember which quote type (" or ')
-	(*i)++;
-	start = *i;
-	while (input[*i] && input[*i] != quote)
-		(*i)++;
-	if (input[*i] != quote) // Error: no matching quote
-		return (NULL);
-	// Extract content between quotes
-	token_value = ar_substr(arena, input, start, *i - start);
-	(*i)++; // Skip closing quote
-	*new_token = create_token(arena, token_value);
-	if (*new_token)
+	in_quotes = 0;
+	string = NULL;
+	while (input[*i])
 	{
-		(*new_token)->type = TOKEN_WORD;
-		// Set different values for single and double quotes
-		if (quote == '\'')
-			(*new_token)->was_quoted = 1; // Single quotes - no expansion
-		else if (quote == '"')
-			(*new_token)->was_quoted = 2; // Double quotes - with expansion
+		if (in_quotes)
+		{
+			string = ar_add_char_to_str(arena, string, input[*i]);
+			if (input[*i] == quote)
+				in_quotes = 0;
+		}
+		else
+		{
+			if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
+			{
+				if (string)
+					break ;
+				else
+					return (extract_special_token(arena, input, i));
+			}
+			else if (input[*i] == '"' || input[*i] == '\'')
+			{
+				in_quotes = 1;
+				quote = input[*i];
+				start_quote = *i;
+				string = ar_add_char_to_str(arena, string, input[*i]);
+				if (!string)
+					return (err_msg_n_return_null("Memory alloc fail for quote"));
+			}
+			else if (input[*i] == ' ' || input[*i] == '\t' || input[*i] == '\n')
+				break ;
+			else
+				string = ar_add_char_to_str(arena, string, input[*i]);
+		}
+		(*i)++;
 	}
-	return (token_value);
+	string = check_for_quoted_string(arena, string);
+	return (string);
+}
+
+/* Check for quotes in the string
+- Return NULL if there is unclosed quote
+- If no $ is present in the string, remove quotes (that are outside of quotes)
+and return a clean string, or NULL if errors
+- If there is $, return the string as it is
+*/
+char	*check_for_quoted_string(t_arena *arena, char *str)
+{
+	size_t	i;
+	char	*output;
+	char	quote;
+	int		in_quote;
+
+	i = 0;
+	output = NULL;
+	in_quote = 0;
+	quote = 0;
+
+	while (str[i])
+	{
+		if (!in_quote && (str[i] == '"' || str[i] == '\''))
+		{
+			quote = str[i];
+			in_quote = 1;
+		}
+		else if (in_quote && str[i] == quote)
+			in_quote = 0;
+		i++;
+	}
+	if (in_quote)
+		return (err_msg_n_return_null("Unclosed quote\n"));
+	if (!ft_strchr(str, '$'))
+	{
+		i = 0;
+		while (str[i])
+		{
+			if (!in_quote && (str[i] == '"' || str[i] == '\''))
+			{
+				quote = str[i];
+				in_quote = 1;
+			}
+			else if (in_quote && str[i] == quote)
+				in_quote = 0;
+			else
+			{
+				output = ar_add_char_to_str(arena, output, str[i]);
+				if (!output)
+					return (err_msg_n_return_null("Failed making string not quoted anymore\n"));
+			}
+			i++;
+		}
+		return (output);
+	}
+	else
+		return (str);
 }

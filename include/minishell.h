@@ -41,6 +41,25 @@ typedef struct	s_cmd_table
 	t_cmd	*list_of_cmds;
 } t_cmd_table;
 
+/*
+// Shell state structure
+typedef struct s_shell
+{
+	char	**env;				// Our own copy of environment variables
+	int		env_capacity;		// Current capacity of env array
+	int		env_count;			// Current number of env variables
+	int		last_exit_status;	// Exit status of last command ($?)
+	char	*cwd;				// Current working directory
+	char	*oldpwd;			// Previous working directory (for cd -)
+	char	*home;				// HOME directory path
+	char	*user;				// Current user name
+	char	*shell_name;		// Shell executable path ($0)
+	int		shell_pid;			// Shell process ID ($$)
+	int		is_interactive;		// Interactive mode flag
+	int		should_exit;		// Exit flag for main loop
+} t_shell;
+*/
+
 //# include <string.h>   // strlen, strcpy, strdup, etc.
 # include <unistd.h>   // write, read, close, fork, execve, pipe
 # include <stdlib.h>   // malloc, free, exit

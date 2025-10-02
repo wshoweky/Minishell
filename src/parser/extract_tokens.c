@@ -8,23 +8,23 @@
 **   This function acts as a dispatcher for all shell operators.
 **
 ** PARAMETERS:
-**   arena - Memory arena for allocations
-**   input - The input string
-**   i     - Pointer to current index (modified by reference)
+**   arena   - Memory arena for allocations
+**   string  - Pointer to string pointer (modified by reference)
+**   current - Current character being processed
 **
 ** RETURN VALUE:
-**   Returns allocated string containing the operator token or NULL
+**   Returns 0 on success, -1 on error
 */
-char	*extract_special_token(t_arena *arena, char *input, int *i)
+int	extract_special_token(t_arena *arena, char **string, char current)
 {
-	if (input[*i] == '|')
-		return (extract_pipe_token(arena, input, i));
-	else if (input[*i] == '<')
-		return (extract_redirect_in_token(arena, input, i));
-	else if (input[*i] == '>')
-		return (extract_redirect_out_token(arena, input, i));
+	if (current == '|')
+		return (extract_pipe_token(arena, string));
+	else if (current == '<')
+		return (extract_redirect_in_token(arena, string));
+	else if (current == '>')
+		return (extract_redirect_out_token(arena, string));
 	else
-		return (NULL);
+		return (err_msg_n_return_value("Not one of special tokens\n", -1));
 }
 
 /*
@@ -32,54 +32,23 @@ char	*extract_special_token(t_arena *arena, char *input, int *i)
 **
 ** DESCRIPTION:
 **   Handles extraction of pipe operator |.
+**   Ensures it is an empty string and sets it to "|"
 **
 ** PARAMETERS:
-**   arena - Memory arena for allocations
-**   input - The input string
-**   i     - Pointer to current index (modified by reference)
+**   arena  - Memory arena for allocations
+**   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns allocated string containing "|" token
+**   Returns 0 on success, -1 on error
 */
-char	*extract_pipe_token(t_arena *arena, char *input, int *i)
+int	extract_pipe_token(t_arena *arena, char **string)
 {
-	char	*token_value;
-
-	token_value = ar_substr(arena, input, *i, 1);
-	(*i)++;
-	return (token_value);
-}
-
-/*
-** extract_redirect_out_token - Extract output redirection tokens
-**
-** DESCRIPTION:
-**   Handles extraction of > and >> operators.
-**   Looks ahead to distinguish between single and double operators.
-**
-** PARAMETERS:
-**   arena - Memory arena for allocations
-**   input - The input string
-**   i     - Pointer to current index (modified by reference)
-**
-** RETURN VALUE:
-**   Returns allocated string containing ">" or ">>" token
-*/
-char	*extract_redirect_out_token(t_arena *arena, char *input, int *i)
-{
-	char	*token_value;
-
-	if (input[*i + 1] == '>')
-	{
-		token_value = ar_substr(arena, input, *i, 2);
-		*i += 2;
-	}
-	else
-	{
-		token_value = ar_substr(arena, input, *i, 1);
-		(*i)++;
-	}
-	return (token_value);
+	if (*string != NULL)
+		return (err_msg_n_return_value("String not empty for |\n", -1));
+	*string = ar_strdup(arena, "|");
+	if (!*string)
+		return (err_msg_n_return_value("strdup failed for |\n", -1));
+	return (0);
 }
 
 /*
@@ -87,29 +56,67 @@ char	*extract_redirect_out_token(t_arena *arena, char *input, int *i)
 **
 ** DESCRIPTION:
 **   Handles extraction of < and << operators.
-**   Looks ahead to distinguish between single and double operators.
+**   Builds single or double operator based on existing string content.
 **
 ** PARAMETERS:
-**   arena - Memory arena for allocations
-**   input - The input string
-**   i     - Pointer to current index (modified by reference)
+**   arena  - Memory arena for allocations
+**   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns allocated string containing "<" or "<<" token
+**   Returns 0 on success, -1 on error
 */
-char	*extract_redirect_in_token(t_arena *arena, char *input, int *i)
+int	extract_redirect_in_token(t_arena *arena, char **string)
 {
-	char	*token_value;
-
-	if (input[*i + 1] == '<')
+	if (!*string)
 	{
-		token_value = ar_substr(arena, input, *i, 2);
-		*i += 2;
+		*string = ar_strdup(arena, "<");
+		if (!*string)
+			return (err_msg_n_return_value("strdup failed for <\n", -1));
+		return (0);
+	}
+	else if (*string && !ft_strcmp(*string, "<"))
+	{
+		*string = ar_add_char_to_str(arena, *string, '<');
+		if (!*string)
+			return (err_msg_n_return_value("Failed to add <\n", -1));
+		return (0);
 	}
 	else
+		return (err_msg_n_return_value("String has different character \
+			than <\n", -1));
+}
+
+/*
+** extract_redirect_out_token - Extract output redirection tokens
+**
+** DESCRIPTION:
+**   Handles extraction of > and >> operators.
+**   Builds single or double operator based on existing string content.
+**
+** PARAMETERS:
+**   arena  - Memory arena for allocations
+**   string - Pointer to string pointer (modified by reference)
+**
+** RETURN VALUE:
+**   Returns 0 on success, -1 on error
+*/
+int	extract_redirect_out_token(t_arena *arena, char **string)
+{
+	if (!*string)
 	{
-		token_value = ar_substr(arena, input, *i, 1);
-		(*i)++;
+		*string = ar_strdup(arena, ">");
+		if (!*string)
+			return (err_msg_n_return_value("strdup failed for >\n", -1));
+		return (0);
 	}
-	return (token_value);
+	else if (*string && !ft_strcmp(*string, ">"))
+	{
+		*string = ar_add_char_to_str(arena, *string, '>');
+		if (!*string)
+			return (err_msg_n_return_value("Failed to add >\n", -1));
+		return (0);
+	}
+	else
+		return (err_msg_n_return_value("String has different character \
+			than >\n", -1));
 }

@@ -85,48 +85,88 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 */
 char	*extract_next_token(t_arena *arena, char *input, int *i)
 {
-	int	in_quotes;
-	char quote;
-	int	start_quote;
 	char *string;
 
-	in_quotes = 0;
 	string = NULL;
+	if (chop_up_input(arena, input, i, &string) == -1)
+		return (NULL);
+	check_for_quoted_string(arena, string); //WORKING ON THIS
+	return (string);
+}
+
+int	chop_up_input(t_arena *arena, char *input, int *i, char **string)
+{
+	int	in_quotes;
+	int	need_break;
+
+	in_quotes = 0;
 	while (input[*i])
 	{
 		if (in_quotes)
 		{
-			string = ar_add_char_to_str(arena, string, input[*i]);
-			if (input[*i] == quote)
-				in_quotes = 0;
+			if (char_in_quotes(arena, string, input[*i], &in_quotes) == -1)
+				return (-1);
 		}
 		else
 		{
-			if (input[*i] == '|' || input[*i] == '<' || input[*i] == '>')
-			{
-				if (string)
-					break ;
-				else
-					return (extract_special_token(arena, input, i));
-			}
-			else if (input[*i] == '"' || input[*i] == '\'')
-			{
-				in_quotes = 1;
-				quote = input[*i];
-				start_quote = *i;
-				string = ar_add_char_to_str(arena, string, input[*i]);
-				if (!string)
-					return (err_msg_n_return_null("Memory alloc fail for quote"));
-			}
-			else if (input[*i] == ' ' || input[*i] == '\t' || input[*i] == '\n')
+			need_break = char_outside_quotes(arena, string, input[*i], &in_quotes);
+			if (need_break == -1)
+				return (-1);
+			if (need_break == 1)
 				break ;
-			else
-				string = ar_add_char_to_str(arena, string, input[*i]);
 		}
 		(*i)++;
 	}
-	string = check_for_quoted_string(arena, string);
-	return (string);
+	return (0);
+}
+
+int	char_in_quotes(t_arena *arena, char **string, char current_char, int *in_quotes)
+{
+	*string = ar_add_char_to_str(arena, *string, current_char);
+	if (!*string)
+		return (-1);
+	if ((current_char == '"' && *in_quotes == 2) 
+			|| (current_char == '\'' && *in_quotes == 1))
+		*in_quotes = 0;
+	return (0);
+}
+
+int	char_outside_quotes(t_arena *arena, char **string, char current_char, int *in_quotes)
+{
+	if (current_char == '|' || current_char == '<' || current_char == '>')
+	{
+		if (!*string || (*string && !(ft_strcmp(*string, "<") 
+			|| ft_strcmp(*string, ">")))) //no string or string is alr "<"/">"
+			return (extract_special_token(arena, string, current_char)); //needs further changes
+		else 
+			return (1);
+	}
+	else if (current_char == '"' || current_char == '\'')
+	{
+		if (char_is_quote(arena, string, current_char, in_quotes) == -1)
+			return (-1);
+	}
+	else if (current_char == ' ' || current_char == '\t' || current_char == '\n')
+		return (1);
+	else
+	{
+		*string = ar_add_char_to_str(arena, *string, current_char);
+		if (!*string)
+			return (err_msg_n_return_value("Failed to add char to string\n", -1));
+	}
+	return (0);
+}
+
+int	char_is_quote(t_arena *arena, char **string, char current_char, int *in_quotes)
+{
+	if (current_char == '"')
+		*in_quotes = 2;
+	else if (current_char == '\'')
+		*in_quotes = 1;
+	*string = ar_add_char_to_str(arena, *string, current_char);
+	if (!*string)
+		return (err_msg_n_return_value("Memory alloc fail for quote\n", -1));
+	return (0);
 }
 
 /* Check for quotes in the string

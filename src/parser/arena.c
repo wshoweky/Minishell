@@ -1,6 +1,18 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   arena.c                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/03 16:39:50 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/10/03 18:05:36 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
-t_arena	*ar_init()
+t_arena	*ar_init(void)
 {
 	t_arena	*arena;
 
@@ -18,32 +30,26 @@ t_arena	*ar_init()
 	return (arena);
 }
 
+/*
+if (bytes > AR_SIZE)
+{
+	ft_printf("Error: Allocation request exceeds maximum arena size\n");
+	return (NULL);
+}
+*/
 void	*ar_alloc(t_arena *arena, size_t bytes)
 {
 	void	*ptr;
 	t_arena	*current;
 	t_arena	*new_arena;
 
-	// Align bytes to ensure proper memory alignment
-	//This line rounds up the requested allocation size to the next multiple of 8 bytes.
-	bytes = (bytes + 7) & ~7;
-
-	// Check if allocation exceeds maximum arena size
-	if (bytes > AR_SIZE)
-	{
-		ft_printf("Error: Allocation request of %zu bytes exceeds maximum arena size\n", bytes);
-		return (NULL);
-	}
-
-	// Try to allocate in the current arena
+	bytes = (bytes + 7) & ~7; // align to 8 bytes -- no need to check
 	if (arena->offset + bytes <= arena->size)
 	{
 		ptr = arena->buffer + arena->offset;
 		arena->offset += bytes;
 		return (ptr);
 	}
-
-	// If we get here, we need to find an arena with enough space or create a new one
 	current = arena;
 	while (current->next)
 	{
@@ -55,15 +61,10 @@ void	*ar_alloc(t_arena *arena, size_t bytes)
 			return (ptr);
 		}
 	}
-
-	// No existing arena has enough space, create a new one
 	new_arena = ar_init();
 	if (!new_arena)
 		return (NULL);
-	
 	current->next = new_arena;
-	
-	// Allocate from the new arena
 	ptr = new_arena->buffer + new_arena->offset;
 	new_arena->offset += bytes;
 	return (ptr);

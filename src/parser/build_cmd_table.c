@@ -52,6 +52,15 @@ Builds a command table where:
 - Redirections (<, >, >>, <<) set redirection type and capture filename
 - Regular word tokens are added as command arguments
 */
+/*
+Builds a command table where:
+- Pipes (|) separate commands and increment the command count
+- Redirections (<, >, >>, <<) set redirection type and capture filename
+- Regular word tokens are added as command arguments
+
+TODO: Update this function to accept t_shell *shell parameter and pass it through 
+to expand_variable_name() for proper environment variable expansion
+*/
 t_cmd_table *register_to_table(t_arena *arena, t_tokens *list_of_toks)
 {
     t_cmd_table *table;
@@ -164,6 +173,8 @@ int    add_argv(t_arena *arena, t_cmd *command, char *expansion)
 - Enter single/double quote mode and exit only when seeing the same quote
 - Variable expansion according to the mode (in single quote or other modes)
 - Other characters are added to the final string
+
+TODO: Update this function to accept t_shell *shell parameter and pass it to find_var_value()
 */
 int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
 {
@@ -200,7 +211,7 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
                 }
                 if (var_name)
                 {
-                    var_name = find_var_value(var_name);
+                    var_name = find_var_value(var_name);  // TODO: Pass shell parameter here
                     expanded_text = ar_strjoin(arena, expanded_text, var_name);
                     if (!expanded_text)
                         return (err_msg_n_return_value("Error in adding variable to string\n", -1));
@@ -242,6 +253,7 @@ int    expand_variable_name(t_arena *arena, t_tokens *word_tok)
 /* Return the value of the variable name passed to the function,
 or NULL if there is no such variable name in the system
 (helper function of expand_variable_name())
+TODO: Update this function to accept t_shell *shell parameter and use get_shell_env_value()
 */
 char    *find_var_value(char *name)
 {
@@ -255,7 +267,8 @@ char    *find_var_value(char *name)
     //     if (name[1])
     //         return (err_msg_n_return_null("Bad environment name - more character after ?\n"));
     //     // get exit_status of the most recently executed foreground pipeline
-    //     // value = ft_itoa(exit_status);
+    //     // TODO: Use shell->last_exit_status when shell parameter is added
+    //     // value = ft_itoa(shell->last_exit_status);
     //     // return (value);
     // }
     i = 0;
@@ -265,7 +278,7 @@ char    *find_var_value(char *name)
             return (err_msg_n_return_null("Bad environment name - forbidden characters\n"));
         i++;
     }
-    value = getenv(name);
+    value = getenv(name); // TODO: Replace with get_shell_env_value(shell, name) when shell parameter is added
     if (!value)
         return(NULL);
     return (value);

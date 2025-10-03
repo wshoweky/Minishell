@@ -21,17 +21,21 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_arena		*arena;
 	t_cmd_table	*cmd_table;
-	//t_shell		*shell;
+	t_shell		*shell;
 	int			exit_status;
 
-	(void)ac;
-	(void)av;
 	exit_status = 0;
-	//shell = shell_init();
+	shell = init_shell(ac, av, env);
+	if (!shell)
+	{
+		ft_printf("Failed to initialize shell\n");
+		return (1);
+	}
 	arena = ar_init();
 	if (!arena)
 	{
 		ft_printf("Failed to initialize memory arena\n");
+		free_shell(shell);
 		return (1);
 	}
 	while (1337)
@@ -62,7 +66,8 @@ int	main(int ac, char **av, char **env)
 			if (cmd_table)
 			{
 				// Execute the commands
-				exit_status = exe_cmd(arena, cmd_table, env);
+				exit_status = exe_cmd(arena, cmd_table, shell->env);
+				shell->last_exit_status = exit_status;
 				ft_printf("Command executed with exit status: %d\n", exit_status);
 			}
 			// No need to free tokens or cmd_table as they're in the arena
@@ -71,9 +76,10 @@ int	main(int ac, char **av, char **env)
 		// Reset arena for next command
 		ar_reset(arena);
 	}
-	// Cleanup arena before exit
+	// Cleanup arena and shell before exit
+	free_shell(shell);
 	free_arena(arena);
-	return (0);
+	return (exit_status);
 }
 
 

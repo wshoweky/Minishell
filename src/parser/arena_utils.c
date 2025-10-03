@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   arena_utils.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/03 16:44:55 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/10/03 17:58:03 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 char	*ar_strdup(t_arena *arena, const char *str)
@@ -7,11 +19,11 @@ char	*ar_strdup(t_arena *arena, const char *str)
 
 	// Normalize NULL input to empty string - eliminates ambiguity
 	if (!str)
-		str = ""; // points to null terminator - empty string ['\0'] to prevent segmentation fault
+		str = ""; // points to null terminator-empty string['\0'] to prevent segmentation fault
 	i = 0;
 	dest = ar_alloc(arena, ft_strlen(str) + 1);
 	if (!dest)
-		return (NULL);  // Only possible cause: allocation failure
+		return (NULL); // Only possible cause: allocation failure
 	while (str[i])
 	{
 		dest[i] = str[i];
@@ -20,11 +32,13 @@ char	*ar_strdup(t_arena *arena, const char *str)
 	dest[i] = '\0';
 	return (dest);
 }
-    //    Returns the substring of the given string at the given start
-    //    position with the given length (or smaller if the length of the
-    //    original string is less than start + length, or length is bigger
-    //    than MAXSTRINGLEN).
-char	*ar_substr(t_arena *arena, const char *s, unsigned int start, size_t len)
+
+//    Returns the substring of the given string at the given start
+//    position with the given length (or smaller if the length of the
+//    original string is less than start + length, or length is bigger
+//    than MAXSTRINGLEN).
+char	*ar_substr(t_arena *arena, const char *s, unsigned int start,
+		size_t len)
 {
 	size_t	i;
 	size_t	n;
@@ -36,12 +50,12 @@ char	*ar_substr(t_arena *arena, const char *s, unsigned int start, size_t len)
 		s = "";
 	strlen = ft_strlen(s);
 	if (start >= strlen)
-		return (ar_strdup(arena, "")); //return empty line as it should
+		return (ar_strdup(arena, "")); // return empty line as it should
 	if (len > strlen - start)
-		len = strlen - start;	// recorrect the string length
+		len = strlen - start; // recorrect the string length
 	substr = (char *)ar_alloc(arena, len + 1);
 	if (!substr)
-		return (NULL);  // Only possible cause: allocation failure
+		return (NULL); // Only possible cause: allocation failure
 	i = start;
 	n = 0;
 	while (s[i] && n < len)
@@ -63,7 +77,7 @@ char	*ar_strjoin(t_arena *arena, const char *s1, const char *s2)
 		s2 = "";
 	str = (char *)ar_alloc(arena, ft_strlen(s1) + ft_strlen(s2) + 1);
 	if (!str)
-		return (NULL);  // Only possible cause: allocation failure
+		return (NULL); // Only possible cause: allocation failure
 	i = 0;
 	n = 0;
 	while (s1[i])
@@ -74,7 +88,6 @@ char	*ar_strjoin(t_arena *arena, const char *s1, const char *s2)
 	str[n] = '\0';
 	return (str);
 }
-
 
 char	*ar_add_char_to_str(t_arena *arena, char *s, char c)
 {
@@ -94,4 +107,3 @@ char	*ar_add_char_to_str(t_arena *arena, char *s, char c)
 	result[len + 1] = '\0';
 	return (result);
 }
-

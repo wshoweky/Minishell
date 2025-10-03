@@ -52,4 +52,20 @@ int			execute_pipeline(t_cmd *cmd_list, char **env);
 int			create_pipe_chain(t_cmd *cmd_list, char **env);
 void		connect_pipes(int *pipe_fds, int cmd_index, int total_cmds);
 
+// Shell initialization and management
+t_shell		*init_shell(int ac, char **av, char **env);
+void		free_shell(t_shell *shell);
+void		free_partial_env(t_shell *shell, int count);
+
+// Shell environment management
+char		*get_shell_env_value(t_shell *shell, char *name);
+int			set_shell_env_value(t_shell *shell, char *name, char *value);
+int			unset_shell_env_value(t_shell *shell, char *name);
+
+// Shell utility functions
+char		*create_env_string(char *name, char *value);
+int			find_env_index(t_shell *shell, char *name);
+int			resize_env_if_needed(t_shell *shell);
+int			update_shell_cwd(t_shell *shell);
+
 #endif

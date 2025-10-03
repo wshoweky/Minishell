@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exe.c                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/03 17:48:17 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/10/03 17:48:36 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 //#include "../include/exe.h"
 #include "minishell.h"
 
@@ -22,10 +34,8 @@ int	exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env)
 
 	if (!cmd_table || !cmd_table->list_of_cmds || !arena)
 		return (0);
-	
 	current_cmd = cmd_table->list_of_cmds;
 	exit_status = 0;
-	
 	// For now, handle single commands only
 	if (cmd_table->cmd_count == 1)
 		exit_status = exe_single_cmd(arena, current_cmd, env);
@@ -34,7 +44,6 @@ int	exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env)
 		ft_printf("Pipeline execution not yet implemented\n");
 		exit_status = 1;
 	}
-	
 	return (exit_status);
 }
 /*
@@ -56,9 +65,7 @@ int	exe_builtin(t_cmd *cmd, char **env)
 
 	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0])
 		return (0);
-	
 	cmd_name = cmd->cmd_av[0];
-	
 	if (ft_strcmp(cmd_name, "cd") == 0)
 		return (builtin_cd(cmd));
 	else if (ft_strcmp(cmd_name, "echo") == 0)
@@ -69,8 +76,7 @@ int	exe_builtin(t_cmd *cmd, char **env)
 		return (builtin_env(env));
 	else if (ft_strcmp(cmd_name, "exit") == 0)
 		return (builtin_exit(cmd));
-
-	//TODO implement export and unset
+	// TODO implement export and unset
 	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
 	return (1);
 }
@@ -90,7 +96,6 @@ int	is_builtin(char *cmd)
 {
 	if (!cmd)
 		return (0);
-	
 	if (ft_strcmp(cmd, "cd") == 0)
 		return (1);
 	if (ft_strcmp(cmd, "echo") == 0)
@@ -105,7 +110,6 @@ int	is_builtin(char *cmd)
 		return (1);
 	if (ft_strcmp(cmd, "exit") == 0)
 		return (1);
-	
 	return (0);
 }
 /*
@@ -125,11 +129,9 @@ int	exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env)
 {
 	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0] || !arena)
 		return (0);
-	
 	// Check if it's a built-in command
 	if (is_builtin(cmd->cmd_av[0]))
 		return (exe_builtin(cmd, env));
-	
 	// Execute as external command
 	return (exe_external_cmd(arena, cmd, env));
 }
@@ -158,7 +160,6 @@ int	exe_external_cmd(t_arena *arena, t_cmd *cmd, char **env)
 		ft_printf("minishell: %s: command not found\n", cmd->cmd_av[0]);
 		return (127);
 	}
-	
 	pid = fork();
 	if (pid < 0)
 	{

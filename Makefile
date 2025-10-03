@@ -27,7 +27,10 @@ SRC = src/main.c \
 	  src/exe/exe.c \
 	  src/exe/builtins.c \
 	  src/exe/path_utils.c \
-	  src/playground/shelly.c
+	  src/exe/shell_init.c \
+	  src/exe/shell_tools.c \
+	  src/exe/shell_utils.c 
+
 
 O_DIR = objdir
 
@@ -54,7 +57,7 @@ $(O_DIR):
 	mkdir -p $(O_DIR)/src
 	mkdir -p $(O_DIR)/src/parser
 	mkdir -p $(O_DIR)/src/exe
-	mkdir -p $(O_DIR)/src/playground
+#	mkdir -p $(O_DIR)/src/playground
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@

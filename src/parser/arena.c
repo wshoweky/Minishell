@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-t_arena	*ar_init()
+t_arena	*ar_init(void)
 {
 	t_arena	*arena;
 
@@ -24,26 +24,9 @@ void	*ar_alloc(t_arena *arena, size_t bytes)
 	t_arena	*current;
 	t_arena	*new_arena;
 
-	// Align bytes to ensure proper memory alignment
-	//This line rounds up the requested allocation size to the next multiple of 8 bytes.
-	bytes = (bytes + 7) & ~7;
-
-	// Check if allocation exceeds maximum arena size
-	if (bytes > AR_SIZE)
-	{
-		ft_printf("Error: Allocation request of %zu bytes exceeds maximum arena size\n", bytes);
-		return (NULL);
-	}
-
-	// Try to allocate in the current arena
-	if (arena->offset + bytes <= arena->size)
-	{
-		ptr = arena->buffer + arena->offset;
-		arena->offset += bytes;
+	ptr = NULL;
+	if (normally_fit_in_arena(arena, &ptr, &bytes) == 1)
 		return (ptr);
-	}
-
-	// If we get here, we need to find an arena with enough space or create a new one
 	current = arena;
 	while (current->next)
 	{
@@ -55,18 +38,28 @@ void	*ar_alloc(t_arena *arena, size_t bytes)
 			return (ptr);
 		}
 	}
-
-	// No existing arena has enough space, create a new one
 	new_arena = ar_init();
 	if (!new_arena)
 		return (NULL);
-	
 	current->next = new_arena;
-	
-	// Allocate from the new arena
 	ptr = new_arena->buffer + new_arena->offset;
 	new_arena->offset += bytes;
 	return (ptr);
+}
+
+int	normally_fit_in_arena(t_arena *arena, void **ptr, size_t *bytes)
+{
+	*bytes = (*bytes + 7) & ~7;
+	if (*bytes > AR_SIZE)
+		return (err_msg_n_return_value("Error: Allocation request "
+				"exceeds maximum arena size\n", 1));
+	if (arena->offset + *bytes <= arena->size)
+	{
+		*ptr = arena->buffer + arena->offset;
+		arena->offset += *bytes;
+		return (1);
+	}
+	return (0);
 }
 
 void	free_arena(t_arena *arena)

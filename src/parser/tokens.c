@@ -35,6 +35,12 @@ t_tokens	*tokenize_input(t_arena *arena, char *input)
 	return (head);
 }
 
+void	skip_whitespace(char *input, int *i)
+{
+	while (input[*i] && (input[*i] == ' ' || input[*i] == '\t'))
+		(*i)++;
+}
+
 /*
 ** process_single_token - Process one token and add it to the list
 **
@@ -51,7 +57,8 @@ t_tokens	*tokenize_input(t_arena *arena, char *input)
 ** RETURN VALUE:
 **   Returns head of token list or NULL on error
 */
-t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head)
+t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
+				t_tokens **head)
 {
 	t_tokens	*new_token;
 	char		*token_value;
@@ -60,8 +67,8 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 	token_value = extract_next_token(arena, input, i);
 	if (!token_value) // Error handling
 		return (NULL);
-    new_token = create_token(arena, token_value);
-	if (!new_token)	// Error handling
+	new_token = create_token(arena, token_value);
+	if (!new_token) // Error handling
 		return (NULL);
 	add_to_end(head, new_token);
 	// No need to free token_value as it's in the arena
@@ -85,143 +92,10 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i, t_tokens **h
 */
 char	*extract_next_token(t_arena *arena, char *input, int *i)
 {
-	char *string;
+	char	*string;
 
 	string = NULL;
 	if (chop_up_input(arena, input, i, &string) == -1)
 		return (NULL);
-	check_for_quoted_string(arena, string); //WORKING ON THIS
-	return (string);
-}
-
-int	chop_up_input(t_arena *arena, char *input, int *i, char **string)
-{
-	int	in_quotes;
-	int	need_break;
-
-	in_quotes = 0;
-	while (input[*i])
-	{
-		if (in_quotes)
-		{
-			if (char_in_quotes(arena, string, input[*i], &in_quotes) == -1)
-				return (-1);
-		}
-		else
-		{
-			need_break = char_outside_quotes(arena, string, input[*i], &in_quotes);
-			if (need_break == -1)
-				return (-1);
-			if (need_break == 1)
-				break ;
-		}
-		(*i)++;
-	}
-	return (0);
-}
-
-int	char_in_quotes(t_arena *arena, char **string, char current_char, int *in_quotes)
-{
-	*string = ar_add_char_to_str(arena, *string, current_char);
-	if (!*string)
-		return (-1);
-	if ((current_char == '"' && *in_quotes == 2) 
-			|| (current_char == '\'' && *in_quotes == 1))
-		*in_quotes = 0;
-	return (0);
-}
-
-int	char_outside_quotes(t_arena *arena, char **string, char current_char, int *in_quotes)
-{
-	if (current_char == '|' || current_char == '<' || current_char == '>')
-	{
-		if (!*string || (*string && !(ft_strcmp(*string, "<") 
-			|| ft_strcmp(*string, ">")))) //no string or string is alr "<"/">"
-			return (extract_special_token(arena, string, current_char)); //needs further changes
-		else 
-			return (1);
-	}
-	else if (current_char == '"' || current_char == '\'')
-	{
-		if (char_is_quote(arena, string, current_char, in_quotes) == -1)
-			return (-1);
-	}
-	else if (current_char == ' ' || current_char == '\t' || current_char == '\n')
-		return (1);
-	else
-	{
-		*string = ar_add_char_to_str(arena, *string, current_char);
-		if (!*string)
-			return (err_msg_n_return_value("Failed to add char to string\n", -1));
-	}
-	return (0);
-}
-
-int	char_is_quote(t_arena *arena, char **string, char current_char, int *in_quotes)
-{
-	if (current_char == '"')
-		*in_quotes = 2;
-	else if (current_char == '\'')
-		*in_quotes = 1;
-	*string = ar_add_char_to_str(arena, *string, current_char);
-	if (!*string)
-		return (err_msg_n_return_value("Memory alloc fail for quote\n", -1));
-	return (0);
-}
-
-/* Check for quotes in the string
-- Return NULL if there is unclosed quote
-- If no $ is present in the string, remove quotes (that are outside of quotes)
-and return a clean string, or NULL if errors
-- If there is $, return the string as it is
-*/
-char	*check_for_quoted_string(t_arena *arena, char *str)
-{
-	size_t	i;
-	char	*output;
-	char	quote;
-	int		in_quote;
-
-	i = 0;
-	output = NULL;
-	in_quote = 0;
-	quote = 0;
-
-	while (str[i])
-	{
-		if (!in_quote && (str[i] == '"' || str[i] == '\''))
-		{
-			quote = str[i];
-			in_quote = 1;
-		}
-		else if (in_quote && str[i] == quote)
-			in_quote = 0;
-		i++;
-	}
-	if (in_quote)
-		return (err_msg_n_return_null("Unclosed quote\n"));
-	if (!ft_strchr(str, '$'))
-	{
-		i = 0;
-		while (str[i])
-		{
-			if (!in_quote && (str[i] == '"' || str[i] == '\''))
-			{
-				quote = str[i];
-				in_quote = 1;
-			}
-			else if (in_quote && str[i] == quote)
-				in_quote = 0;
-			else
-			{
-				output = ar_add_char_to_str(arena, output, str[i]);
-				if (!output)
-					return (err_msg_n_return_null("Failed making string not quoted anymore\n"));
-			}
-			i++;
-		}
-		return (output);
-	}
-	else
-		return (str);
+	return (check_for_quoted_string(arena, string));
 }

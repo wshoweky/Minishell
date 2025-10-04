@@ -16,7 +16,8 @@ RESET = \033[0m
 
 SRC = src/main.c \
 	  src/parser/tokens.c \
-	  src/parser/tokens_utils.c \
+	  src/parser/tokens_break_input.c \
+	  src/parser/tokens_quote_check.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
  	  src/parser/build_cmd_table.c \

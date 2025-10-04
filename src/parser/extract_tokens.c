@@ -39,7 +39,7 @@ int	extract_special_token(t_arena *arena, char **string, char current)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on error
+**   Returns 0 on success, -1 on errors
 */
 int	extract_pipe_token(t_arena *arena, char **string)
 {
@@ -63,7 +63,7 @@ int	extract_pipe_token(t_arena *arena, char **string)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on error
+**   Returns 0 on success, -1 on errors
 */
 int	extract_redirect_in_token(t_arena *arena, char **string)
 {
@@ -82,8 +82,8 @@ int	extract_redirect_in_token(t_arena *arena, char **string)
 		return (0);
 	}
 	else
-		return (err_msg_n_return_value("String has different character \
-			than <\n", -1));
+		return (err_msg_n_return_value("String has different character "
+				"or more than 2 of <\n", -1));
 }
 
 /*
@@ -98,7 +98,7 @@ int	extract_redirect_in_token(t_arena *arena, char **string)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on error
+**   Returns 0 on success, -1 on errors
 */
 int	extract_redirect_out_token(t_arena *arena, char **string)
 {
@@ -117,6 +117,6 @@ int	extract_redirect_out_token(t_arena *arena, char **string)
 		return (0);
 	}
 	else
-		return (err_msg_n_return_value("String has different character \
-			than >\n", -1));
+		return (err_msg_n_return_value("String has different character "
+				"or more than 2 of >\n", -1));
 }

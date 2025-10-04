@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/02 15:55:25 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/04 20:17:15 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,8 +29,8 @@ int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
 			return (err_msg_n_return_value("Syntax error around pipe\n", -1));
 		(*current_cmd)->next_cmd = new_cmd_alloc(arena);
 		if (!(*current_cmd)->next_cmd)
-			return (err_msg_n_return_value("Memory allocation failed for \
-				new command\n", -1));
+			return (err_msg_n_return_value("Memory allocation failed for "
+					"new command\n", -1));
 		*current_cmd = (*current_cmd)->next_cmd;
 		table->cmd_count++;
 		return (0);
@@ -38,8 +38,8 @@ int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
 	else if (is_redirection(token->type))
 	{
 		if (!token->next || token->next->type != TOKEN_WORD)
-			return (err_msg_n_return_value("No valid name for \
-				redirection file\n", -1));
+			return (err_msg_n_return_value("No valid name for"
+					"redirection file\n", -1));
 		if (make_redir(arena, token, *current_cmd) == -1)
 			return (-1);
 		return (0);

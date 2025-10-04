@@ -80,26 +80,32 @@ typedef struct s_shell
 // Playground functions
 //int	shelly(void);
 
-// List utility functions
-
+// Token utility functions
+char			*get_token_type_name(t_token_type type);
 // int			list_size(t_tokens *head);
 // void		free_split(char **words);
 // void		free_list_nodes(t_tokens *head);
-void		add_to_end(t_tokens **head, t_tokens *new_node);
-t_tokens	*create_token(t_arena *arena, char *word);
 // t_tokens	*split_commands(t_arena *arena, char *input);
 
 
 // Tokenization functions
 
 t_tokens		*tokenize_input(t_arena *arena, char *input);
+void			skip_whitespace(char *input, int *i);
 t_tokens		*process_single_token(t_arena *arena, char *input, int *i, t_tokens **head);
+t_tokens		*create_token(t_arena *arena, char *word);
+t_token_type	get_token_type(char *str);
+void			add_to_end(t_tokens **head, t_tokens *new_node);
+
+
+// Parsing input for correct tokenization functions
+
 char			*extract_next_token(t_arena *arena, char *input, int *i);
 int				chop_up_input(t_arena *arena, char *input, int *i, char **string);
 int				char_in_quotes(t_arena *arena, char **string, char current_char, int *in_quotes);
 int				char_outside_quotes(t_arena *arena, char **string, char current_char, int *in_quotes);
 int				char_is_quote(t_arena *arena, char **string, char current_char, int *in_quotes);
-char			*check_for_quoted_string(t_arena *arena, char *str);
+int				char_normal_outside_quotes(t_arena *arena, char **string, char current_char);
 
 
 // Special token extraction functions
@@ -110,12 +116,12 @@ int				extract_redirect_in_token(t_arena *arena, char **string);
 int				extract_redirect_out_token(t_arena *arena, char **string);
 
 
-// Token utility functions
+// Quotes in string check and modify functions
 
-t_token_type	get_token_type(char *str);
-char			*get_token_type_name(t_token_type type);
-// int				is_special_char(char c);
-void			skip_whitespace(char *input, int *i);
+char			*check_for_quoted_string(t_arena *arena, char *str);
+int				check_for_unclosed_quote(char *str, size_t *i);
+int				remove_quotes_for_plain_string(t_arena *arena, char *str, char **output, 
+					size_t *i);
 
 
 // Parsing functions

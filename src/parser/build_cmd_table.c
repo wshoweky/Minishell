@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 15:51:21 by gita              #+#    #+#             */
-/*   Updated: 2025/10/02 15:52:51 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/04 20:16:22 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -56,6 +56,7 @@ static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
 		cmd_index++;
 	}
 }
+
 
 /* Parses a linked list of tokens into a command table structure.
 

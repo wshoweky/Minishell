@@ -30,6 +30,41 @@ t_tokens	*create_token(t_arena *arena, char *word)
 	return (token);
 }
 
+t_token_type	get_token_type(char *str)
+{
+	if (!str || !*str)
+		return (TOKEN_EOF);
+	if (ft_strcmp(str, "|") == 0)
+		return (TOKEN_PIPE);
+	if (ft_strcmp(str, "<") == 0)
+		return (TOKEN_REDIRECT_IN);
+	if (ft_strcmp(str, ">") == 0)
+		return (TOKEN_REDIRECT_OUT);
+	if (ft_strcmp(str, ">>") == 0)
+		return (TOKEN_APPEND);
+	if (ft_strcmp(str, "<<") == 0)
+		return (TOKEN_HEREDOC);
+	return (TOKEN_WORD);
+}
+
+// to be printed for debugging
+char	*get_token_type_name(t_token_type type)
+{
+	if (type == TOKEN_WORD)
+		return ("WORD");
+	if (type == TOKEN_PIPE)
+		return ("PIPE");
+	if (type == TOKEN_REDIRECT_IN)
+		return ("REDIRECT_IN");
+	if (type == TOKEN_REDIRECT_OUT)
+		return ("REDIRECT_OUT");
+	if (type == TOKEN_APPEND)
+		return ("APPEND");
+	if (type == TOKEN_HEREDOC)
+		return ("HEREDOC");
+	return ("EOF");
+}
+
 // void	free_list_nodes(t_tokens *head)
 // {
 // 	t_tokens	*tmp;
@@ -68,7 +103,7 @@ void	add_to_end(t_tokens **head, t_tokens *new_node)
 	tmp = *head;
 	while (tmp->next)
 		tmp = tmp->next;
-	tmp->next = new_node;	
+	tmp->next = new_node;
 }
 
 // t_tokens	*split_commands(t_arena *arena, char *input)

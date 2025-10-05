@@ -16,11 +16,14 @@ RESET = \033[0m
 
 SRC = src/main.c \
 	  src/parser/tokens.c \
-	  src/parser/tokens_utils.c \
+	  src/parser/tokens_break_input.c \
+	  src/parser/tokens_quote_check.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
  	  src/parser/build_cmd_table.c \
 	  src/parser/build_cmd_table_redir.c \
+	  src/parser/build_cmd_table_tok.c \
+	  src/parser/build_cmd_table_var.c \
 	  src/parser/arena.c \
 	  src/parser/arena_utils.c \
 	  src/parser/arena_split.c \

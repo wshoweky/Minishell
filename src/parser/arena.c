@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   arena.c                                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 16:39:50 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/03 18:05:36 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 t_arena	*ar_init(void)
@@ -30,26 +18,15 @@ t_arena	*ar_init(void)
 	return (arena);
 }
 
-/*
-if (bytes > AR_SIZE)
-{
-	ft_printf("Error: Allocation request exceeds maximum arena size\n");
-	return (NULL);
-}
-*/
 void	*ar_alloc(t_arena *arena, size_t bytes)
 {
 	void	*ptr;
 	t_arena	*current;
 	t_arena	*new_arena;
 
-	bytes = (bytes + 7) & ~7; // align to 8 bytes -- no need to check
-	if (arena->offset + bytes <= arena->size)
-	{
-		ptr = arena->buffer + arena->offset;
-		arena->offset += bytes;
+	ptr = NULL;
+	if (normally_fit_in_arena(arena, &ptr, &bytes) == 1)
 		return (ptr);
-	}
 	current = arena;
 	while (current->next)
 	{
@@ -68,6 +45,21 @@ void	*ar_alloc(t_arena *arena, size_t bytes)
 	ptr = new_arena->buffer + new_arena->offset;
 	new_arena->offset += bytes;
 	return (ptr);
+}
+
+int	normally_fit_in_arena(t_arena *arena, void **ptr, size_t *bytes)
+{
+	*bytes = (*bytes + 7) & ~7;
+	if (*bytes > AR_SIZE)
+		return (err_msg_n_return_value("Error: Allocation request "
+				"exceeds maximum arena size\n", 1));
+	if (arena->offset + *bytes <= arena->size)
+	{
+		*ptr = arena->buffer + arena->offset;
+		arena->offset += *bytes;
+		return (1);
+	}
+	return (0);
 }
 
 void	free_arena(t_arena *arena)

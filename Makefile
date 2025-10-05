@@ -16,20 +16,26 @@ RESET = \033[0m
 
 SRC = src/main.c \
 	  src/parser/tokens.c \
-	  src/parser/tokens_utils.c \
+	  src/parser/tokens_break_input.c \
+	  src/parser/tokens_quote_check.c \
 	  src/parser/token_list_utils.c \
 	  src/parser/extract_tokens.c \
  	  src/parser/build_cmd_table.c \
 	  src/parser/build_cmd_table_redir.c \
+	  src/parser/build_cmd_table_tok.c \
+	  src/parser/build_cmd_table_var.c \
 	  src/parser/arena.c \
 	  src/parser/arena_utils.c \
 	  src/parser/arena_split.c \
 	  src/exe/exe.c \
+	  src/exe/redirection.c \
 	  src/exe/builtins.c \
 	  src/exe/path_utils.c \
 	  src/exe/shell_init.c \
+	  src/exe/free_shell.c \
 	  src/exe/shell_tools.c \
 	  src/exe/shell_utils.c 
+	
 
 
 O_DIR = objdir
@@ -79,7 +85,7 @@ re: fclean all
 # =============================================================================
 valgrind: re
 	@echo "${PURPLE}🔍 Running memory and file descriptor analysis with valgrind...${RESET}"
-	valgrind --leak-check=full --show-leak-kinds=definite --track-origins=yes --track-fds=yes ./$(NAME) 
+	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --suppressions=gnu_suppression.supp --track-origins=yes ./$(NAME) 
 # =============================================================================
 #  MESSAGES
 #      Custom messages displayed during the build process.

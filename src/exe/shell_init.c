@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/03 17:49:11 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/03 17:49:15 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/05 16:05:55 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -17,6 +17,8 @@
 // Static function prototypes
 static int	init_shell_env(t_shell *shell, char **env);
 static int	init_shell_variables(t_shell *shell, char **av);
+static void	init_shell_paths(t_shell *shell);
+static void	init_shell_user_info(t_shell *shell);
 
 /**
 ** init_shell - Initialize shell state structure
@@ -82,6 +84,52 @@ static int	init_shell_env(t_shell *shell, char **env)
 }
 
 /**
+** init_shell_paths - Initialize shell path variables (CWD, OLDPWD, HOME)
+**
+**   shell - Shell state structure
+*/
+static void	init_shell_paths(t_shell *shell)
+{
+	char	*cwd_buffer;
+	char	*env_value;
+
+	cwd_buffer = getcwd(NULL, 0);
+	if (cwd_buffer)
+	{
+		shell->cwd = ft_strdup(cwd_buffer);
+		free(cwd_buffer);
+	}
+	else
+		shell->cwd = ft_strdup("/");
+	env_value = get_shell_env_value(shell, "OLDPWD");
+	if (env_value)
+		shell->oldpwd = ft_strdup(env_value);
+	else
+		shell->oldpwd = ft_strdup("");
+	env_value = get_shell_env_value(shell, "HOME");
+	if (env_value)
+		shell->home = ft_strdup(env_value);
+	else
+		shell->home = ft_strdup("/");
+}
+
+/**
+** init_shell_user_info - Initialize user and shell name variables
+**
+**   shell - Shell state structure
+*/
+static void	init_shell_user_info(t_shell *shell)
+{
+	char	*env_value;
+
+	env_value = get_shell_env_value(shell, "USER");
+	if (env_value)
+		shell->user = ft_strdup(env_value);
+	else
+		shell->user = ft_strdup("unknown");
+}
+
+/**
 ** init_shell_variables - Initialize shell-specific variables
 **
 **   Sets up essential shell variables like PWD, HOME, USER, etc.
@@ -93,71 +141,13 @@ static int	init_shell_env(t_shell *shell, char **env)
 */
 static int	init_shell_variables(t_shell *shell, char **av)
 {
-	char	*cwd_buffer;
-
-	cwd_buffer = getcwd(NULL, 0);
-	shell->cwd = ft_strdup(cwd_buffer);
-	if (!cwd_buffer)
-		cwd_buffer = ft_strdup("/");
-	free(cwd_buffer);
-	shell->oldpwd = ft_strdup(get_shell_env_value(shell, "OLDPWD"));
-	shell->home = ft_strdup(get_shell_env_value(shell, "HOME"));
-	shell->user = ft_strdup(get_shell_env_value(shell, "USER"));
+	init_shell_paths(shell);
+	init_shell_user_info(shell);
 	shell->shell_name = ft_strdup(av[0]);
 	shell->shell_pid = getpid();
-	if (!shell->cwd || !shell->shell_name)
+	if (!shell->cwd || !shell->oldpwd || !shell->home 
+		|| !shell->user || !shell->shell_name)
 		return (0);
-	if (!shell->oldpwd)
-		shell->oldpwd = ft_strdup("");
-	if (!shell->home)
-		shell->home = ft_strdup("/");
-	if (!shell->user)
-		shell->user = ft_strdup("unknown");
 	return (1);
 }
 
-/**
-** free_shell - Free shell state structure and all its members
-**
-**   Properly deallocates all memory used by the shell state.
-**
-**   shell - Shell state structure to free
-*/
-void	free_shell(t_shell *shell)
-{
-	int	i;
-
-	if (!shell)
-		return ;
-	if (shell->env)
-	{
-		i = 0;
-		while (shell->env[i])
-			free(shell->env[i++]);
-		free(shell->env);
-	}
-	free(shell->cwd);
-	free(shell->oldpwd);
-	free(shell->home);
-	free(shell->user);
-	free(shell->shell_name);
-	free(shell);
-}
-
-/**
-** free_partial_env - Free partially allocated environment array
-**
-**   Helper function for cleanup during failed initialization.
-**
-**   shell - Shell state structure
-**   count - Number of successfully allocated entries
-*/
-void	free_partial_env(t_shell *shell, int count)
-{
-	int	i;
-
-	i = 0;
-	while (i < count)
-		free(shell->env[i++]);
-	free(shell->env);
-}

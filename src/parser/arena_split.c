@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   arena_split.c                                      :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 16:43:44 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/03 17:15:57 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 static size_t	count_split_words(const char *s, char c)
@@ -66,12 +54,13 @@ char	**ar_split(t_arena *arena, const char *s, char c)
 	char	**result;
 	size_t	count;
 
+	// Normalize NULL input to empty string - eliminates ambiguity
 	if (!s)
 		s = "";
 	count = count_split_words(s, c);
 	result = (char **)ar_alloc(arena, (count + 1) * sizeof(char *));
 	if (!result)
-		return (NULL);
+		return (NULL);  // Only possible cause: allocation failure
 	if (!fill_split_result(arena, result, s, c))
 		return (NULL);
 	return (result);

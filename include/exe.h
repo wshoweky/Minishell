@@ -48,9 +48,9 @@ int			handle_output_redirection(char *filename, int append);
 int			handle_heredoc(char *delimiter);
 
 // Pipeline management
-int			execute_pipeline(t_cmd *cmd_list, char **env);
-int			create_pipe_chain(t_cmd *cmd_list, char **env);
-void		connect_pipes(int *pipe_fds, int cmd_index, int total_cmds);
+//int			execute_pipeline(t_cmd *cmd_list, char **env);
+//int			create_pipe_chain(t_cmd *cmd_list, char **env);
+//void		connect_pipes(int *pipe_fds, int cmd_index, int total_cmds);
 
 // Shell initialization and management
 t_shell		*init_shell(int ac, char **av, char **env);

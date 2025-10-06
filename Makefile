@@ -28,9 +28,16 @@ SRC = src/main.c \
 	  src/parser/arena_utils.c \
 	  src/parser/arena_split.c \
 	  src/exe/exe.c \
+	  src/exe/exe_utils.c \
+	  src/exe/redirection.c \
 	  src/exe/builtins.c \
 	  src/exe/path_utils.c \
-	  src/playground/shelly.c
+	  src/exe/shell_init.c \
+	  src/exe/free_shell.c \
+	  src/exe/shell_tools.c \
+	  src/exe/shell_utils.c 
+	
+
 
 O_DIR = objdir
 
@@ -57,7 +64,7 @@ $(O_DIR):
 	mkdir -p $(O_DIR)/src
 	mkdir -p $(O_DIR)/src/parser
 	mkdir -p $(O_DIR)/src/exe
-	mkdir -p $(O_DIR)/src/playground
+#	mkdir -p $(O_DIR)/src/playground
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@
@@ -79,7 +86,7 @@ re: fclean all
 # =============================================================================
 valgrind: re
 	@echo "${PURPLE}🔍 Running memory and file descriptor analysis with valgrind...${RESET}"
-	valgrind --leak-check=full --show-leak-kinds=definite --track-origins=yes --track-fds=yes ./$(NAME) 
+	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --suppressions=gnu_suppression.supp --track-origins=yes ./$(NAME) 
 # =============================================================================
 #  MESSAGES
 #      Custom messages displayed during the build process.

@@ -1,4 +1,15 @@
-//#include "../include/exe.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   builtins.c                                         :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/03 17:46:05 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/10/03 17:46:07 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -15,22 +26,19 @@
 */
 int	builtin_echo(t_cmd *cmd)
 {
-	int		i;
-	int		newline;
+	int	i;
+	int	newline;
 
 	if (!cmd || !cmd->cmd_av)
 		return (0);
-	
 	newline = 1;
 	i = 1;
-	
 	// Check for -n flag
 	if (cmd->cmd_av[1] && ft_strcmp(cmd->cmd_av[1], "-n") == 0)
 	{
 		newline = 0;
 		i = 2;
 	}
-	
 	// Print arguments
 	while (cmd->cmd_av[i])
 	{
@@ -39,10 +47,8 @@ int	builtin_echo(t_cmd *cmd)
 			ft_printf(" ");
 		i++;
 	}
-	
 	if (newline)
 		ft_printf("\n");
-	
 	return (0);
 }
 
@@ -66,7 +72,6 @@ int	builtin_pwd(t_cmd *cmd)
 		perror("minishell: pwd");
 		return (1);
 	}
-	
 	ft_printf("%s\n", cwd);
 	free(cwd);
 	return (0);
@@ -87,28 +92,24 @@ int	builtin_cd(t_cmd *cmd)
 
 	if (!cmd || !cmd->cmd_av)
 		return (1);
-	
 	// cd with no arguments - go to HOME
 	if (!cmd->cmd_av[1])
 	{
 		ft_printf("cd: no argument provided\n");
 		return (1);
 	}
-	
 	// cd with multiple arguments - error
 	if (cmd->cmd_av[2])
 	{
 		ft_printf("cd: too many arguments\n");
 		return (1);
 	}
-	
 	path = cmd->cmd_av[1];
 	if (chdir(path) != 0)
 	{
 		perror("cd");
 		return (1);
 	}
-	
 	return (0);
 }
 
@@ -127,14 +128,12 @@ int	builtin_env(char **env)
 
 	if (!env)
 		return (0);
-	
 	i = 0;
 	while (env[i])
 	{
 		ft_printf("%s\n", env[i]);
 		i++;
 	}
-	
 	return (0);
 }
 
@@ -152,10 +151,8 @@ int	builtin_exit(t_cmd *cmd)
 	int	exit_code;
 
 	exit_code = 0;
-	
 	if (cmd && cmd->cmd_av && cmd->cmd_av[1])
 		exit_code = ft_atoi(cmd->cmd_av[1]);
-	
 	ft_printf("exit\n");
 	exit(exit_code);
 }

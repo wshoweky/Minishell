@@ -1,0 +1,39 @@
+{
+	ignore_readline_leaks
+	Memcheck:Leak
+	match-leak-kinds: reachable
+	...
+	fun:readline
+}
+
+{
+	ignore_add_history_leaks
+	Memcheck:Leak
+	match-leak-kinds: reachable
+	...
+	fun:add_history
+}
+
+{
+	ignore_readline_internal_char_leaks
+	Memcheck:Leak
+	match-leak-kinds: reachable
+	...
+	fun:readline_internal_char
+}
+
+{
+	ignore_readline_arg_dispatch_leaks
+	Memcheck:Leak
+	match-leak-kinds: reachable
+	...
+	fun:_rl_arg_dispatch
+}
+
+{
+   ignore_cat_leaks
+   Memcheck:Leak
+   match-leak-kinds: reachable
+   ...
+   obj:/usr/bin/cat
+}

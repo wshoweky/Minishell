@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   build_cmd_table_tok.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/04 22:21:25 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/06 16:03:08 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ int	check_token_word(t_arena *arena, t_tokens *token, t_cmd *current_cmd)
 		return (err_msg_n_return_value("Not a word token\n", -1));
 	if (ft_strcmp(token->value, "&") == 0 || ft_strcmp(token->value, "&&") == 0)
 		return (err_msg_n_return_value("& and && not supported\n", -1));
-	if (ft_strchr(token->value, '$'))
+	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
 		if (expand_variable_name(arena, token) == -1)
 			return (-1);
 	if (add_argv(arena, current_cmd, token->value) == -1)
@@ -80,10 +80,10 @@ Return: 0 on success, -1 on errors
 */
 int	expand_variable_name(t_arena *arena, t_tokens *word_tok)
 {
-	size_t	i;
+	//size_t	i;
 	char	*expanded_text;
 
-	i = 0;
+	//i = 0;	unused
 	expanded_text = NULL;
 	if (go_thru_input(arena, word_tok->value, &expanded_text) == -1)
 		return (-1);

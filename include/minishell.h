@@ -41,7 +41,7 @@ typedef struct	s_cmd_table
 	t_cmd	*list_of_cmds;
 } t_cmd_table;
 
-/*
+
 // Shell state structure
 typedef struct s_shell
 {
@@ -58,7 +58,7 @@ typedef struct s_shell
 	int		is_interactive;		// Interactive mode flag
 	int		should_exit;		// Exit flag for main loop
 } t_shell;
-*/
+
 
 //# include <string.h>   // strlen, strcpy, strdup, etc.
 # include <unistd.h>   // write, read, close, fork, execve, pipe
@@ -74,8 +74,8 @@ typedef struct s_shell
 # include <readline/readline.h> // readline()
 # include <readline/history.h> // add_history()
 # include "arena.h"			 // memory arena
-# include "exe.h"			 // execution
 # include "../libft/libft.h"
+# include "exe.h"			 // execution
 
 // Playground functions
 //int	shelly(void);

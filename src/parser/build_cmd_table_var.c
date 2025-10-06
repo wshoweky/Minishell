@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   build_cmd_table_var.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 16:18:48 by gita              #+#    #+#             */
-/*   Updated: 2025/10/04 20:16:43 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/06 16:03:00 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,9 +116,6 @@ int	transform_var_name(t_arena *arena, char **text, char *var_name)
 {
 	char	*var_value;
 
-	if (ft_isdigit(var_name[0]))
-		return (err_msg_n_return_value("Bad environment name "
-				"- starts with digit\n", -1));
 	// if (name[0] == '?')
 	// {
 	//     if (name[1])
@@ -127,7 +124,7 @@ int	transform_var_name(t_arena *arena, char **text, char *var_name)
 	//     // value = ft_itoa(exit_status);
 	//     // return (value);
 	// }
-	var_value = getenv(var_name);
+	var_value = getenv(var_name); // should get it from shell env (get_shell_env_value)
 	*text = ar_strjoin(arena, *text, var_value);
 	if (!*text)
 		return (err_msg_n_return_value("Error in joining variable to string\n",

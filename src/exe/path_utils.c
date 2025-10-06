@@ -1,4 +1,15 @@
-//#include "../include/exe.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   path_utils.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/10/03 17:53:46 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/10/03 17:59:21 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -25,7 +36,6 @@ char	*find_executable(t_arena *arena, char *cmd, char **env)
 
 	if (!cmd || !arena)
 		return (NULL);
-	
 	// If command contains '/' it's a path (absolute or relative)
 	if (ft_strchr(cmd, '/'))
 	{
@@ -33,16 +43,13 @@ char	*find_executable(t_arena *arena, char *cmd, char **env)
 			return (ar_strdup(arena, cmd));
 		return (NULL);
 	}
-	
 	// Search in PATH
 	path_env = get_env_value(env, "PATH");
 	if (!path_env)
 		return (NULL);
-	
 	path_dirs = ar_split(arena, path_env, ':');
 	if (!path_dirs)
 		return (NULL);
-	
 	i = 0;
 	while (path_dirs[i])
 	{
@@ -55,7 +62,6 @@ char	*find_executable(t_arena *arena, char *cmd, char **env)
 		// No need to free full_path - it's in arena
 		i++;
 	}
-	
 	// No need to free path_dirs - it's in arena
 	return (NULL);
 }
@@ -79,15 +85,13 @@ int	is_executable(char *path)
 	// Basic input validation - null path is not executable
 	if (!path)
 		return (0);
-	
 	// Use stat() system call to get file metadata
 	// stat() fills the file_stat structure with file information
-	// Returns 0 on success, -1 on failure (file doesn't exist, no permissions, etc.)
+	// Returns 0 on success, -1 on failure (file doesn't exist, no permissions,	etc.)
 	if (stat(path, &file_stat) != 0)
 		return (0);
-	
 	// Check two conditions for executability:
-	// 1. S_ISREG(file_stat.st_mode): Is it a regular file? (not directory, symlink, etc.)
+	// 1. S_ISREG(file_stat.st_mode): Is it a regular file? (not directory,symlink, etc.)
 	//    - S_ISREG is a macro that checks file type bits in st_mode
 	//    - st_mode contains both file type and permission information
 	// 2. (file_stat.st_mode & S_IXUSR): Does the user (owner) have execute permission?
@@ -96,7 +100,6 @@ int	is_executable(char *path)
 	//    - Only checks owner permissions, not group or others
 	if (S_ISREG(file_stat.st_mode) && (file_stat.st_mode & S_IXUSR))
 		return (1);
-	
 	// File exists but is either not a regular file or not executable by owner
 	return (0);
 }
@@ -124,9 +127,7 @@ char	*build_path(t_arena *arena, char *dir, char *file)
 
 	if (!dir || !file || !arena)
 		return (NULL);
-	
 	dir_len = ft_strlen(dir);
-	
 	// Add slash if needed
 	if (dir_len > 0 && dir[dir_len - 1] != '/')
 	{
@@ -138,7 +139,6 @@ char	*build_path(t_arena *arena, char *dir, char *file)
 	}
 	else
 		path = ar_strjoin(arena, dir, file);
-	
 	return (path);
 }
 
@@ -157,12 +157,11 @@ char	*build_path(t_arena *arena, char *dir, char *file)
 */
 char	*get_env_value(char **env, char *name)
 {
-	int		i;
-	int		name_len;
+	int	i;
+	int	name_len;
 
 	if (!env || !name)
 		return (NULL);
-	
 	name_len = ft_strlen(name);
 	i = 0;
 	while (env[i])
@@ -171,6 +170,5 @@ char	*get_env_value(char **env, char *name)
 			return (&env[i][name_len + 1]);
 		i++;
 	}
-	
 	return (NULL);
 }

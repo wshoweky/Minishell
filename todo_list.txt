@@ -61,37 +61,49 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 ⚡ EXECUTOR - "How do I run this?"
 =================================
 ✅ [COMPLETED] Built-in command recognition
-    - Basic is_builtin() function implemented
-    - Builtin dispatch system working
+    - is_builtin() function implemented
+    - Builtin dispatch system working (exe_builtin())
+    - Non-forkable builtin detection (cd, exit, export, unset)
 
-🔧 [CRITICAL] Built-in implementations - NEEDS MAJOR FIXES (See builtins.txt)
-    ❌ builtin_echo(): PARTIAL - Fix -n flag parsing for multiple flags
-    ❌ builtin_cd(): BROKEN - Missing HOME support, no OLDPWD, no PWD updates
-    ✅ builtin_pwd(): GOOD - Working correctly, minor portability issues
-    ❌ builtin_env(): INCOMPLETE - Wrong signature, missing functionality  
-    ❌ builtin_exit(): UNSAFE - No exit code validation, missing error handling
+✅ [COMPLETED] Redirection handling for builtins
+    - dispatch_builtin() implemented
+    - Fork when needed for builtins with redirections
+    - Proper handling of non-forkable builtins (cd, exit, export, unset)
+
+✅ [COMPLETED] Basic redirection infrastructure
+    - setup_redirections() implemented in redirection.c
+    - handle_input_redirection() for < (WORKING)
+    - handle_output_redirection() for > and >> (WORKING)
+    - File opening with proper flags and permissions
+
+🔧 [CRITICAL] Built-in implementations - NEEDS FIXES
+    ⚠️  builtin_echo(): PARTIAL - Only handles single -n flag, needs multiple flag support
+    ⚠️  builtin_cd(): BASIC - Works for paths, missing HOME and OLDPWD (cd -, cd with no args)
+    ✅ builtin_pwd(): WORKING - Correctly implemented
+    ✅ builtin_env(): WORKING - Prints environment variables
+    ⚠️  builtin_exit(): BASIC - Works but needs exit code validation and error handling
     🔧 [TODO] builtin_export(): Not implemented yet
     🔧 [TODO] builtin_unset(): Not implemented yet
 
+✅ [COMPLETED] External command execution infrastructure
+    - PATH resolution implemented (path_utils.c)
+    - Command searching in PATH directories
+    - exe_single_cmd() dispatcher for single commands
+
 🔧 [TODO] External command execution
-    - PATH resolution for commands
     - fork() and execve() for external programs
-    - Fr Giang: in pipex exec_cmd, if cmd_av == NULL, just exit but not error, 
-    since a command like "cat file | > out.txt" will still create outfile although no command is executed, 
-    no error appears in bash and exit code is 0;
-    - Handle command not found errors
+    - Handle command not found errors (exit 127)
+    - Handle permission denied errors (exit 126)
+    - Proper process management and exit status collection
 
 🔧 [TODO] Pipeline execution
     - Create pipes between commands
     - Handle multiple processes in pipeline
     - Wait for all processes and collect exit codes
-
-🔧 [TODO] Redirection handling
-    - Open files for input/output redirection
-    - Handle file permission errors
-    - Restore original stdin/stdout after redirection
+    - Note: Currently shows "pipelines not yet implemented" message
 
 🔧 [TODO] Heredoc implementation
+    - handle_heredoc() stub exists but not implemented
     - Read input until delimiter is found
     - Handle variable expansion in heredoc (if required)
     - Create temporary files or use pipes
@@ -131,20 +143,19 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Memory alignment for optimal performance
     - Reset functionality for command-by-command reuse
 
-🔧 [TODO] Environment management
-    - Create environment variable manipulation functions
-    - Handle environment variable inheritance
-    - Implement variable scoping for subshells
+✅ [COMPLETED] Shell initialization
+    - shell_init() and related infrastructure in shell_init.c
+    - Shell structure management
+    - Environment handling setup
 
-🔧 [TODO] History management (bonus)
-    - Implement command history storage
-    - Add history expansion (!!, !n, !string)
-    - Save/load history from file
+✅ [COMPLETED] Path utilities
+    - Command resolution in PATH directories
+    - Path searching and validation (path_utils.c)
 
-🔧 [TODO] Job control (bonus)
-    - Implement background processes (&)
-    - Add job status tracking
-    - Implement jobs, fg, bg built-ins
+✅ [COMPLETED] Shell utilities
+    - Helper functions in shell_tools.c and shell_utils.c
+    - Command table management
+    - Token processing utilities
 
 🔧 [TODO] Advanced features (bonus)
     - Command line editing with readline
@@ -153,56 +164,71 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 
 🧪 TESTING & VALIDATION
 =======================
+✅ [COMPLETED] Basic manual testing
+    - Tokenizer tested with various inputs
+    - Parser tested with command structures
+    - Variable expansion tested
+
 🔧 [TODO] Unit tests
-    - Test tokenizer with various inputs
+    - Test tokenizer edge cases
     - Test parser with complex command structures
     - Test each built-in command individually
+    - Test redirection combinations
 
 🔧 [TODO] Integration tests
     - Test complete command execution flow
     - Test error handling and edge cases
-    - Test memory management
+    - Test memory management with valgrind
+    - Test redirection + pipeline combinations
 
 🔧 [TODO] Comparison testing
     - Compare behavior with bash
     - Test subject requirements compliance
     - Test bonus features if implemented
+    - Edge case validation
 
-📋 CURRENT STATUS
-================
+📋 CURRENT STATUS (Updated: October 5, 2025)
+============================================
 ✅ Tokenizer complete with arena memory management
 ✅ Quote handling with type differentiation implemented  
 ✅ Parser base functionality complete with arena memory
 ✅ Memory arena infrastructure complete and integrated
-✅ Basic executor framework implemented
+✅ Variable expansion with quote context awareness (expand_variable_name())
+✅ Redirection parsing (>, >>, <, <<) in parser
+✅ Redirection execution for input (<) and output (>, >>) - WORKING!
+✅ Built-in command framework with fork management
 ✅ Path resolution system working (exe/path_utils.c)
+✅ Single command execution dispatcher
 ✅ Development tooling enhanced (Makefile with valgrind/cppcheck)
-❌ Built-in commands need major fixes (see builtins.txt analysis)
-✅ Variable expansion
-⏳ Advanced executor features (pipes, redirections)
-⏳ Advanced features - Final phase
+⚠️  Built-in commands: basic implementations exist, need enhancements
+⏳ Heredoc execution (stub exists, not implemented)
+⏳ Pipeline execution (recognized but not implemented)
+⏳ External command execution (infrastructure ready, execution pending)
 
 🎯 NEXT IMMEDIATE STEPS - UPDATED PRIORITIES
 ============================================
-🚨 CRITICAL (Fix Now):
-1. Fix builtin_cd() - Add HOME directory support (cd with no args)
-2. Fix builtin_exit() - Add exit code validation and error handling  
-3. Fix builtin_echo() - Proper -n flag parsing for multiple flags
+🚨 CRITICAL (Complete Core Functionality):
+1. Implement external command execution with fork/execve
+2. Complete heredoc implementation (handle_heredoc())
+3. Implement pipeline execution (execute_pipeline())
 
-🔥 HIGH PRIORITY:
-4. Complete builtin_cd() - Add OLDPWD support (cd -) and PWD updates
-5. Fix builtin_env() - Correct function signature and add functionality
-6. Implement builtin_export() and builtin_unset()
+🔥 HIGH PRIORITY (Enhance Built-ins):
+4. Enhance builtin_cd() - Add HOME directory support (cd with no args)
+5. Enhance builtin_cd() - Add OLDPWD support (cd -) and PWD updates
+6. Enhance builtin_echo() - Handle multiple -n flags correctly
+7. Enhance builtin_exit() - Add exit code validation and error handling
 
-⭐ MEDIUM PRIORITY:
-7. Implement variable expansion for $? (needs exit status in t_shell struct), later on if needed also $$ and $0
-8. Add syntax validation during parsing
-9. Enhance pipeline execution system
+⭐ MEDIUM PRIORITY (Complete Built-ins):
+8. Implement builtin_export() - Set/export environment variables
+9. Implement builtin_unset() - Remove environment variables
+10. Add error handling for command not found (exit 127)
+11. Add error handling for permission denied (exit 126)
 
-🎯 LATER:
-10. Add redirections and heredoc support
-11. Add logical operators (&& and ||)
-12. Advanced features and optimizations
+💡 POLISH & FEATURES:
+12. Implement variable expansion for $? (exit status)
+13. Add comprehensive error messages
+14. Handle signal interrupts (Ctrl+C, Ctrl+\, Ctrl+D)
+15. Advanced features and bonus items
 
 📝 NOTES & INSIGHTS
 ===================
@@ -212,18 +238,28 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 - Keep clean separation between lexer/parser/executor
 - Built-ins are recognized at EXECUTION time, not parsing time
 - All command names are WORD tokens regardless of type (built-in vs external)
+- Non-forkable builtins (cd, exit, export, unset) must run in parent process
+- Forkable builtins (echo, pwd, env) can fork when redirections are needed
 
-🔧 DEVELOPMENT TOOLS READY:
-- Enhanced Makefile with Halloween theme and colored output
+🔧 DEVELOPMENT TOOLS:
+- Enhanced Makefile with colored output and comprehensive targets
 - Valgrind integration with file descriptor tracking (--track-fds=yes)
 - Comprehensive cppcheck static analysis (--enable=all --inconclusive)
 - Professional development workflow established
 
 🧪 QUALITY ASSURANCE:
-- Detailed builtin analysis completed (see builtins.txt)
-- Code quality issues identified and prioritized
-- Security assessment performed for all current functions
-- Memory management validated (no leaks detected)
+- Code structured with clear separation of concerns
+- Memory management validated with arena system (no leaks detected)
+- Redirection system tested and working for basic cases
+- Variable expansion implemented with quote awareness
+
+📊 PROJECT STATISTICS:
+- Lexer/Parser: ~90% complete
+- Executor: ~40% complete (basic framework + redirections done)
+- Built-ins: ~50% complete (basic versions exist, need enhancements)
+- Overall: ~60% complete
 
 🚀 Remember: "Make it work, make it right, make it fast!"
-💡 Current Focus: Fix critical builtin issues before adding new features!
+💡 Current Focus: Complete core execution (external commands, pipes, heredoc)
+🎯 Next Phase: Polish built-ins and add comprehensive error handling
+✨ Final Phase: Signal handling, bonus features, and extensive testing

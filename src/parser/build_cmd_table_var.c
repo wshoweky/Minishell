@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 16:18:48 by gita              #+#    #+#             */
-/*   Updated: 2025/10/05 16:18:10 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 16:03:00 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -116,9 +116,6 @@ int	transform_var_name(t_arena *arena, char **text, char *var_name)
 {
 	char	*var_value;
 
-	if (ft_isdigit(var_name[0])) // check for $0...
-		return (err_msg_n_return_value("Bad environment name "
-				"- starts with digit\n", -1));
 	// if (name[0] == '?')
 	// {
 	//     if (name[1])

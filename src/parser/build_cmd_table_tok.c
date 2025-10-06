@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/05 13:06:28 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 16:03:08 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -62,7 +62,7 @@ int	check_token_word(t_arena *arena, t_tokens *token, t_cmd *current_cmd)
 		return (err_msg_n_return_value("Not a word token\n", -1));
 	if (ft_strcmp(token->value, "&") == 0 || ft_strcmp(token->value, "&&") == 0)
 		return (err_msg_n_return_value("& and && not supported\n", -1));
-	if (ft_strchr(token->value, '$'))
+	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
 		if (expand_variable_name(arena, token) == -1)
 			return (-1);
 	if (add_argv(arena, current_cmd, token->value) == -1)

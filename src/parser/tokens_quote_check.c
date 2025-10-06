@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokens_quote_check.c                               :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/04 16:53:31 by gita              #+#    #+#             */
-/*   Updated: 2025/10/04 21:05:11 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/06 16:02:53 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -31,7 +31,7 @@ char	*check_for_quoted_string(t_arena *arena, char *str)
 	i = 0;
 	if (check_for_unclosed_quote(str, &i) == 1)
 		return (err_msg_n_return_null("Unclosed quote\n"));
-	if (!ft_strchr(str, '$'))
+	if (!ft_strchr(str, '$') && !ft_strchr(str, '&'))
 	{
 		if (remove_quotes_for_plain_string(arena, str, &output, &i) == -1)
 			return (NULL);

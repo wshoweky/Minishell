@@ -1,10 +1,5 @@
 #include "minishell.h"
-#include "exe.h"
-#include <fcntl.h>      // for open(), O_WRONLY, O_CREAT, etc.
-#include <unistd.h>     // for dup2(), close()
-#include <sys/stat.h>   // for file permissions
 
-// Forward declaration
 static int	setup_single_redirection(t_redir *redir);
 
 /*
@@ -35,7 +30,6 @@ int	setup_redirections(t_cmd *cmd)
 	}
 	return (0);
 }
-
 /*
 ** setup_single_redirection - Setup a single redirection
 **
@@ -53,7 +47,8 @@ static int	setup_single_redirection(t_redir *redir)
 {
 	if (!redir || !redir->filename)
 		return (-1);
-
+	printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
+		redir->tok_type, redir->filename);
 	if (redir->tok_type == TOKEN_REDIRECT_OUT) // >
 		return (handle_output_redirection(redir->filename, 0));
 	else if (redir->tok_type == TOKEN_APPEND) // >>
@@ -62,10 +57,8 @@ static int	setup_single_redirection(t_redir *redir)
 		return (handle_input_redirection(redir->filename));
 	else if (redir->tok_type == TOKEN_HEREDOC) // <<
 		return (handle_heredoc(redir->filename));
-
 	return (-1); // Unknown redirection type
 }
-
 /*
 ** handle_input_redirection - Handle input redirection (<)
 **
@@ -84,7 +77,6 @@ int	handle_input_redirection(char *filename)
 
 	if (!filename)
 		return (-1);
-
 	fd = open(filename, O_RDONLY);
 	if (fd < 0)
 	{
@@ -100,7 +92,6 @@ int	handle_input_redirection(char *filename)
 	close(fd);
 	return (0);
 }
-
 /*
 ** handle_output_redirection - Handle output redirection (>, >>)
 **
@@ -121,13 +112,11 @@ int	handle_output_redirection(char *filename, int append)
 
 	if (!filename)
 		return (-1);
-
 	flags = O_WRONLY | O_CREAT;
 	if (append)
 		flags |= O_APPEND;
 	else
 		flags |= O_TRUNC;
-
 	fd = open(filename, flags, 0644);
 	if (fd < 0)
 	{
@@ -143,7 +132,6 @@ int	handle_output_redirection(char *filename, int append)
 	close(fd);
 	return (0);
 }
-
 /*
 ** handle_heredoc - Handle heredoc redirection (<<)
 **

@@ -6,106 +6,13 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/03 17:48:17 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/05 17:32:01 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 12:38:38 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "minishell.h"
-#include "exe.h"
-#include <sys/wait.h>
-#include <unistd.h>
 
-/*
-** is_non_forkable_builtin - Check if builtin must not fork
-**
-** DESCRIPTION:
-**   Checks if a builtin command affects parent shell state.
-**
-** PARAMETERS:
-**   cmd_name - Command name to check
-**
-** RETURN VALUE:
-**   Returns 1 if command must not fork, 0 otherwise
-*/
-static int	is_non_forkable_builtin(char *cmd_name)
-{
-	if (ft_strcmp(cmd_name, "cd") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "exit") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "export") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "unset") == 0)
-		return (1);
-	return (0);
-}
-
-/*
-** exe_builtin_with_fork - Execute builtin with redirections in child
-*/
-static int	exe_builtin_with_fork(t_cmd *cmd, char **env)
-{
-	pid_t	pid;
-	int		status;
-
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("minishell: fork");
-		return (1);
-	}
-	else if (pid == 0)
-	{
-		if (setup_redirections(cmd) != 0)
-			exit(1);
-		exit(exe_builtin(cmd, env));
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status))
-			return (WEXITSTATUS(status));
-		else
-			return (1);
-	}
-}
-
-/*
-** dispatch_builtin - Dispatch builtin to correct execution context
-**
-** DESCRIPTION:
-**   Decides whether to execute builtin in parent or child process.
-**   Parent-only: cd, export, unset, exit (modify shell state).
-**   Forkable: echo, pwd, env (safe to fork with redirections).
-**
-** PARAMETERS:
-**   cmd - Command structure
-**   env - Environment variables
-**
-** RETURN VALUE:
-**   Returns exit status of built-in command
-*/
-int	dispatch_builtin(t_cmd *cmd, char **env)
-{
-	char	*cmd_name;
-
-	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0])
-		return (0);
-	cmd_name = cmd->cmd_av[0];
-	if (is_non_forkable_builtin(cmd_name))
-	{
-		if (cmd->redirections)
-		{
-			ft_printf("minishell: %s: redirection not supported for this "
-				"built-in\n", cmd_name);
-			return (1);
-		}
-		return (exe_builtin(cmd, env));
-	}
-	if (!cmd->redirections)
-		return (exe_builtin(cmd, env));
-	return (exe_builtin_with_fork(cmd, env));
-}
+int	dispatch_builtin(t_cmd *cmd, char **env);
 
 /*
 ** exe_cmd - Main command execution dispatcher
@@ -141,7 +48,60 @@ int	exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env)
 	}	
 	return (exit_status);
 }
-
+/*
+** exe_single_cmd - Execute a single command
+**
+** DESCRIPTION:
+**   Executes a single command, checking for built-ins first.
+**
+** PARAMETERS:
+**   arena - Memory arena
+**   cmd   - Command structure with arguments
+**   env   - Environment variables
+**
+** RETURN VALUE:
+**   Returns exit status of the command
+*/
+int	exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env)
+{
+	int		status;
+	pid_t	pid;
+	
+	if (!cmd || !arena)
+		return (0);	
+	// Handle case where there are only redirections (no command to execute)
+	if (!cmd->cmd_av || !cmd->cmd_av[0])
+	{
+		if (cmd->redirections)
+		{
+			// Process redirections in a child process since they might fail
+			pid = fork();
+			if (pid < 0)
+			{
+				perror("minishell: fork");
+				return (1);
+			}
+			else if (pid == 0)
+			{
+				if (setup_redirections(cmd) != 0)
+					exit(1);
+				exit(0);  // Success - redirections processed
+			}
+			else
+			{
+				waitpid(pid, &status, 0);
+				if (WIFEXITED(status))
+					return (WEXITSTATUS(status));
+				else
+					return (1);
+			}
+		}
+		return (0);  // No command and no redirections
+	}	
+	if (is_builtin(cmd->cmd_av[0]))
+		return (dispatch_builtin(cmd, env));
+	return (exe_external_cmd(arena, cmd, env));
+}
 /*
 ** exe_builtin - Execute built-in command
 **
@@ -208,79 +168,35 @@ int	is_builtin(char *cmd)
 		return (1);
 	return (0);
 }
-
 /*
-** exe_single_cmd - Execute a single command
+** dispatch_builtin - Dispatch builtin to correct execution context
 **
 ** DESCRIPTION:
-**   Executes a single command, checking for built-ins first.
+**   Decides whether to execute builtin in parent or child process.
+**   Parent-only: cd, export, unset, exit (modify shell state).
+**   Forkable: echo, pwd, env (safe to fork with redirections).
 **
 ** PARAMETERS:
-**   arena - Memory arena
-**   cmd   - Command structure with arguments
-**   env   - Environment variables
+**   cmd - Command structure
+**   env - Environment variables
 **
 ** RETURN VALUE:
-**   Returns exit status of the command
+**   Returns exit status of built-in command
 */
-int	exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env)
+int	dispatch_builtin(t_cmd *cmd, char **env)
 {
-	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0] || !arena)
+	char	*cmd_name;
+
+	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0])
 		return (0);
-	if (is_builtin(cmd->cmd_av[0]))
-		return (dispatch_builtin(cmd, env));
-	return (exe_external_cmd(arena, cmd, env));
-}
-
-/*
-** exe_external_cmd - Execute external program
-**
-** DESCRIPTION:
-**   Forks and executes external program using execve.
-**
-** PARAMETERS:
-**   arena - Memory arena
-**   cmd   - Command structure
-**   env   - Environment variables
-**
-** RETURN VALUE:
-**   Returns exit status of the external command
-*/
-int	exe_external_cmd(t_arena *arena, t_cmd *cmd, char **env)
-{
-	pid_t	pid;
-	int		status;
-	char	*executable_path;
-
-	executable_path = find_executable(arena, cmd->cmd_av[0], env);
-	if (!executable_path)
+	cmd_name = cmd->cmd_av[0];
+	if (is_non_forkable_builtin(cmd_name))
 	{
-		ft_printf("minishell: %s: command not found\n", cmd->cmd_av[0]);
-		return (127);
+		// Non-forkable builtins execute in parent process
+		// Redirections are ignored for these commands (like in bash)
+		return (exe_builtin(cmd, env));
 	}
-	pid = fork();
-	if (pid < 0)
-	{
-		perror("minishell: fork");
-		return (1);
-	}
-	else if (pid == 0)
-	{
-		if (setup_redirections(cmd) != 0)
-			exit(1);
-		if (execve(executable_path, cmd->cmd_av, env) == -1)
-		{
-			perror("minishell: execve");
-			exit(126);
-		}
-	}
-	else
-	{
-		waitpid(pid, &status, 0);
-		if (WIFEXITED(status))
-			return (WEXITSTATUS(status));
-		else
-			return (1);
-	}
-	return (0);
+	if (!cmd->redirections)
+		return (exe_builtin(cmd, env));
+	return (exe_builtin_with_fork(cmd, env));
 }

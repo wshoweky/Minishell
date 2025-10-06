@@ -28,6 +28,7 @@ SRC = src/main.c \
 	  src/parser/arena_utils.c \
 	  src/parser/arena_split.c \
 	  src/exe/exe.c \
+	  src/exe/exe_utils.c \
 	  src/exe/redirection.c \
 	  src/exe/builtins.c \
 	  src/exe/path_utils.c \

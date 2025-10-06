@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 15:51:21 by gita              #+#    #+#             */
-/*   Updated: 2025/10/05 21:52:47 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 15:48:09 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -43,20 +43,18 @@ static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
 		printf("]\n");
 		if (current_cmd->redirections)
 		{
-			printf("Redirection: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
-			printf("filename saved: %s\n", current_cmd->redirections->filename);
-			while (current_cmd->redirections->next)
+			t_redir *redir_ptr = current_cmd->redirections;  // Use local pointer!
+			while (redir_ptr)  // Traverse without modifying original
 			{
-				current_cmd->redirections = current_cmd->redirections->next;
-				printf("Redirection: %s\n", get_token_type_name(current_cmd->redirections->tok_type));
-				printf("filename saved: %s\n", current_cmd->redirections->filename);
+				printf("Redirection: %s\n", get_token_type_name(redir_ptr->tok_type));
+				printf("filename saved: %s\n", redir_ptr->filename);
+				redir_ptr = redir_ptr->next;  // Move local pointer
 			}
 		}
 		current_cmd = current_cmd->next_cmd;
 		cmd_index++;
 	}
 }
-
 
 /* Parses a linked list of tokens into a command table structure.
 

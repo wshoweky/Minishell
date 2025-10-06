@@ -19,7 +19,6 @@ int	main(int ac, char **av, char **env)
 {
 	char		*input;
 	t_tokens	*tokens;
-	t_arena		*arena;
 	t_cmd_table	*cmd_table;
 	t_shell		*shell;
 	int			exit_status;
@@ -29,13 +28,6 @@ int	main(int ac, char **av, char **env)
 	if (!shell)
 	{
 		ft_printf("Failed to initialize shell\n");
-		return (1);
-	}
-	arena = ar_init();
-	if (!arena)
-	{
-		ft_printf("Failed to initialize memory arena\n");
-		free_shell(shell);
 		return (1);
 	}
 	while (1337)
@@ -53,7 +45,7 @@ int	main(int ac, char **av, char **env)
 			free(input);
 			break;
 		}
-		tokens = tokenize_input(arena, input);
+		tokens = tokenize_input(shell->arena, input);
 		if (!tokens)
 		{
 			ft_printf("Error in tokenization!\n");
@@ -62,11 +54,11 @@ int	main(int ac, char **av, char **env)
 		else
 		{
 			print_tokens(tokens);
-			cmd_table = register_to_table(arena, tokens);
+			cmd_table = register_to_table(shell, tokens);
 			if (cmd_table)
 			{
 				// Execute the commands
-				exit_status = exe_cmd(arena, cmd_table, shell->env);
+				exit_status = exe_cmd(shell->arena, cmd_table, shell->env);
 				shell->last_exit_status = exit_status;
 				ft_printf("Command executed with exit status: %d\n", exit_status);
 			}
@@ -74,11 +66,10 @@ int	main(int ac, char **av, char **env)
 			free(input);
 		}
 		// Reset arena for next command
-		ar_reset(arena);
+		ar_reset(shell->arena);
 	}
 	// Cleanup arena and shell before exit
 	free_shell(shell);
-	free_arena(arena);
 	return (exit_status);
 }
 

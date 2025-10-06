@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   build_cmd_table.c                                  :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/02 15:51:21 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 15:48:09 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/07 00:08:08 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -64,7 +64,7 @@ Builds a command table where:
 - Redirections (<, >, >>, <<) set redirection type and capture filename
 - Regular word tokens are added as command arguments
 */
-t_cmd_table	*register_to_table(t_arena *arena, t_tokens *list_of_toks)
+t_cmd_table	*register_to_table(t_shell *shell, t_tokens *list_of_toks)
 {
 	t_cmd_table	*table;
 	t_tokens	*current_tok;
@@ -73,17 +73,17 @@ t_cmd_table	*register_to_table(t_arena *arena, t_tokens *list_of_toks)
 	if (list_of_toks == NULL)
 		return (NULL);
 	current_tok = list_of_toks;
-	table = ar_alloc(arena, sizeof(t_cmd_table));
+	table = ar_alloc(shell->arena, sizeof(t_cmd_table));
 	if (!table)
 		return (err_msg_n_return_null("Memory alloc failed for t_cmd_table\n"));
-	current_cmd = new_cmd_alloc(arena);
+	current_cmd = new_cmd_alloc(shell->arena);
 	if (!current_cmd)
 		return (err_msg_n_return_null("Memory alloc failed for t_cmd\n"));
 	table->list_of_cmds = current_cmd;
 	table->cmd_count = 1;
 	while (current_tok)
 	{
-		if (check_current_token(arena, current_tok, &current_cmd, table) == -1)
+		if (check_current_token(shell, current_tok, &current_cmd, table) == -1)
 			return (NULL);
 		current_tok = current_tok->next;
 	}

@@ -56,6 +56,7 @@ static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
 	}
 }
 
+
 /* Parses a linked list of tokens into a command table structure.
 
 Builds a command table where:

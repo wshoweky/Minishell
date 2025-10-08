@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   shell_init.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/03 17:49:11 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/05 16:05:55 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 19:21:40 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,6 +46,13 @@ t_shell	*init_shell(int ac, char **av, char **env)
 	shell->last_exit_status = 0;
 	shell->is_interactive = isatty(STDIN_FILENO);
 	shell->should_exit = 0;
+	shell->arena = ar_init();
+	if (!shell->arena)
+	{
+		ft_printf("Failed to initialize memory arena\n");
+		free_shell(shell);
+		return (NULL);
+	}
 	(void)ac;
 	return (shell);
 }

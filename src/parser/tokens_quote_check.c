@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/04 16:53:31 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 16:02:53 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/08 11:32:21 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -102,6 +102,14 @@ int	remove_quotes_for_plain_string(t_arena *arena, char *str, char **output,
 					not quoted anymore\n", -1));
 		}
 		(*i)++;
+	}
+	//fix: If output is still NULL (empty quoted string), create empty string
+	if (!*output)
+	{
+		*output = ar_alloc(arena, 1);
+		if (!*output)
+			return (err_msg_n_return_value("Failed to allocate empty string\n", -1));
+		(*output)[0] = '\0';
 	}
 	return (0);
 }

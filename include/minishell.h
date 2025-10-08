@@ -1,7 +1,6 @@
 #ifndef MINISHELL_H
 # define MINISHELL_H
 
-// Token types
 typedef enum e_token_type
 {
 	TOKEN_WORD,        // Regular words: echo, hello, file.txt
@@ -41,7 +40,8 @@ typedef struct	s_cmd_table
 	t_cmd	*list_of_cmds;
 } t_cmd_table;
 
-
+# include <stddef.h> 		// for size_t
+# include "arena.h"			// memory arena// Token types
 // Shell state structure
 typedef struct s_shell
 {
@@ -57,13 +57,13 @@ typedef struct s_shell
 	int		shell_pid;			// Shell process ID ($$)
 	int		is_interactive;		// Interactive mode flag
 	int		should_exit;		// Exit flag for main loop
+	t_arena	*arena;
 } t_shell;
 
 
 //# include <string.h>   // strlen, strcpy, strdup, etc.
 # include <unistd.h>   // write, read, close, fork, execve, pipe
 # include <stdlib.h>   // malloc, free, exit
-# include <stddef.h> // for size_t
 # include <stdio.h>    // printf, perror
 # include <fcntl.h>    // open
 # include <signal.h>   // signals
@@ -73,7 +73,6 @@ typedef struct s_shell
 # include <sys/stat.h> // stat lstat fstat
 # include <readline/readline.h> // readline()
 # include <readline/history.h> // add_history()
-# include "arena.h"			 // memory arena
 # include "../libft/libft.h"
 # include "exe.h"			 // execution
 
@@ -126,7 +125,7 @@ int				remove_quotes_for_plain_string(t_arena *arena, char *str, char **output,
 
 // Parsing functions
 
-t_cmd_table	*register_to_table(t_arena *arena, t_tokens *list_of_toks);
+t_cmd_table	*register_to_table(t_shell *shell, t_tokens *list_of_toks);
 t_cmd		*new_cmd_alloc(t_arena *arena);
 void	    *err_msg_n_return_null(char *msg);
 int		    err_msg_n_return_value(char *msg, int value);
@@ -134,21 +133,21 @@ int		    err_msg_n_return_value(char *msg, int value);
 
 // Token checking functions
 
-int			check_current_token(t_arena *arena, t_tokens *token,
+int			check_current_token(t_shell *shell, t_tokens *token,
 				t_cmd **current_cmd, t_cmd_table *table);
-int			check_token_word(t_arena *arena, t_tokens *token, t_cmd *current_cmd);
-int	    	expand_variable_name(t_arena *arena, t_tokens *word_tok);
+int			check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd);
+int	    	expand_variable_name(t_shell *shell, t_tokens *word_tok);
 int			add_argv(t_arena *arena, t_cmd *command, char *expansion);
 void		get_old_argv(char **old, char **new, size_t *i);
 
 
 // Variable name expansion
 
-int			go_thru_input(t_arena *arena, char *input, char **expand_text);
-int			dollar_sign_encounter(t_arena *arena, char *input, size_t *i, char **text);
+int			go_thru_input(t_shell *shell, char *input, char **expand_text);
+int			dollar_sign_encounter(t_shell *shell, char *input, size_t *i, char **text);
 int			other_character(t_arena *arena, char **expand_text, char current_char,
 				int *in_quote);
-int			transform_var_name(t_arena *arena, char **text, char *var_name);
+int			transform_var_name(t_shell *shell, char **text, char *var_name);
 
 
 //	Redirection functions

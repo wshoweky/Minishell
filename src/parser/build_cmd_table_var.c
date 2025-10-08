@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   build_cmd_table_var.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/01 16:18:48 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 16:03:00 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/07 00:09:55 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
 Return: 0 on success, -1 on errors
 */
-int	go_thru_input(t_arena *arena, char *input, char **expand_text)
+int	go_thru_input(t_shell *shell, char *input, char **expand_text)
 {
 	size_t	i;
 	int		in_quote;
@@ -29,12 +29,13 @@ int	go_thru_input(t_arena *arena, char *input, char **expand_text)
 	{
 		if (input[i] == '$' && (in_quote != 1))
 		{
-			if (dollar_sign_encounter(arena, input, &i, expand_text) == -1)
+			if (dollar_sign_encounter(shell, input, &i, expand_text) == -1)
 				return (-1);
 		}
 		else
 		{
-			if (other_character(arena, expand_text, input[i], &in_quote) == -1)
+			if (other_character(shell->arena, expand_text, input[i],
+					&in_quote) == -1)
 				return (-1);
 		}
 		i++;
@@ -51,7 +52,7 @@ the same quote to exit that quote mode
 Return: 0 on success, -1 on errors
 */
 int	other_character(t_arena *arena, char **expand_text, char current_char,
-	int *in_quote)
+		int *in_quote)
 {
 	if ((current_char == '\"' || current_char == '\'') && !*in_quote)
 	{
@@ -74,32 +75,36 @@ int	other_character(t_arena *arena, char **expand_text, char current_char,
 }
 
 /* When encounter a $, extract the variable name that contains alphanumeric
-characters or _ only. If there is a valid name, pass the variable name to
-helper function for expansion. If not, add the lonely $ to the string in build.
+or _ characters only, or only one ? after the $.
+If there is a valid name,
+	pass the variable name to helper function for expansion.
+If not, add the lonely $ to the string in build.
 
 Return: 0 on success, -1 on errors
 */
-int	dollar_sign_encounter(t_arena *arena, char *input, size_t *i, char **text)
+int	dollar_sign_encounter(t_shell *shell, char *input, size_t *i, char **text)
 {
 	char	*var_name;
 
 	var_name = NULL;
-	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_')
+	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' || input[*i
+			+ 1] == '?')
 	{
-		var_name = ar_add_char_to_str(arena, var_name, input[*i + 1]);
+		var_name = ar_add_char_to_str(shell->arena, var_name, input[*i + 1]);
 		if (!var_name)
-			return (err_msg_n_return_value("Error in building variable name\n",
-					-1));
+			return (err_msg_n_return_value("Error building var name\n", -1));
 		(*i)++;
+		if (var_name[0] == '?' && input[*i + 1])
+			break ;
 	}
 	if (var_name)
 	{
-		if (transform_var_name(arena, text, var_name) == -1)
+		if (transform_var_name(shell, text, var_name) == -1)
 			return (-1);
 	}
 	else
 	{
-		*text = ar_add_char_to_str(arena, *text, '$');
+		*text = ar_add_char_to_str(shell->arena, *text, '$');
 		if (!*text)
 			return (err_msg_n_return_value("Error adding $ to string\n", -1));
 	}
@@ -112,20 +117,20 @@ then add that value to the string in building
 
 Return: 0 on success, -1 on errors
 */
-int	transform_var_name(t_arena *arena, char **text, char *var_name)
+int	transform_var_name(t_shell *shell, char **text, char *var_name)
 {
 	char	*var_value;
 
-	// if (name[0] == '?')
-	// {
-	//     if (name[1])
-	//         return (err_msg_n_return_null("Bad environment name - more character after ?\n"));
-	//     // get exit_status of the most recently executed foreground pipeline
-	//     // value = ft_itoa(exit_status);
-	//     // return (value);
-	// }
-	var_value = getenv(var_name); // should get it from shell env (get_shell_env_value)
-	*text = ar_strjoin(arena, *text, var_value);
+	if (var_name[0] == '?')
+	{
+		if (var_name[1])
+			return (err_msg_n_return_value("Not supposed to have longer "
+					"name for $?\n", -1));
+		var_value = ar_itoa(shell->arena, shell->last_exit_status);
+	}
+	else
+		var_value = get_shell_env_value(shell, var_name);
+	*text = ar_strjoin(shell->arena, *text, var_value);
 	if (!*text)
 		return (err_msg_n_return_value("Error in joining variable to string\n",
 				-1));

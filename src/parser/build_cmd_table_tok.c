@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   build_cmd_table_tok.c                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 16:03:08 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/06 20:01:19 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -19,7 +19,7 @@
 
 Return: 0 on success, -1 on errors
 */
-int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
+int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
 	t_cmd_table *table)
 {
 	if (token->type == TOKEN_PIPE)
@@ -27,7 +27,7 @@ int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
 		if (!((*current_cmd)->cmd_av || (*current_cmd)->redirections)
 			|| !token->next)
 			return (err_msg_n_return_value("Syntax error around pipe\n", -1));
-		(*current_cmd)->next_cmd = new_cmd_alloc(arena);
+		(*current_cmd)->next_cmd = new_cmd_alloc(shell->arena);
 		if (!(*current_cmd)->next_cmd)
 			return (err_msg_n_return_value("Memory allocation failed for "
 					"new command\n", -1));
@@ -40,12 +40,12 @@ int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
 		if (!token->next || token->next->type != TOKEN_WORD)
 			return (err_msg_n_return_value("Syntax error around redirection\n",
 					-1));
-		if (make_redir(arena, token, *current_cmd) == -1)
+		if (make_redir(shell->arena, token, *current_cmd) == -1)
 			return (-1);
 		return (0);
 	}
 	else
-		return (check_token_word(arena, token, *current_cmd));
+		return (check_token_word(shell, token, *current_cmd));
 }
 
 /* Process word token and build the current command
@@ -56,16 +56,16 @@ int	check_current_token(t_arena *arena, t_tokens *token, t_cmd **current_cmd,
 
 Return: 0 on success, -1 on errors
 */
-int	check_token_word(t_arena *arena, t_tokens *token, t_cmd *current_cmd)
+int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 {
 	if (token->type != TOKEN_WORD)
 		return (err_msg_n_return_value("Not a word token\n", -1));
 	if (ft_strcmp(token->value, "&") == 0 || ft_strcmp(token->value, "&&") == 0)
 		return (err_msg_n_return_value("& and && not supported\n", -1));
 	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
-		if (expand_variable_name(arena, token) == -1)
+		if (expand_variable_name(shell, token) == -1)
 			return (-1);
-	if (add_argv(arena, current_cmd, token->value) == -1)
+	if (add_argv(shell->arena, current_cmd, token->value) == -1)
 		return (-1);
 	return (0);
 }
@@ -78,14 +78,12 @@ int	check_token_word(t_arena *arena, t_tokens *token, t_cmd *current_cmd)
 
 Return: 0 on success, -1 on errors
 */
-int	expand_variable_name(t_arena *arena, t_tokens *word_tok)
+int	expand_variable_name(t_shell *shell, t_tokens *word_tok)
 {
-	//size_t	i;
 	char	*expanded_text;
 
-	//i = 0;	unused
 	expanded_text = NULL;
-	if (go_thru_input(arena, word_tok->value, &expanded_text) == -1)
+	if (go_thru_input(shell, word_tok->value, &expanded_text) == -1)
 		return (-1);
 	word_tok->value = expanded_text;
 	return (0);

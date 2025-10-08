@@ -25,6 +25,7 @@ void	free_shell(t_shell *shell)
 	free(shell->home);
 	free(shell->user);
 	free(shell->shell_name);
+	free_arena(shell->arena);
 	free(shell);
 }
 

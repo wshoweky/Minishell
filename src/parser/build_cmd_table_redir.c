@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 22:53:23 by gita              #+#    #+#             */
-/*   Updated: 2025/10/02 15:54:00 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/11 23:53:36 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,20 +30,19 @@ int	is_redirection(t_token_type check)
 - Appends the new t_redir to the command's redirection list.
 	If no redirection exists, it becomes the first node; otherwise at the end.
 */
-int	make_redir(t_arena *arena, t_tokens *curr_tok, t_cmd *curr_cmd)
+int	make_redir(t_shell *shell, t_tokens *curr_tok, t_cmd *curr_cmd)
 {
 	t_redir	*new;
 	t_redir	*find_tail;
 
-	new = ar_alloc(arena, sizeof(t_redir));
+	new = ar_alloc(shell->arena, sizeof(t_redir));
 	if (!new)
 		return (err_msg_n_return_value("Mem alloc failed for t_redir\n", -1));
 	set_redir_type(curr_tok->type, &new->tok_type);
 	new->next = NULL;
 	*curr_tok = *curr_tok->next;
-	new->filename = ar_strdup(arena, curr_tok->value);
-	if (!new->filename)
-		return (err_msg_n_return_value("Mem alloc failed for file name\n", -1));
+	if (work_on_filename(shell, curr_tok, &new->filename) == -1)
+		return (-1);
 	if (!curr_cmd->redirections)
 		curr_cmd->redirections = new;
 	else
@@ -69,4 +68,20 @@ void	set_redir_type(t_token_type tok_type, t_token_type *redir_type)
 		*redir_type = TOKEN_APPEND;
 	else if (tok_type == TOKEN_HEREDOC)
 		*redir_type = TOKEN_HEREDOC;
+}
+
+/* 
+*/
+int	work_on_filename(t_shell *shell, t_tokens *tok_name, char **name)
+{
+	if (ft_strchr(tok_name->value, '$') || ft_strchr(tok_name->value, '&'))
+		if (expand_variable_name(shell, tok_name) == -1)
+			return (-1);
+	if (tok_name->value[0] == 0)
+		return (0);
+	*name = ar_strdup(shell->arena, tok_name->value);
+	if (!*name)
+		return (err_msg_n_return_value("strdup failed for redir filename\n",
+				-1));
+	return (0);
 }

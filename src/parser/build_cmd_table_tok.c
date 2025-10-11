@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 20:01:19 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/11 23:08:47 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -40,7 +40,7 @@ int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
 		if (!token->next || token->next->type != TOKEN_WORD)
 			return (err_msg_n_return_value("Syntax error around redirection\n",
 					-1));
-		if (make_redir(shell->arena, token, *current_cmd) == -1)
+		if (make_redir(shell, token, *current_cmd) == -1)
 			return (-1);
 		return (0);
 	}

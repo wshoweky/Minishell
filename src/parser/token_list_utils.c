@@ -32,7 +32,7 @@ t_tokens	*create_token(t_arena *arena, char *word)
 
 t_token_type	get_token_type(char *str)
 {
-	if (!str || !*str)
+	if (!str) //fix: don't check for empty string (!*str)
 		return (TOKEN_EOF);
 	if (ft_strcmp(str, "|") == 0)
 		return (TOKEN_PIPE);

@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   path_utils.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 17:53:46 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/03 17:59:21 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -27,42 +15,36 @@
 ** RETURN VALUE:
 **   Returns path to executable or NULL if not found
 */
-char	*find_executable(t_arena *arena, char *cmd, char **env)
+char	*find_executable(t_shell *shell, char *cmd)
 {
 	char	*path_env;
 	char	**path_dirs;
 	char	*full_path;
 	int		i;
 
-	if (!cmd || !arena)
+	if (!cmd || !shell)
 		return (NULL);
 	// If command contains '/' it's a path (absolute or relative)
 	if (ft_strchr(cmd, '/'))
 	{
 		if (is_executable(cmd))
-			return (ar_strdup(arena, cmd));
+			return (ar_strdup(shell->arena, cmd));
 		return (NULL);
 	}
-	// Search in PATH
-	path_env = get_env_value(env, "PATH");
+	path_env = get_shell_env_value(shell, "PATH");
 	if (!path_env)
 		return (NULL);
-	path_dirs = ar_split(arena, path_env, ':');
+	path_dirs = ar_split(shell->arena, path_env, ':');
 	if (!path_dirs)
 		return (NULL);
 	i = 0;
 	while (path_dirs[i])
 	{
-		full_path = build_path(arena, path_dirs[i], cmd);
+		full_path = build_path(shell, path_dirs[i], cmd);
 		if (full_path && is_executable(full_path))
-		{
-			// No need to free path_dirs - it's in arena
 			return (full_path);
-		}
-		// No need to free full_path - it's in arena
 		i++;
 	}
-	// No need to free path_dirs - it's in arena
 	return (NULL);
 }
 
@@ -119,26 +101,26 @@ int	is_executable(char *path)
 ** RETURN VALUE:
 **   Returns allocated full path or NULL on error
 */
-char	*build_path(t_arena *arena, char *dir, char *file)
+char	*build_path(t_shell *shell, char *dir, char *file)
 {
 	char	*dir_with_slash;
 	char	*path;
 	int		dir_len;
 
-	if (!dir || !file || !arena)
+	if (!dir || !file || !shell)
 		return (NULL);
 	dir_len = ft_strlen(dir);
 	// Add slash if needed
 	if (dir_len > 0 && dir[dir_len - 1] != '/')
 	{
-		dir_with_slash = ar_strjoin(arena, dir, "/");
+		dir_with_slash = ar_strjoin(shell->arena, dir, "/");
 		if (!dir_with_slash)
 			return (NULL);
-		path = ar_strjoin(arena, dir_with_slash, file);
+		path = ar_strjoin(shell->arena, dir_with_slash, file);
 		// No need to free dir_with_slash - it's in arena
 	}
 	else
-		path = ar_strjoin(arena, dir, file);
+		path = ar_strjoin(shell->arena, dir, file);
 	return (path);
 }
 

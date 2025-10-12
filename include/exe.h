@@ -12,29 +12,31 @@ typedef struct s_cmd		t_cmd;
 typedef struct s_shell		t_shell;
 
 // Main execution dispatcher
-int					exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env);
-int					exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env);
-int					exe_builtin_with_fork(t_cmd *cmd, char **env);
+int					exe_cmd(t_shell *shell, t_cmd_table *cmd_table);
+int					exe_single_cmd(t_shell *shell, t_cmd *cmd);
+int					exe_builtin_with_fork(t_cmd *cmd, t_shell *shell);
 int					is_non_forkable_builtin(char *cmd_name);
-int					exe_external_cmd(t_arena *arena, t_cmd *cmd, char **env);
+int					exe_external_cmd(t_shell *shell, t_cmd *cmd);
+int					exe_redirection_only(t_cmd *cmd);
+int					dispatch_builtin(t_cmd *cmd, t_shell *shell);
 
 // Built-in command detection and dispatch
 int					is_builtin(char *cmd);
-int					exe_builtin(t_cmd *cmd, char **env);
+int					exe_builtin(t_cmd *cmd, t_shell *shell);
 
 // Individual built-in implementations
 int					builtin_echo(t_cmd *cmd);
 int					builtin_pwd(t_cmd *cmd);
 int					builtin_cd(t_cmd *cmd);
-int					builtin_env(char **env);
+int					builtin_env(t_shell *shell);
 int					builtin_export(t_cmd *cmd, char ***env);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
 
 // Executable path resolution
-char				*find_executable(t_arena *arena, char *cmd, char **env);
+char				*find_executable(t_shell *shell, char *cmd);
 int					is_executable(char *path);
-char				*build_path(t_arena *arena, char *dir, char *file);
+char				*build_path(t_shell *shell, char *dir, char *file);
 
 // Environment variable utilities
 char				*get_env_value(char **env, char *name);
@@ -45,6 +47,8 @@ int					unset_env_value(char ***env, char *name);
 pid_t				create_child_process(void);
 int					wait_for_child(pid_t pid);
 void				setup_child_process(t_cmd *cmd, char **env);
+void				execute_child_process(t_shell *shell, t_cmd *cmd, char *path);
+int					wait_and_get_status(pid_t pid);
 
 // Redirection handling
 int					setup_redirections(t_cmd *cmd);
@@ -52,10 +56,12 @@ int					handle_input_redirection(char *filename);
 int					handle_output_redirection(char *filename, int append);
 int					handle_heredoc(char *delimiter);
 
-// Pipeline management
-// int			execute_pipeline(t_cmd *cmd_list, char **env);
-// int			create_pipe_chain(t_cmd *cmd_list, char **env);
-// void		connect_pipes(int *pipe_fds, int cmd_index, int total_cmds);
+// Pipeline execution
+void			execute_pipeline(t_shell *shell, t_cmd_table *cmd_table);
+int				**alloc_pipe_array(t_shell *shell, int cmd_count);
+void			setup_pipe_fds(t_shell *shell, int cmd_index, int cmd_count);
+void			wait_all_children(t_shell *shell, int cmd_count);
+void			close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd);
 
 // Shell initialization and management
 t_shell				*init_shell(int ac, char **av, char **env);

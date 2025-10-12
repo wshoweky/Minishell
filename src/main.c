@@ -57,8 +57,7 @@ int	main(int ac, char **av, char **env)
 			cmd_table = register_to_table(shell, tokens);
 			if (cmd_table)
 			{
-				// Execute the commands
-				exit_status = exe_cmd(shell->arena, cmd_table, shell->env);
+				exit_status = exe_cmd(shell, cmd_table);
 				shell->last_exit_status = exit_status;
 				ft_printf("Command executed with exit status: %d\n", exit_status);
 			}

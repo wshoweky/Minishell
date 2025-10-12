@@ -103,5 +103,13 @@ int	remove_quotes_for_plain_string(t_arena *arena, char *str, char **output,
 		}
 		(*i)++;
 	}
+	//fix: If output is still NULL (empty quoted string), create empty string
+	if (!*output)
+	{
+		*output = ar_alloc(arena, 1);
+		if (!*output)
+			return (err_msg_n_return_value("Failed to allocate empty string\n", -1));
+		(*output)[0] = '\0';
+	}
 	return (0);
 }

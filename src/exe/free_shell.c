@@ -46,4 +46,3 @@ void	free_partial_env(t_shell *shell, int count)
 		free(shell->env[i++]);
 	free(shell->env);
 }
-

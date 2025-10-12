@@ -57,7 +57,9 @@ typedef struct s_shell
 	int		shell_pid;			// Shell process ID ($$)
 	int		is_interactive;		// Interactive mode flag
 	int		should_exit;		// Exit flag for main loop
-	t_arena	*arena;
+	t_arena	*arena;				// Memory arena for temporary allocations
+	int		**pipe_array;		// Array of pipe file descriptors [cmd_count-1][2]
+	int		*pipe_pids;			// Array of child process PIDs
 } t_shell;
 
 

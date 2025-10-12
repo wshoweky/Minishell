@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   shell_init.c                                       :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 17:49:11 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/06 19:21:40 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 //#define INITIAL_ENV_CAPACITY 128
@@ -152,9 +140,8 @@ static int	init_shell_variables(t_shell *shell, char **av)
 	init_shell_user_info(shell);
 	shell->shell_name = ft_strdup(av[0]);
 	shell->shell_pid = getpid();
-	if (!shell->cwd || !shell->oldpwd || !shell->home 
+	if (!shell->cwd || !shell->oldpwd || !shell->home
 		|| !shell->user || !shell->shell_name)
 		return (0);
 	return (1);
 }
-

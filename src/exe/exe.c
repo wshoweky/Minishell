@@ -1,139 +1,89 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   exe.c                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 17:48:17 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/06 12:38:38 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
-int	dispatch_builtin(t_cmd *cmd, char **env);
+int	dispatch_builtin(t_cmd *cmd, t_shell *shell);
 
 /*
 ** exe_cmd - Main command execution dispatcher
 **
 ** DESCRIPTION:
-**   Decides whether to execute as built-in or external command.
-**   This is the main entry point for command execution.
+**   Routes execution to single command or pipeline based on command count.
+**   Single commands execute directly, pipelines use pipe infrastructure.
 **
 ** PARAMETERS:
-**   arena     - Memory arena
+**   shell     - Shell state structure
 **   cmd_table - Command table from parser
-**   env       - Environment variables
 **
 ** RETURN VALUE:
 **   Returns exit status of executed command(s)
 */
-int	exe_cmd(t_arena *arena, t_cmd_table *cmd_table, char **env)
+int	exe_cmd(t_shell *shell, t_cmd_table *cmd_table)
 {
-	t_cmd	*current_cmd;
-	int		exit_status;
-
-	if (!cmd_table || !cmd_table->list_of_cmds || !arena)
+	if (!cmd_table || !cmd_table->list_of_cmds || !shell)
 		return (0);
-	current_cmd = cmd_table->list_of_cmds;
-	exit_status = 0;
-	if (cmd_table->cmd_count == 1)
-		exit_status = exe_single_cmd(arena, current_cmd, env);
-	else
+	if (cmd_table->cmd_count > 1)
 	{
-		//	exit_status = execute_pipeline(arena, cmd_table, env);
-		ft_printf("minishell: pipelines not yet implemented\n");
-		exit_status = 1;
-	}	
-	return (exit_status);
+		execute_pipeline(shell, cmd_table);
+		return (shell->last_exit_status);
+	}
+	return (exe_single_cmd(shell, cmd_table->list_of_cmds));
 }
+
 /*
-** exe_single_cmd - Execute a single command
+** dispatch_builtin - Dispatch builtin to correct execution context
 **
 ** DESCRIPTION:
-**   Executes a single command, checking for built-ins first.
+**   Decides whether to execute builtin in parent or child process.
+**   Parent-only: cd, export, unset, exit (modify shell state).
+**   Forkable: echo, pwd, env (safe to fork with redirections).
 **
 ** PARAMETERS:
-**   arena - Memory arena
-**   cmd   - Command structure with arguments
-**   env   - Environment variables
-**
-** RETURN VALUE:
-**   Returns exit status of the command
-*/
-int	exe_single_cmd(t_arena *arena, t_cmd *cmd, char **env)
-{
-	int		status;
-	pid_t	pid;
-	
-	if (!cmd || !arena)
-		return (0);	
-	// Handle case where there are only redirections (no command to execute)
-	if (!cmd->cmd_av || !cmd->cmd_av[0])
-	{
-		if (cmd->redirections)
-		{
-			// Process redirections in a child process since they might fail
-			pid = fork();
-			if (pid < 0)
-			{
-				perror("minishell: fork");
-				return (1);
-			}
-			else if (pid == 0)
-			{
-				if (setup_redirections(cmd) != 0)
-					exit(1);
-				exit(0);  // Success - redirections processed
-			}
-			else
-			{
-				waitpid(pid, &status, 0);
-				if (WIFEXITED(status))
-					return (WEXITSTATUS(status));
-				else
-					return (1);
-			}
-		}
-		return (0);  // No command and no redirections
-	}	
-	if (is_builtin(cmd->cmd_av[0]))
-		return (dispatch_builtin(cmd, env));
-	return (exe_external_cmd(arena, cmd, env));
-}
-/*
-** exe_builtin - Execute built-in command
-**
-** DESCRIPTION:
-**   Dispatches to appropriate built-in command handler.
-**
-** PARAMETERS:
-**   cmd - Command structure
-**   env - Environment variables
+**   cmd   - Command structure
+**   shell - Shell state structure
 **
 ** RETURN VALUE:
 **   Returns exit status of built-in command
 */
-int	exe_builtin(t_cmd *cmd, char **env)
+int	dispatch_builtin(t_cmd *cmd, t_shell *shell)
 {
 	char	*cmd_name;
 
 	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0])
 		return (0);
 	cmd_name = cmd->cmd_av[0];
-	if (ft_strcmp(cmd_name, "cd") == 0)
-		return (builtin_cd(cmd));
-	else if (ft_strcmp(cmd_name, "echo") == 0)
-		return (builtin_echo(cmd));
-	else if (ft_strcmp(cmd_name, "pwd") == 0)
-		return (builtin_pwd(cmd));
-	else if (ft_strcmp(cmd_name, "env") == 0)
-		return (builtin_env(env));
-	else if (ft_strcmp(cmd_name, "exit") == 0)
-		return (builtin_exit(cmd));
-	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
-	return (1);
+	if (is_non_forkable_builtin(cmd_name))
+	{
+		// Non-forkable builtins execute in parent process
+		// Redirections are ignored for these commands (like in bash)
+		return (exe_builtin(cmd, shell));
+	}
+	if (!cmd->redirections)
+		return (exe_builtin(cmd, shell));
+	return (exe_builtin_with_fork(cmd, shell));
+}
+
+/*
+** exe_single_cmd - Execute a single command
+**
+** DESCRIPTION:
+**   Executes a single command: builtin, external, or redirection-only.
+**   Dispatches to appropriate handler based on command type.
+**
+** PARAMETERS:
+**   shell - Shell state structure
+**   cmd   - Command structure with arguments
+**
+** RETURN VALUE:
+**   Returns exit status of the command
+*/
+int	exe_single_cmd(t_shell *shell, t_cmd *cmd)
+{
+	if (!cmd || !shell)
+		return (0);
+	if (!cmd->cmd_av || !cmd->cmd_av[0])
+		return (exe_redirection_only(cmd));
+	if (is_builtin(cmd->cmd_av[0]))
+		return (dispatch_builtin(cmd, shell));
+	return (exe_external_cmd(shell, cmd));
 }
 
 /*
@@ -168,35 +118,37 @@ int	is_builtin(char *cmd)
 		return (1);
 	return (0);
 }
+
 /*
-** dispatch_builtin - Dispatch builtin to correct execution context
+** exe_builtin - Execute built-in command
 **
 ** DESCRIPTION:
-**   Decides whether to execute builtin in parent or child process.
-**   Parent-only: cd, export, unset, exit (modify shell state).
-**   Forkable: echo, pwd, env (safe to fork with redirections).
+**   Dispatches to appropriate built-in command handler.
 **
 ** PARAMETERS:
-**   cmd - Command structure
-**   env - Environment variables
+**   cmd   - Command structure
+**   shell - Shell state structure
 **
 ** RETURN VALUE:
 **   Returns exit status of built-in command
 */
-int	dispatch_builtin(t_cmd *cmd, char **env)
+int	exe_builtin(t_cmd *cmd, t_shell *shell)
 {
 	char	*cmd_name;
 
 	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[0])
 		return (0);
 	cmd_name = cmd->cmd_av[0];
-	if (is_non_forkable_builtin(cmd_name))
-	{
-		// Non-forkable builtins execute in parent process
-		// Redirections are ignored for these commands (like in bash)
-		return (exe_builtin(cmd, env));
-	}
-	if (!cmd->redirections)
-		return (exe_builtin(cmd, env));
-	return (exe_builtin_with_fork(cmd, env));
+	if (ft_strcmp(cmd_name, "cd") == 0)
+		return (builtin_cd(cmd));
+	else if (ft_strcmp(cmd_name, "echo") == 0)
+		return (builtin_echo(cmd));
+	else if (ft_strcmp(cmd_name, "pwd") == 0)
+		return (builtin_pwd(cmd));
+	else if (ft_strcmp(cmd_name, "env") == 0)
+		return (builtin_env(shell));
+	else if (ft_strcmp(cmd_name, "exit") == 0)
+		return (builtin_exit(cmd));
+	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
+	return (1);
 }

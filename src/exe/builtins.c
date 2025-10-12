@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   builtins.c                                         :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/03 17:46:05 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/03 17:46:07 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /*
@@ -122,16 +110,16 @@ int	builtin_cd(t_cmd *cmd)
 ** RETURN VALUE:
 **   Returns 0 on success
 */
-int	builtin_env(char **env)
+int	builtin_env(t_shell *shell)
 {
 	int	i;
 
-	if (!env)
+	if (!shell || !shell->env)
 		return (0);
 	i = 0;
-	while (env[i])
+	while (shell->env[i])
 	{
-		ft_printf("%s\n", env[i]);
+		ft_printf("%s\n", shell->env[i]);
 		i++;
 	}
 	return (0);

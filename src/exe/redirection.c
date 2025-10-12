@@ -30,6 +30,7 @@ int	setup_redirections(t_cmd *cmd)
 	}
 	return (0);
 }
+
 /*
 ** setup_single_redirection - Setup a single redirection
 **
@@ -59,6 +60,7 @@ static int	setup_single_redirection(t_redir *redir)
 		return (handle_heredoc(redir->filename));
 	return (-1); // Unknown redirection type
 }
+
 /*
 ** handle_input_redirection - Handle input redirection (<)
 **
@@ -92,6 +94,7 @@ int	handle_input_redirection(char *filename)
 	close(fd);
 	return (0);
 }
+
 /*
 ** handle_output_redirection - Handle output redirection (>, >>)
 **
@@ -132,6 +135,7 @@ int	handle_output_redirection(char *filename, int append)
 	close(fd);
 	return (0);
 }
+
 /*
 ** handle_heredoc - Handle heredoc redirection (<<)
 **
@@ -148,7 +152,6 @@ int	handle_output_redirection(char *filename, int append)
 int	handle_heredoc(char *delimiter)
 {
 	(void)delimiter; // Suppress unused parameter warning
-	
 	// TODO: Implement heredoc functionality
 	ft_printf("minishell: heredoc not yet implemented\n");
 	return (-1);

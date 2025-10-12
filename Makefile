@@ -36,7 +36,9 @@ SRC = src/main.c \
 	  src/exe/shell_init.c \
 	  src/exe/free_shell.c \
 	  src/exe/shell_tools.c \
-	  src/exe/shell_utils.c 
+	  src/exe/shell_utils.c \
+	  src/exe/pipeline.c \
+	  src/exe/pipe_utils.c
 	
 
 
@@ -87,7 +89,7 @@ re: fclean all
 # =============================================================================
 valgrind: re
 	@echo "${PURPLE}🔍 Running memory and file descriptor analysis with valgrind...${RESET}"
-	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --suppressions=gnu_suppression.supp --track-origins=yes ./$(NAME) 
+	valgrind --track-fds=yes --leak-check=full --show-leak-kinds=all --suppressions=readline.supp --track-origins=yes ./$(NAME) 
 # =============================================================================
 #  MESSAGES
 #      Custom messages displayed during the build process.

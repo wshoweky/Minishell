@@ -32,6 +32,7 @@ int					builtin_env(t_shell *shell);
 int					builtin_export(t_cmd *cmd, char ***env);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
+int	builtin_set(t_shell *shell, t_cmd *cmd);
 
 // Executable path resolution
 char				*find_executable(t_shell *shell, char *cmd);

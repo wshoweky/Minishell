@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   build_cmd_table_redir.c                            :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 22:53:23 by gita              #+#    #+#             */
-/*   Updated: 2025/10/11 23:53:36 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /* Check if token is a redirectional token.
@@ -29,6 +17,8 @@ int	is_redirection(t_token_type check)
 - Move to next token and ar_strdup the filename
 - Appends the new t_redir to the command's redirection list.
 	If no redirection exists, it becomes the first node; otherwise at the end.
+
+Return: 0 on success, -1 on errors
 */
 int	make_redir(t_shell *shell, t_tokens *curr_tok, t_cmd *curr_cmd)
 {
@@ -70,13 +60,16 @@ void	set_redir_type(t_token_type tok_type, t_token_type *redir_type)
 		*redir_type = TOKEN_HEREDOC;
 }
 
-/* 
+/* Copy the string of the token to be the file name. Expand variables if any.
+Return: 0 on success, -1 on errors
 */
 int	work_on_filename(t_shell *shell, t_tokens *tok_name, char **name)
 {
 	if (ft_strchr(tok_name->value, '$') || ft_strchr(tok_name->value, '&'))
-		if (expand_variable_name(shell, tok_name) == -1)
+	{
+		if (expand_variable_name(shell, tok_name, 1) == -1)
 			return (-1);
+	}
 	if (tok_name->value[0] == 0)
 		return (0);
 	*name = ar_strdup(shell->arena, tok_name->value);

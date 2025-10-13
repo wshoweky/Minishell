@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   build_cmd_table.c                                  :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/02 15:51:21 by gita              #+#    #+#             */
-/*   Updated: 2025/10/07 00:08:08 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
@@ -104,6 +92,42 @@ t_cmd	*new_cmd_alloc(t_arena *arena)
 	new->redirections = NULL;
 	new->next_cmd = NULL;
 	return (new);
+}
+
+/* Process tokens for building command table
+- Pipes: validate syntax then create a new t_cmd struct
+- Redirections: validate file name, then create redirection expansion
+- Words: pass to helper function for further processing
+
+Return: 0 on success, -1 on errors
+*/
+int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
+	t_cmd_table *table)
+{
+	if (token->type == TOKEN_PIPE)
+	{
+		if (!((*current_cmd)->cmd_av || (*current_cmd)->redirections)
+			|| !token->next)
+			return (err_msg_n_return_value("Syntax error around pipe\n", -1));
+		(*current_cmd)->next_cmd = new_cmd_alloc(shell->arena);
+		if (!(*current_cmd)->next_cmd)
+			return (err_msg_n_return_value("Memory allocation failed for "
+					"new command\n", -1));
+		*current_cmd = (*current_cmd)->next_cmd;
+		table->cmd_count++;
+		return (0);
+	}
+	else if (is_redirection(token->type))
+	{
+		if (!token->next || token->next->type != TOKEN_WORD)
+			return (err_msg_n_return_value("Syntax error around redirection\n",
+					-1));
+		if (make_redir(shell, token, *current_cmd) == -1)
+			return (-1);
+		return (0);
+	}
+	else
+		return (check_token_word(shell, token, *current_cmd));
 }
 
 void	*err_msg_n_return_null(char *msg)

@@ -1,52 +1,4 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   build_cmd_table_tok.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/09/30 21:49:19 by gita              #+#    #+#             */
-/*   Updated: 2025/10/11 23:08:47 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
-
-/* Process tokens for building command table
-- Pipes: validate syntax then create a new t_cmd struct
-- Redirections: validate file name, then create redirection expansion
-- Words: pass to helper function for further processing
-
-Return: 0 on success, -1 on errors
-*/
-int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
-	t_cmd_table *table)
-{
-	if (token->type == TOKEN_PIPE)
-	{
-		if (!((*current_cmd)->cmd_av || (*current_cmd)->redirections)
-			|| !token->next)
-			return (err_msg_n_return_value("Syntax error around pipe\n", -1));
-		(*current_cmd)->next_cmd = new_cmd_alloc(shell->arena);
-		if (!(*current_cmd)->next_cmd)
-			return (err_msg_n_return_value("Memory allocation failed for "
-					"new command\n", -1));
-		*current_cmd = (*current_cmd)->next_cmd;
-		table->cmd_count++;
-		return (0);
-	}
-	else if (is_redirection(token->type))
-	{
-		if (!token->next || token->next->type != TOKEN_WORD)
-			return (err_msg_n_return_value("Syntax error around redirection\n",
-					-1));
-		if (make_redir(shell, token, *current_cmd) == -1)
-			return (-1);
-		return (0);
-	}
-	else
-		return (check_token_word(shell, token, *current_cmd));
-}
 
 /* Process word token and build the current command
 - Validate if it is a word token
@@ -63,7 +15,7 @@ int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 	if (ft_strcmp(token->value, "&") == 0 || ft_strcmp(token->value, "&&") == 0)
 		return (err_msg_n_return_value("& and && not supported\n", -1));
 	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
-		if (expand_variable_name(shell, token) == -1)
+		if (expand_variable_name(shell, token, 0) == -1)
 			return (-1);
 	if (add_argv(shell->arena, current_cmd, token->value) == -1)
 		return (-1);
@@ -78,14 +30,49 @@ int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 
 Return: 0 on success, -1 on errors
 */
-int	expand_variable_name(t_shell *shell, t_tokens *word_tok)
+int	expand_variable_name(t_shell *shell, t_tokens *word_tok, int in_redir)
 {
 	char	*expanded_text;
 
 	expanded_text = NULL;
 	if (go_thru_input(shell, word_tok->value, &expanded_text) == -1)
 		return (-1);
+	if (in_redir)
+	{
+		if (expanded_text[0] == 0)
+			return (err_msg_n_return_value("Ambiguous redirect\n", -1));
+		if (var_in_redir_outside_2xquotes(word_tok->value) == 1)
+			if (ft_strchr(expanded_text, ' '))
+				return (err_msg_n_return_value("Ambiguous redirect\n", -1));
+	}
 	word_tok->value = expanded_text;
+	return (0);
+}
+
+
+int	var_in_redir_outside_2xquotes(char *tok_value)
+{
+	int		i;
+	int		in_quote;
+
+	i = 0;
+	in_quote = 0;
+	while (tok_value[i])
+	{
+		if (tok_value[i] == '$')
+		{
+			if (!in_quote)
+				return (1);
+		}
+		else
+		{
+			if (tok_value[i] == '"' && !in_quote)
+				in_quote = 1;
+			else if (tok_value[i] == '"' && in_quote)
+				in_quote = 0;
+		}
+		i++;
+	}
 	return (0);
 }
 

@@ -74,22 +74,6 @@ typedef struct s_shell
 	int		*pipe_pids;			// Array of child process PIDs
 } t_shell;
 
-
-//# include <string.h>   // strlen, strcpy, strdup, etc.
-# include <unistd.h>   // write, read, close, fork, execve, pipe
-# include <stdlib.h>   // malloc, free, exit
-# include <stdio.h>    // printf, perror
-# include <fcntl.h>    // open
-# include <signal.h>   // signals
-# include <time.h>     // time sleep usleep
-# include <errno.h>    // ENOENT
-# include <sys/wait.h> // wait, waitpid
-# include <sys/stat.h> // stat lstat fstat
-# include <readline/readline.h> // readline()
-# include <readline/history.h> // add_history()
-# include "../libft/libft.h"
-# include "exe.h"			 // execution
-
 // Playground functions
 //int	shelly(void);
 
@@ -138,6 +122,8 @@ char			*check_for_quoted_string(t_arena *arena, char *str);
 int				check_for_unclosed_quote(char *str, size_t *i);
 int				remove_quotes_for_plain_string(t_arena *arena, char *str,
 					char **output, size_t *i);
+int				build_output(t_arena *arena, char **output, char c);
+int				ensure_output_not_null(t_arena *arena, char **output);
 
 // Parsing functions
 
@@ -152,7 +138,8 @@ int				check_current_token(t_shell *shell, t_tokens *token,
 					t_cmd **current_cmd, t_cmd_table *table);
 int				check_token_word(t_shell *shell, t_tokens *token,
 					t_cmd *current_cmd);
-int				expand_variable_name(t_shell *shell, t_tokens *word_tok);
+int				expand_variable_name(t_shell *shell, t_tokens *word_tok, int in_redir);
+int				var_in_redir_outside_2xquotes(char *tok_value);
 int				add_argv(t_arena *arena, t_cmd *command, char *expansion);
 void			get_old_argv(char **old, char **new, size_t *i);
 

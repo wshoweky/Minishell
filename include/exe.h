@@ -81,4 +81,9 @@ int					find_env_index(t_shell *shell, char *name);
 int					resize_env_if_needed(t_shell *shell);
 int					update_shell_cwd(t_shell *shell);
 
+// Heredoc utilities
+//int handle_heredocs(t_shell *shell, t_cmd_table *cmd_table);
+//int handle_heredoc_file(char *heredoc_filename);
+//char *generate_heredoc_filename(t_shell *shell);
+
 #endif

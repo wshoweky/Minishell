@@ -41,14 +41,17 @@ typedef struct s_redir
 	struct s_redir	*next;
 }	t_redir;
 
-typedef struct s_cmd
+// Command structure
+typedef struct	s_cmd
 {
 	char			**cmd_av;
-	t_redir			*redirections;
-	struct s_cmd	*next_cmd;
-}	t_cmd;
+	t_redir			*redirections;  //to be used if there is redirections
+	//char			*heredoc_filename; // Temporary file for heredoc input
+	struct s_cmd	*next_cmd;		//to be used if there is pipe
+} t_cmd;
 
-typedef struct s_cmd_table
+// Command table structure
+typedef struct	s_cmd_table
 {
 	int		cmd_count;
 	t_cmd	*list_of_cmds;
@@ -57,21 +60,38 @@ typedef struct s_cmd_table
 // Shell state structure
 typedef struct s_shell
 {
+	// Environment variables
 	char	**env;				// Our own copy of environment variables
 	int		env_capacity;		// Current capacity of env array
 	int		env_count;			// Current number of env variables
+	
+	// Exit status
 	int		last_exit_status;	// Exit status of last command ($?)
+	
+	// Directory paths
 	char	*cwd;				// Current working directory
 	char	*oldpwd;			// Previous working directory (for cd -)
 	char	*home;				// HOME directory path
+	
+	// Shell metadata
 	char	*user;				// Current user name
 	char	*shell_name;		// Shell executable path ($0)
 	int		shell_pid;			// Shell process ID ($$)
+	
+	// Control flags
 	int		is_interactive;		// Interactive mode flag
 	int		should_exit;		// Exit flag for main loop
+	
+	// Memory management
 	t_arena	*arena;				// Memory arena for temporary allocations
+	
+	// Pipeline execution state
 	int		**pipe_array;		// Array of pipe file descriptors [cmd_count-1][2]
 	int		*pipe_pids;			// Array of child process PIDs
+	int		children_forked;	// Number of children successfully forked
+	
+	// Heredoc support
+	//int		heredoc_counter;	// Counter for unique heredoc filenames
 } t_shell;
 
 // Playground functions

@@ -114,3 +114,60 @@ void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd)
 		i++;
 	}
 }
+
+/**
+** wait_all_children - Wait for all pipeline processes to complete
+**
+** WAITING STRATEGY:
+** - Wait for all children to prevent zombies
+** - Only care about exit status of LAST command (bash behavior)
+** - Handle both normal exit and signal termination
+**
+** WHY ARRAY ACCESS: We need to wait for specific PIDs in order.
+** Array gives us O(1) access to each PID by index.
+**
+**   shell     - Shell state with pipe PIDs
+**   cmd_count - Number of child processes to wait for
+*/
+void	wait_all_children(t_shell *shell, int cmd_count)
+{
+	int	i;
+	int	status;
+	int	last_valid_cmd_index;
+
+	/* Find the index of the last successfully forked command */
+	last_valid_cmd_index = -1;
+	i = cmd_count - 1;
+	while (i >= 0)
+	{
+		if (shell->pipe_pids[i] > 0)
+		{
+			last_valid_cmd_index = i;
+			break ;
+		}
+		i--;
+	}
+	
+	/* Wait for all successfully forked children */
+	i = 0;
+	while (i < cmd_count)
+	{
+		/* Only wait for valid PIDs */
+		if (shell->pipe_pids[i] > 0)
+		{
+			waitpid(shell->pipe_pids[i], &status, 0);
+			/* Take exit status from the last valid command (rightmost in pipeline) */
+			if (i == last_valid_cmd_index)
+			{
+				/* Extract exit status from wait status */
+				if (WIFEXITED(status))
+					shell->last_exit_status = WEXITSTATUS(status);
+				else if (WIFSIGNALED(status))
+					shell->last_exit_status = 128 + WTERMSIG(status);
+				else
+					shell->last_exit_status = 1;
+			}
+		}
+		i++;
+	}
+}

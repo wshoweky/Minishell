@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   exe.h                                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/06 11:51:14 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/11 20:45:39 by wshoweky         ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #ifndef EXE_H
 # define EXE_H
 
@@ -18,7 +6,10 @@
 // # include <unistd.h>    // For fork, execve, etc.
 
 // Type aliases for 42 norm compliance
-typedef struct stat	t_stat;
+typedef struct stat			t_stat;
+typedef struct s_cmd_table	t_cmd_table;
+typedef struct s_cmd		t_cmd;
+typedef struct s_shell		t_shell;
 
 // Main execution dispatcher
 int					exe_cmd(t_shell *shell, t_cmd_table *cmd_table);
@@ -41,6 +32,7 @@ int					builtin_env(t_shell *shell);
 int					builtin_export(t_cmd *cmd, char ***env);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
+int	builtin_set(t_shell *shell, t_cmd *cmd);
 
 // Executable path resolution
 char				*find_executable(t_shell *shell, char *cmd);

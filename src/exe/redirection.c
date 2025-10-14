@@ -46,8 +46,10 @@ int	setup_redirections(t_cmd *cmd)
 */
 static int	setup_single_redirection(t_redir *redir)
 {
-	if (!redir || !redir->filename)
+	if (!redir)
 		return (-1);
+	if (!redir->filename)
+		return (err_msg_n_return_value(": No such file or directory\n", -1));
 	printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
 		redir->tok_type, redir->filename);
 	if (redir->tok_type == TOKEN_REDIRECT_OUT) // >

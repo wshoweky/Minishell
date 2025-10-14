@@ -55,7 +55,7 @@ typedef struct	s_cmd_table
 {
 	int		cmd_count;
 	t_cmd	*list_of_cmds;
-} t_cmd_table;
+}	t_cmd_table;
 
 // Shell state structure
 typedef struct s_shell

@@ -29,6 +29,7 @@ int	make_redir(t_shell *shell, t_tokens *curr_tok, t_cmd *curr_cmd)
 	if (!new)
 		return (err_msg_n_return_value("Mem alloc failed for t_redir\n", -1));
 	set_redir_type(curr_tok->type, &new->tok_type);
+	new->filename = NULL;
 	new->next = NULL;
 	*curr_tok = *curr_tok->next;
 	if (work_on_filename(shell, curr_tok, &new->filename) == -1)

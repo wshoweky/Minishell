@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   build_cmd_table_var.c                              :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/01 16:18:48 by gita              #+#    #+#             */
-/*   Updated: 2025/10/07 00:09:55 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /* Iterate through the input string and rewrite the input into expand_text
@@ -68,7 +56,7 @@ int	other_character(t_arena *arena, char **expand_text, char current_char,
 	else
 	{
 		*expand_text = ar_add_char_to_str(arena, *expand_text, current_char);
-		if (!expand_text)
+		if (!*expand_text)
 			return (err_msg_n_return_value("Error building string\n", -1));
 	}
 	return (0);

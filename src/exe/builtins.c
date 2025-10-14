@@ -144,3 +144,19 @@ int	builtin_exit(t_cmd *cmd)
 	ft_printf("exit\n");
 	exit(exit_code);
 }
+
+int	builtin_set(t_shell *shell, t_cmd *cmd) //DELETEEEEEEEEEEEEE
+{
+	char	*name = NULL;
+	char	*value = NULL;
+	int i = 0;
+	while (cmd->cmd_av[1][i] && (cmd->cmd_av[1][i] != '='))
+		name = ar_add_char_to_str(shell->arena, name, cmd->cmd_av[1][i++]);
+	if (cmd->cmd_av[1][i] == '=')
+		i++;
+	while (cmd->cmd_av[1][i])
+		value = ar_add_char_to_str(shell->arena, value, cmd->cmd_av[1][i++]);
+	if (!set_shell_env_value(shell, name, value))
+		return (-1);
+	return (0);
+}

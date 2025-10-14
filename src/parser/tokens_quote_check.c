@@ -1,15 +1,3 @@
-/* ************************************************************************** */
-/*                                                                            */
-/*                                                        :::      ::::::::   */
-/*   tokens_quote_check.c                               :+:      :+:    :+:   */
-/*                                                    +:+ +:+         +:+     */
-/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
-/*                                                +#+#+#+#+#+   +#+           */
-/*   Created: 2025/10/04 16:53:31 by gita              #+#    #+#             */
-/*   Updated: 2025/10/06 16:40:32 by gita             ###   ########.fr       */
-/*                                                                            */
-/* ************************************************************************** */
-
 #include "minishell.h"
 
 /* Check for quotes in the string
@@ -72,7 +60,8 @@ int	check_for_unclosed_quote(char *str, size_t *i)
 /*
 - Upon seeing a quote, enter quote mode and skip the quote
 - Only exit quote mode and skip when seeing closing quote
-- Otherwise, add characters to the string
+- Otherwise, add characters to the string with helper function
+- Ensure output is not NULL with helper function
 
  Return: 0 on success, -1 on errors
 */
@@ -96,19 +85,41 @@ int	remove_quotes_for_plain_string(t_arena *arena, char *str, char **output,
 			in_quote = 0;
 		else
 		{
-			*output = ar_add_char_to_str(arena, *output, str[*i]);
-			if (!*output)
-				return (err_msg_n_return_value("Failed making string \
-					not quoted anymore\n", -1));
+			if (build_output(arena, output, str[*i]) == -1)
+				return (-1);			
 		}
 		(*i)++;
 	}
-	//fix: If output is still NULL (empty quoted string), create empty string
+	if (ensure_output_not_null(arena, output) == -1)
+		return (-1);
+	return (0);
+}
+
+/*For characters that are not handled previously, add them to output string
+Return: 0 on success, -1 on error
+(helper function of remove_quotes_for_plain_string())
+*/
+int	build_output(t_arena *arena, char **output, char c)
+{
+	*output = ar_add_char_to_str(arena, *output, c);
+	if (!*output)
+		return (err_msg_n_return_value("Failed to unquote string\n", -1));
+	return (0);
+}
+
+/*If output is still NULL after going thru the input string, make output
+an empty string instead
+Return: 0 on success, -1 on error
+(helper function of remove_quotes_for_plain_string())
+*/
+int	ensure_output_not_null(t_arena *arena, char **output)
+{
 	if (!*output)
 	{
 		*output = ar_alloc(arena, 1);
 		if (!*output)
-			return (err_msg_n_return_value("Failed to allocate empty string\n", -1));
+			return (err_msg_n_return_value("Failed to allocate empty string\n",
+				-1));
 		(*output)[0] = '\0';
 	}
 	return (0);

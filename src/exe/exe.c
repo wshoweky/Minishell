@@ -20,6 +20,7 @@ int	exe_cmd(t_shell *shell, t_cmd_table *cmd_table)
 {
 	if (!cmd_table || !cmd_table->list_of_cmds || !shell)
 		return (0);
+	// if (handle heredocs(shell, cmd_table) != 0)
 	if (cmd_table->cmd_count > 1)
 	{
 		execute_pipeline(shell, cmd_table);
@@ -116,6 +117,8 @@ int	is_builtin(char *cmd)
 		return (1);
 	if (ft_strcmp(cmd, "exit") == 0)
 		return (1);
+	if (ft_strcmp(cmd, "set") == 0) //DELETEEEEEEEEEE
+		return (1);
 	return (0);
 }
 
@@ -149,6 +152,8 @@ int	exe_builtin(t_cmd *cmd, t_shell *shell)
 		return (builtin_env(shell));
 	else if (ft_strcmp(cmd_name, "exit") == 0)
 		return (builtin_exit(cmd));
+	else if (ft_strcmp(cmd_name, "set") == 0) //DELETEEEEEEEE
+		return (builtin_set(shell, cmd));
 	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
 	return (1);
 }

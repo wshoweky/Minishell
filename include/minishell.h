@@ -57,6 +57,14 @@ typedef struct	s_cmd_table
 	t_cmd	*list_of_cmds;
 }	t_cmd_table;
 
+typedef struct s_var
+{
+	char	*name;
+	char	*value;
+	int		push_to_env;
+	t_var	*next_var;
+}	t_var;
+
 // Shell state structure
 typedef struct s_shell
 {
@@ -92,6 +100,7 @@ typedef struct s_shell
 	
 	// Heredoc support
 	//int		heredoc_counter;	// Counter for unique heredoc filenames
+	t_var	*vars;
 } t_shell;
 
 // Playground functions

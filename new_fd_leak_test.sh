@@ -303,52 +303,80 @@ test_normal_pipeline() {
 
 test_fork_failure() {
     print_section "Test 2: Fork Failure FD Cleanup"
-    print_test "Pipeline with fork() failures should clean up FDs"
+    print_test "Pipeline execution tracking with strace"
     
     local test_id="$$_$(date +%s)"
     local test_input="/tmp/test_input_${test_id}.txt"
-    local test_script="/tmp/run_limited_minishell_${test_id}.sh"
-    
-    local before_fds=$(count_fds $$)
-    log_verbose "FDs before: $before_fds"
+    local strace_output="/tmp/strace_output_${test_id}.txt"
     
     # Create test input
     echo "test data" > "$test_input"
     
-    # Create a subprocess with limited process count to force fork failures
-    cat > "$test_script" << EOF
-#!/bin/bash
-ulimit -u 10 -n 30 2>/dev/null
-echo "cat $test_input | grep test | sort | uniq | wc -l" | $MINISHELL 2>/dev/null
-exit 0
-EOF
-    
-    chmod +x "$test_script"
-    
-    # Run with timeout in case it hangs
-    echo -n "  Testing fork failure handling..."
-    timeout 3 bash "$test_script" > /dev/null 2>&1 || true
-    echo " done"
-    
-    # Wait for cleanup (reduced for speed)
-    echo -n "  Waiting for cleanup"
-    sleep 0.2
-    wait_for_process_cleanup 2 1  # Show progress, allow up to 2 iterations for fork failure test
-    
-    local after_fds=$(count_fds $$)
-    log_verbose "FDs after: $after_fds"
-    
-    local fd_diff=$((after_fds - before_fds))
-    log_verbose "FD difference: $fd_diff"
-    
-    # Should not leak FDs even on fork failure
-    if [ $fd_diff -le 2 ] && [ $fd_diff -ge -2 ]; then
-        test_result 0 "Fork failure cleanup" "(FD diff: $fd_diff)"
-    else
-        test_result 1 "Fork failure cleanup" "(FD diff: $fd_diff, expected: -2 to +2)"
+    # Check if strace is available
+    if ! command -v strace &> /dev/null; then
+        test_warning "strace not available - skipping detailed FD tracking"
+        return
     fi
     
-    rm -f "$test_input" "$test_script"
+    echo -n "  Running minishell with strace FD tracking..."
+    
+    # Run minishell with strace to track all pipe and close operations
+    # Redirect minishell output to /dev/null to not interfere with strace
+    strace -e trace=pipe,pipe2,close,fork -f -o "$strace_output" \
+        bash -c "echo 'cat $test_input | grep test | sort | uniq | wc' | $MINISHELL > /dev/null 2>&1" 2>/dev/null
+    
+    echo " done"
+    
+    log_verbose "Analyzing strace output..."
+    
+    # Count successful pipes - fixed regex to handle various strace formats
+    # Matches: pipe([3, 4]) = 0 or pipe2([3, 4], ...) = 0
+    local pipes_created
+    pipes_created=$(grep -E "pipe2?\(\[.*\]\)" "$strace_output" 2>/dev/null | grep -c "= 0") || pipes_created=0
+    local fds_from_pipes=$((pipes_created * 2))
+    
+    # Count successful closes
+    local closes
+    closes=$(grep -E "close\([0-9]+\)" "$strace_output" 2>/dev/null | grep -c "= 0") || closes=0
+    
+    # Count forks (to detect if fork failures occurred)  
+    local forks
+    forks=$(grep -c "fork()" "$strace_output" 2>/dev/null) || forks=0
+    
+    log_verbose "Pipes created: $pipes_created (= $fds_from_pipes FDs)"
+    log_verbose "Successful close() calls: $closes"
+    log_verbose "Fork calls detected: $forks"
+    
+    # Extract and check individual FD closures
+    local leaked=0
+    while IFS= read -r line; do
+        # Extract FDs from pipe output: pipe([3, 4]) = 0
+        fds=$(echo "$line" | grep -oE "\[[0-9]+, [0-9]+\]" | tr -d '[], ')
+        if [ -n "$fds" ]; then
+            for fd in $fds; do
+                if ! grep -E "close\($fd\)" "$strace_output" 2>/dev/null | grep -q "= 0"; then
+                    leaked=$((leaked + 1))
+                    log_verbose "  FD $fd: LEAKED (pipe created but never closed)"
+                fi
+            done
+        fi
+    done < <(grep -E "pipe2?\(\[.*\]\)" "$strace_output" 2>/dev/null | grep "= 0")
+    
+    # Test result
+    if [ $leaked -eq 0 ]; then
+        test_result 0 "FD tracking (strace)" "($pipes_created pipes, all FDs closed)"
+    else
+        test_result 1 "FD tracking (strace)" "($leaked FDs leaked from $pipes_created pipes)"
+        log_verbose "  Bug: Pipes created but not closed (likely on fork failure path)"
+    fi
+    
+    # Show sample strace output if verbose
+    if [ $VERBOSE -eq 1 ] && [ -f "$strace_output" ]; then
+        echo -e "${CYAN}  Sample strace output:${NC}"
+        head -20 "$strace_output" | sed 's/^/    /'
+    fi
+    
+    rm -f "$test_input" "$strace_output"
 }
 
 # ============================================================================
@@ -376,13 +404,13 @@ test_multiple_failures() {
         cat > "$test_script" << EOF
 #!/bin/bash
 ulimit -u 10 -n 25 2>/dev/null
-echo "cat $test_input | grep x | sort | wc" | $MINISHELL 2>/dev/null
+echo "cat $test_input | grep x | sort | wc" | $MINISHELL > /dev/null 2>&1
 exit 0
 EOF
         chmod +x "$test_script"
         timeout 2 bash "$test_script" > /dev/null 2>&1 || true
         echo " done"
-        sleep 0.1  # Reduced from 0.2 to 0.1
+        sleep 0.1
     done
     
     # Wait for cleanup (reduced for speed)

@@ -46,7 +46,7 @@ typedef struct	s_cmd
 {
 	char			**cmd_av;
 	t_redir			*redirections;  //to be used if there is redirections
-	//char			*heredoc_filename; // Temporary file for heredoc input
+	char			*heredoc_filename; // Temporary file for heredoc input
 	struct s_cmd	*next_cmd;		//to be used if there is pipe
 } t_cmd;
 

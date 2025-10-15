@@ -38,8 +38,9 @@ SRC = src/main.c \
 	  src/exe/shell_tools.c \
 	  src/exe/shell_utils.c \
 	  src/exe/pipeline.c \
-	  src/exe/pipe_utils.c
-#heredoc.c
+	  src/exe/pipe_utils.c \
+	  src/exe/heredoc.c
+#heredoc_utils.c
 	
 
 

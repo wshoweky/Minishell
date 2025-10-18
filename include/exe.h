@@ -29,7 +29,7 @@ int					builtin_echo(t_cmd *cmd);
 int					builtin_pwd(t_cmd *cmd);
 int					builtin_cd(t_cmd *cmd);
 int					builtin_env(t_shell *shell);
-int					builtin_export(t_cmd *cmd, char ***env);
+int					builtin_export(t_shell *shell, t_cmd *cmd);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
 int	builtin_set(t_shell *shell, t_cmd *cmd);

@@ -3,7 +3,7 @@ NAME = minishell
 CC = cc 
 
 
-CFLAG = -Wall -Wextra -Werror #-g3 -O0 -ggdb3 -fno-omit-frame-pointer -fsanitize=address
+CFLAG = -Wall -Wextra -Werror -g3 -O0 -ggdb3 #-fno-omit-frame-pointer -fsanitize=address
 
 # Colors for output
 RED = \033[31m
@@ -32,6 +32,7 @@ SRC = src/main.c \
 	  src/exe/exe_utils.c \
 	  src/exe/redirection.c \
 	  src/exe/builtins.c \
+	  src/exe/builtin_export.c \
 	  src/exe/path_utils.c \
 	  src/exe/shell_init.c \
 	  src/exe/free_shell.c \

@@ -59,10 +59,10 @@ typedef struct	s_cmd_table
 
 typedef struct s_var
 {
-	char	*name;
-	char	*value;
-	int		push_to_env;
-	t_var	*next_var;
+	char			*name;
+	char			*value;
+	int				push_to_env;
+	struct s_var	*next_var;
 }	t_var;
 
 // Shell state structure
@@ -179,6 +179,7 @@ int				dollar_sign_encounter(t_shell *shell, char *input, size_t *i,
 					char **text);
 int				other_character(t_arena *arena, char **expand_text,
 					char current_char, int *in_quote);
+int				build_var_name(t_shell *shell, char *input, size_t *i, char **var_name);
 int				transform_var_name(t_shell *shell, char **text, char *var_name);
 
 //	Redirection functions

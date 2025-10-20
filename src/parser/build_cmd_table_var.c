@@ -62,29 +62,23 @@ int	other_character(t_arena *arena, char **expand_text, char current_char,
 	return (0);
 }
 
-/* When encounter a $, extract the variable name that contains alphanumeric
-or _ characters only, or only one ? after the $.
-If there is a valid name,
-	pass the variable name to helper function for expansion.
-If not, add the lonely $ to the string in build.
+/* When encounter a $, extract the variable name with helper function
+- If there is a valid variable name,
+pass the variable name to helper function for expansion.
+- If no variable name, add the lonely $ to the string in build
+when there is no quote following right after the $
 
 Return: 0 on success, -1 on errors
 */
 int	dollar_sign_encounter(t_shell *shell, char *input, size_t *i, char **text)
 {
 	char	*var_name;
+	int		check;
 
 	var_name = NULL;
-	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' || input[*i
-			+ 1] == '?')
-	{
-		var_name = ar_add_char_to_str(shell->arena, var_name, input[*i + 1]);
-		if (!var_name)
-			return (err_msg_n_return_value("Error building var name\n", -1));
-		(*i)++;
-		if (var_name[0] == '?' && input[*i + 1])
-			break ;
-	}
+	check = build_var_name(shell, input, i, &var_name);
+	if (check == -1)
+		return (-1);
 	if (var_name)
 	{
 		if (transform_var_name(shell, text, var_name) == -1)
@@ -92,9 +86,37 @@ int	dollar_sign_encounter(t_shell *shell, char *input, size_t *i, char **text)
 	}
 	else
 	{
-		*text = ar_add_char_to_str(shell->arena, *text, '$');
-		if (!*text)
-			return (err_msg_n_return_value("Error adding $ to string\n", -1));
+		if (check != 1)
+		{
+			*text = ar_add_char_to_str(shell->arena, *text, '$');
+			if (!*text)
+				return (err_msg_n_return_value("Error adding $ to string\n", -1));
+		}
+	}
+	return (0);
+}
+
+/* Build the variable name that contains alphanumeric or _ characters,
+or only one ? after the $. No building if a quote is found after $.
+
+Return: 1 when finding a quote after $, 0 on success, -1 on errors
+*/
+int	build_var_name(t_shell *shell, char *input, size_t *i, char **var_name)
+{
+	if (input[*i + 1] == '"' || input[*i + 1] == '\'')
+	{
+		(*i)++;
+		return (1);
+	}
+	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' || input[*i
+			+ 1] == '?')
+	{
+		*var_name = ar_add_char_to_str(shell->arena, *var_name, input[*i + 1]);
+		if (!*var_name)
+			return (err_msg_n_return_value("Error building var name\n", -1));
+		(*i)++;
+		if (*var_name[0] == '?' && input[*i + 1])
+			return (0);
 	}
 	return (0);
 }

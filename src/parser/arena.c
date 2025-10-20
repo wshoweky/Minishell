@@ -84,6 +84,7 @@ void	ar_reset(t_arena *arena)
 {
 	while (arena)
 	{
+		ft_bzero(arena->buffer, AR_SIZE);
 		arena->offset = 0;
 		arena = arena->next;
 	}

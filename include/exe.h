@@ -29,7 +29,7 @@ int					builtin_echo(t_cmd *cmd);
 int					builtin_pwd(t_cmd *cmd);
 int					builtin_cd(t_cmd *cmd);
 int					builtin_env(t_shell *shell);
-int					builtin_export(t_cmd *cmd, char ***env);
+int					builtin_export(t_shell *shell, t_cmd *cmd);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
 int	builtin_set(t_shell *shell, t_cmd *cmd);
@@ -41,8 +41,8 @@ char				*build_path(t_shell *shell, char *dir, char *file);
 
 // Environment variable utilities
 char				*get_env_value(char **env, char *name);
-int					set_env_value(char ***env, char *name, char *value);
-int					unset_env_value(char ***env, char *name);
+// int					set_env_value(char ***env, char *name, char *value);
+// int					unset_env_value(char ***env, char *name);
 
 // Process creation and management
 pid_t				create_child_process(void);

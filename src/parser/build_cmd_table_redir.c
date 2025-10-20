@@ -67,7 +67,7 @@ int	work_on_filename(t_shell *shell, t_tokens *tok_name, char **name)
 {
 	if (ft_strchr(tok_name->value, '$') || ft_strchr(tok_name->value, '&'))
 	{
-		if (expand_variable_name(shell, tok_name, 1) == -1)
+		if (expand_variable_name(shell, &tok_name->value, 1) == -1)
 			return (-1);
 	}
 	if (tok_name->value[0] == 0)

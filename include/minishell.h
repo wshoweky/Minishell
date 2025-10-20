@@ -61,6 +61,7 @@ typedef struct s_var
 {
 	char			*name;
 	char			*value;
+	int				equal_sign;
 	int				push_to_env;
 	struct s_var	*next_var;
 }	t_var;
@@ -167,7 +168,7 @@ int				check_current_token(t_shell *shell, t_tokens *token,
 					t_cmd **current_cmd, t_cmd_table *table);
 int				check_token_word(t_shell *shell, t_tokens *token,
 					t_cmd *current_cmd);
-int				expand_variable_name(t_shell *shell, t_tokens *word_tok, int in_redir);
+int				expand_variable_name(t_shell *shell, char **original_string, int in_redir);
 int				var_in_redir_outside_2xquotes(char *tok_value);
 int				add_argv(t_arena *arena, t_cmd *command, char *expansion);
 void			get_old_argv(char **old, char **new, size_t *i);

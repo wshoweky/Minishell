@@ -41,8 +41,8 @@ char				*build_path(t_shell *shell, char *dir, char *file);
 
 // Environment variable utilities
 char				*get_env_value(char **env, char *name);
-int					set_env_value(char ***env, char *name, char *value);
-int					unset_env_value(char ***env, char *name);
+// int					set_env_value(char ***env, char *name, char *value);
+// int					unset_env_value(char ***env, char *name);
 
 // Process creation and management
 pid_t				create_child_process(void);

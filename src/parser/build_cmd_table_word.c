@@ -15,7 +15,7 @@ int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 	if (ft_strcmp(token->value, "&") == 0 || ft_strcmp(token->value, "&&") == 0)
 		return (err_msg_n_return_value("& and && not supported\n", -1));
 	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
-		if (expand_variable_name(shell, token, 0) == -1)
+		if (expand_variable_name(shell, &token->value, 0) == -1)
 			return (-1);
 	if (add_argv(shell->arena, current_cmd, token->value) == -1)
 		return (-1);
@@ -30,22 +30,22 @@ int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 
 Return: 0 on success, -1 on errors
 */
-int	expand_variable_name(t_shell *shell, t_tokens *word_tok, int in_redir)
+int	expand_variable_name(t_shell *shell, char **original_string, int in_redir)
 {
 	char	*expanded_text;
 
 	expanded_text = NULL;
-	if (go_thru_input(shell, word_tok->value, &expanded_text) == -1)
+	if (go_thru_input(shell, *original_string, &expanded_text) == -1)
 		return (-1);
 	if (in_redir)
 	{
 		if (expanded_text[0] == 0)
 			return (err_msg_n_return_value("Ambiguous redirect\n", -1));
-		if (var_in_redir_outside_2xquotes(word_tok->value) == 1)
+		if (var_in_redir_outside_2xquotes(*original_string) == 1)
 			if (ft_strchr(expanded_text, ' '))
 				return (err_msg_n_return_value("Ambiguous redirect\n", -1));
 	}
-	word_tok->value = expanded_text;
+	*original_string = expanded_text;
 	return (0);
 }
 

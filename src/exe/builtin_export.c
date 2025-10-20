@@ -25,7 +25,6 @@ int	builtin_set(t_shell *shell, t_cmd *cmd)//DELETEEEEEEEEEEEEE
 // 	name = NULL;
 // 	value = NULL;
 // 	i = 1;
-// 	//test="$" ok, test="$abc" ambiguous
 // 	if (!cmd->cmd_av[1])
 // 	{
 // 		plain_export(shell);
@@ -42,11 +41,17 @@ int	builtin_set(t_shell *shell, t_cmd *cmd)//DELETEEEEEEEEEEEEE
 
 // void	plain_export(t_shell *shell)
 // {//only export -> print all exported variables
-// 	while (shell->vars)
+// 	t_var	*print_this;
+
+// 	print_this = shell->vars;
+// 	while (print_this)
 // 	{
-// 		ft_printf("declare -x %s=\"%s\"", shell->vars->name,
-// 			shell->vars->value);
-// 		shell->vars = shell->vars->next_var;
+// 		if (print_this->equal_sign == 1)
+// 			ft_printf("declare -x %s=\"%s\"\n", print_this->name,
+// 				print_this->value);
+// 		else if (print_this->equal_sign == 0)
+// 			ft_printf("declare -x %s\n", print_this->name);
+// 		print_this = print_this->next_var;
 // 	}
 // }
 
@@ -57,18 +62,16 @@ int	builtin_set(t_shell *shell, t_cmd *cmd)//DELETEEEEEEEEEEEEE
 // 	if (!var)
 // 		return (err_msg_n_return_value("Allocation failed for a t_var struct\n",
 // 			-1));
-// 	// all quotes and var expansions apply to both name and value
-// 	//register to shell->vars, do sorting then add in
-
-	
+// 	if (find_name_and_value(shell, arg, &var) == -1)
+// 		return (-1);
+// 	if (register_to_shell_vars(shell, var) == -1)
+// 		return (-1);
 // 	if (ft_strchr(arg, "="))
 // 	{
-// 		//if nothing after =, value = ""
-// 		if (find_name_and_value(shell, arg, &var) == -1)
-// 			return (-1);
 // 		if (!set_shell_env_value(shell, var->name, var->value))
 // 			return (err_msg_n_return_value("Fail to export var to shell env\n",
 // 				-1));
+// 		var->push_to_env = 1;
 // 	}
 // 	return (0);
 // }
@@ -82,17 +85,25 @@ int	builtin_set(t_shell *shell, t_cmd *cmd)//DELETEEEEEEEEEEEEE
 // 	{
 // 		(*var)->name = ar_add_char_to_str(shell->arena, (*var)->name, arg[i]);
 // 		if (!(*var)->name)
-// 			return (err_msg_n_return_value("Error in building var name to "
-// 				"export \n", -1));
+// 			return (err_msg_n_return_value("Error allocating memory for var "
+// 				"name in export\n", -1));
 // 	}
-// 	i++;
+// 	if (ft_strchr((*var)->name, '$') || ft_strchr((*var)->name, '&'))
+// 		if (expand_variable_name(shell, (*var)->name, 0) == -1)
+// 			return (-1);
+// 	if ((*var)->name[0] == 0)
+// 		return(err_msg_n_return_value("Not a valid identifier\n", -1));
+// 	if (arg[i] == '=')
+// 	{
+// 		(*var)->equal_sign = 1;
+// 		i++;
+// 	}
 // 	if (arg[i] == '\0')
 // 	{
 // 		(*var)->value = ar_alloc(shell->arena, 1);
 // 		if (!(*var)->value)
-// 			return (err_msg_n_return_value("Error in building var value to "
-// 				"export\n", -1));
-// 		(*var)->value[0] = '\0';
+// 			return (err_msg_n_return_value("Error allocating memory for var "
+// 				"value in export\n", -1));
 // 	}
 // 	else
 // 	{
@@ -105,6 +116,35 @@ int	builtin_set(t_shell *shell, t_cmd *cmd)//DELETEEEEEEEEEEEEE
 // 					"export\n", -1));
 // 			i++;
 // 		}
+// 		if (ft_strchr((*var)->value, '$') || ft_strchr((*var)->value, '&'))
+// 			if (expand_variable_name(shell, (*var)->value, 0) == -1)
+// 				return (-1);
 // 	}
 // 	return (0);
 // }
+
+// int	register_to_shell_vars(t_shell *shell, t_var *var)
+// {
+// 	t_var	*find_place;
+
+// 	if (!shell->vars)
+// 		shell->vars = var;
+// 	else
+// 	{
+// 		find_place = shell->vars;
+// 		while (find_place && ft_strcmp(find_place->name, var->name) < 0)
+// 		{
+// 			find_place = find_place->next_var;
+// 		}
+// 		if (ft_strcmp(find_place->name, var->name) == 0)
+// 		{
+// 			if (ft_strcmp(var->name, "_"))
+// 				find_place->value = var->value;
+// 			return (0);
+// 		}
+// 		var->next_var = find_place->next_var;
+// 		find_place->next_var = var;
+// 	}
+// 	return (0);
+// }
+

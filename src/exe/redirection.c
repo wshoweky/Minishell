@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-static int	setup_single_redirection(t_redir *redir);
+static int	setup_single_redirection(t_redir *redir, t_cmd *cmd);
 
 /*
 ** setup_redirections - Setup file redirections for command execution
@@ -24,13 +24,12 @@ int	setup_redirections(t_cmd *cmd)
 	redir = cmd->redirections;
 	while (redir)
 	{
-		if (setup_single_redirection(redir) != 0)
+		if (setup_single_redirection(redir, cmd) != 0)
 			return (-1);
 		redir = redir->next;
 	}
 	return (0);
 }
-
 /*
 ** setup_single_redirection - Setup a single redirection
 **
@@ -44,12 +43,10 @@ int	setup_redirections(t_cmd *cmd)
 ** RETURN VALUE:
 **   Returns 0 on success, -1 on error
 */
-static int	setup_single_redirection(t_redir *redir)
+static int	setup_single_redirection(t_redir *redir, t_cmd *cmd)
 {
-	if (!redir)
+	if (!redir || !redir->filename)
 		return (-1);
-	if (!redir->filename)
-		return (err_msg_n_return_value(": No such file or directory\n", -1));
 	printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
 		redir->tok_type, redir->filename);
 	if (redir->tok_type == TOKEN_REDIRECT_OUT) // >
@@ -59,10 +56,9 @@ static int	setup_single_redirection(t_redir *redir)
 	else if (redir->tok_type == TOKEN_REDIRECT_IN) // <
 		return (handle_input_redirection(redir->filename));
 	else if (redir->tok_type == TOKEN_HEREDOC) // <<
-		return (handle_heredoc(redir->filename));
+		return (handle_heredoc_file(cmd->heredoc_filename));
 	return (-1); // Unknown redirection type
 }
-
 /*
 ** handle_input_redirection - Handle input redirection (<)
 **
@@ -96,7 +92,6 @@ int	handle_input_redirection(char *filename)
 	close(fd);
 	return (0);
 }
-
 /*
 ** handle_output_redirection - Handle output redirection (>, >>)
 **
@@ -139,22 +134,60 @@ int	handle_output_redirection(char *filename, int append)
 }
 
 /*
-** handle_heredoc - Handle heredoc redirection (<<)
+** handle_heredoc_file - Handle heredoc redirection using temporary file
 **
 ** DESCRIPTION:
-**   Creates temporary file for heredoc content and redirects stdin to it.
-**   TODO: Implement heredoc functionality.
+**   Opens the temporary heredoc file for reading and redirects stdin to it.
+**   The temporary file was created during parsing by handle_heredocs().
 **
 ** PARAMETERS:
-**   delimiter - Heredoc delimiter string
+**   filename - Path to temporary heredoc file
 **
 ** RETURN VALUE:
 **   Returns 0 on success, -1 on error
 */
-int	handle_heredoc(char *delimiter)
+int	handle_heredoc_file(char *filename)
 {
-	(void)delimiter; // Suppress unused parameter warning
-	// TODO: Implement heredoc functionality
-	ft_printf("minishell: heredoc not yet implemented\n");
-	return (-1);
+	int	fd;
+
+	if (!filename)
+	{
+		ft_printf("minishell: heredoc: no temporary file\n");
+		return (-1);
+	}
+	fd = open(filename, O_RDONLY);
+	if (fd == -1)
+	{
+		perror("minishell: heredoc");
+		return (-1);
+	}
+	if (dup2(fd, STDIN_FILENO) == -1)
+	{
+		perror("minishell: dup2");
+		close(fd);
+		return (-1);
+	}
+	close(fd);
+	return (0);
 }
+// /*
+// ** handle_heredoc - Handle heredoc redirection (<<)
+// **
+// ** DESCRIPTION:
+// **   Creates temporary file for heredoc content and redirects stdin to it.
+// **   TODO: Implement heredoc functionality.
+// **
+// ** PARAMETERS:
+// **   delimiter - Heredoc delimiter string
+// **
+// ** RETURN VALUE:
+// **   Returns 0 on success, -1 on error
+// */
+// int	handle_heredoc(char *delimiter)
+// {
+// 	(void)delimiter; // Suppress unused parameter warning
+	
+// 	// TODO: Implement heredoc functionality
+// 	ft_printf("minishell: heredoc not yet implemented\n");
+// 	return (-1);
+// }

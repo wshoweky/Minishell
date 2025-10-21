@@ -89,7 +89,6 @@ static int	init_pipeline(t_shell *shell, int cmd_count)
 	shell->pipe_pids = ar_alloc(shell->arena, sizeof(int) * cmd_count);
 	if (!shell->pipe_pids || !shell->pipe_array)
 	{
-		/* Use write() to stderr for error reporting (no buffering issues) */
 		write(STDERR_FILENO, "minishell: pipeline: memory allocation failed\n", 47);
 		shell->last_exit_status = 1;
 		return (0);
@@ -124,30 +123,22 @@ static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table)
 	i = 0;
 	while (i < cmd_count && current_cmd)
 	{
-		/* Create pipe for communication with next command (except for last cmd) */
 		if (i < cmd_count - 1)
 		{
 			if (pipe(shell->pipe_array[i]) < 0)
 			{
 				perror("minishell: pipe");
 				shell->last_exit_status = 1;
-				/* Close any pipes created in previous iterations */
 				close_partial_pipes(shell, i);
 				return ;
 			}
 		}
-		/* Fork child process and set up pipe connections */
 		fork_pipeline_child(shell, current_cmd, i, cmd_count);
-		/* If fork failed, abort pipeline execution */
 		if (shell->pipe_pids[i] < 0)
 		{
-			/* Close any pipes created up to this point */
-			// ft_printf("DEBUG: Fork failed at command %d! Pipes created so far: %d\n", i, i);
-			// ft_printf("DEBUG: WARNING - Potential FD leak! Returning without closing pipes.\n");
 			close_partial_pipes(shell, i + 1);
 			return ;
 		}
-		/* Move to next command in linked list */
 		current_cmd = current_cmd->next_cmd;
 		i++;
 	}
@@ -185,16 +176,11 @@ static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i, int cmd_count
 	}
 	else if (shell->pipe_pids[i] < 0)
 	{
-		/* Fork failed - report error to stderr */
 		perror("minishell: fork");
 		shell->last_exit_status = 1;
 	}
 	else
-	{
-		/* Fork succeeded - increment counter */
 		shell->children_forked++;
-	}
-	/* PARENT PROCESS: Continue to next command in loop */
 }
 
 /**

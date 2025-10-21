@@ -82,8 +82,19 @@ int					resize_env_if_needed(t_shell *shell);
 int					update_shell_cwd(t_shell *shell);
 
 // Heredoc utilities
-//int handle_heredocs(t_shell *shell, t_cmd_table *cmd_table);
-//int handle_heredoc_file(char *heredoc_filename);
-//char *generate_heredoc_filename(t_shell *shell);
+
+int handle_heredocs(t_shell *shell, t_cmd_table *cmd_table);
+int handle_heredoc_file(char *heredoc_filename);
+int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename);
+int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd);
+char *generate_filename(t_shell *shell);
+
+//	Heredoc functions
+
+char		*expand_heredoc_line(t_shell *shell, char *line);
+char		*generate_filename(t_shell *shell);
+int			write_heredoc_line(int fd, char *line);
+char		*strip_heredoc_delimiter_quotes(t_arena *arena, char *delimiter);
+void		cleanup_heredoc_files(t_cmd_table *cmd_table);
 
 #endif

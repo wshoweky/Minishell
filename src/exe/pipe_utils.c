@@ -119,12 +119,13 @@ void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd)
 ** wait_all_children - Wait for all pipeline processes to complete
 **
 ** WAITING STRATEGY:
-** - Wait for all children to prevent zombies
-** - Only care about exit status of LAST command (bash behavior)
-** - Handle both normal exit and signal termination
+** - Must wait for ALL children to prevent zombie processes
+** - Children may exit in any order, but we wait sequentially (0→N)
+** - Only the LAST command's exit status matters (bash behavior)
+** - waitpid() blocks if child still running, returns immediately if already exited
 **
-** WHY ARRAY ACCESS: We need to wait for specific PIDs in order.
-** Array gives us O(1) access to each PID by index.
+** WHY SEQUENTIAL WAIT: Simple, deterministic, and easy to identify last command.
+** Waiting order doesn't affect correctness - only matters that we wait for ALL.
 **
 **   shell     - Shell state with pipe PIDs
 **   cmd_count - Number of child processes to wait for

@@ -33,14 +33,17 @@ int					builtin_env(t_shell *shell);
 int					builtin_export(t_shell *shell, t_cmd *cmd);
 int					builtin_unset(t_cmd *cmd, char ***env);
 int					builtin_exit(t_cmd *cmd);
-int	builtin_set(t_shell *shell, t_cmd *cmd);
 
 // Export helper functions
-void				plain_export(t_shell *shell);
+int					plain_export(t_shell *shell);
 int					export_this_var(t_shell *shell, char *arg);
-int					find_name_and_value(t_shell *shell, char *arg, t_var **var);
 int					copy_var_fr_arena_to_shell(t_var *arena_var, t_var *shell_var);
 int					register_to_shell_vars(t_shell *shell, t_var *var);
+
+// Export input parsing
+int					find_name_and_value(t_shell *shell, char *arg, t_var **var);
+int					this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var);
+int					this_is_value(t_shell *shell, char *arg, size_t *i, t_var **var);
 
 // Executable path resolution
 char				*find_executable(t_shell *shell, char *cmd);
@@ -53,9 +56,9 @@ char				*get_env_value(char **env, char *name);
 // int					unset_env_value(char ***env, char *name);
 
 // Process creation and management
-pid_t				create_child_process(void);
-int					wait_for_child(pid_t pid);
-void				setup_child_process(t_cmd *cmd, char **env);
+// pid_t				create_child_process(void);
+// int					wait_for_child(pid_t pid);
+// void				setup_child_process(t_cmd *cmd, char **env);
 void				execute_child_process(t_shell *shell, t_cmd *cmd, char *path);
 int					wait_and_get_status(pid_t pid);
 
@@ -63,7 +66,7 @@ int					wait_and_get_status(pid_t pid);
 int					setup_redirections(t_cmd *cmd);
 int					handle_input_redirection(char *filename);
 int					handle_output_redirection(char *filename, int append);
-int					handle_heredoc(char *delimiter);
+// int					handle_heredoc(char *delimiter);
 
 // Pipeline execution
 void			execute_pipeline(t_shell *shell, t_cmd_table *cmd_table);
@@ -75,7 +78,8 @@ void			close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd);
 // Shell initialization and management
 t_shell				*init_shell(int ac, char **av, char **env);
 void				free_shell(t_shell *shell);
-void				free_vars(t_var *var);
+void				free_list_of_vars(t_var **var);
+void				free_1_var(t_var **var);
 void				free_partial_env(t_shell *shell, int count);
 
 // Shell environment management

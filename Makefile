@@ -33,6 +33,7 @@ SRC = src/main.c \
 	  src/exe/redirection.c \
 	  src/exe/builtins.c \
 	  src/exe/builtin_export.c \
+	  src/exe/builtin_export_parse.c \
 	  src/exe/path_utils.c \
 	  src/exe/shell_init.c \
 	  src/exe/free_shell.c \

@@ -90,6 +90,7 @@ t_cmd	*new_cmd_alloc(t_arena *arena)
 		return (NULL);
 	new->cmd_av = NULL;
 	new->redirections = NULL;
+	new->heredoc_filename = NULL;
 	new->next_cmd = NULL;
 	return (new);
 }

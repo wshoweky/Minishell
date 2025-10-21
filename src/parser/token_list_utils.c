@@ -26,6 +26,7 @@ t_tokens	*create_token(t_arena *arena, char *word)
 	if (!token->value)
 		return (NULL);
 	token->type = get_token_type(word);
+	token->was_quoted = 0;  // Will be set during quote processing
 	token->next = NULL;
 	return (token);
 }

@@ -12,7 +12,7 @@
 # include <readline/history.h> // add_history()
 # include "arena.h"			// memory arena
 # include "../libft/libft.h"
-# include "exe.h"			 // execution
+
 
 // Token types
 typedef enum e_token_type
@@ -30,6 +30,7 @@ typedef struct s_tokens
 {
 	t_token_type	type;
 	char			*value;	
+	int				was_quoted; // needed check for the heredoc expansions
 	struct s_tokens	*next;
 }	t_tokens;
 
@@ -38,6 +39,7 @@ typedef struct s_redir
 {
 	t_token_type	tok_type;
 	char			*filename;
+	int				expand_heredoc; // 1 means expand, 0 is not to expand
 	struct s_redir	*next;
 }	t_redir;
 
@@ -102,8 +104,10 @@ typedef struct s_shell
 	// Heredoc support
 	//int		heredoc_counter;	// Counter for unique heredoc filenames
 	t_var	*vars;
+	int		heredoc_counter;	// Counter for unique heredoc filenames
 } t_shell;
 
+# include "exe.h"			 // execution
 // Playground functions
 //int	shelly(void);
 
@@ -123,6 +127,7 @@ t_tokens		*process_single_token(t_arena *arena, char *input, int *i,
 t_tokens		*create_token(t_arena *arena, char *word);
 t_token_type	get_token_type(char *str);
 void			add_to_end(t_tokens **head, t_tokens *new_node);
+int				has_quotes(char *str);
 
 // Parsing input for correct tokenization functions
 

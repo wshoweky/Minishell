@@ -10,6 +10,32 @@ int	is_redirection(t_token_type check)
 	return (0);
 }
 
+/* Setup filename for redirection (helper for make_redir)
+**
+** For heredoc: strips quotes from delimiter and sets expansion flag
+** For other redirections: handles variable expansion in filename
+**
+** Return: 0 on success, -1 on errors
+*/
+static int	setup_redir_filename(t_shell *shell, t_tokens *tok,
+			t_redir *new)
+{
+	if (new->tok_type == TOKEN_HEREDOC)
+	{
+		new->expand_heredoc = !tok->was_quoted;
+		new->filename = strip_heredoc_delimiter_quotes(shell->arena,
+				tok->value);
+	}
+	else
+	{
+		if (work_on_filename(shell, tok, &new->filename) == -1)
+			return (-1);
+	}
+	if (!new->filename || new->filename[0] == 0)
+		return (err_msg_n_return_value("Minishell: No such file or directory\n", -1));
+	return (0);
+}
+
 /* Create and append a new redirection node to the command
 
 - Allocate memory for a new t_redir structure
@@ -31,7 +57,7 @@ int	make_redir(t_shell *shell, t_tokens *curr_tok, t_cmd *curr_cmd)
 	set_redir_type(curr_tok->type, &new->tok_type);
 	new->next = NULL;
 	*curr_tok = *curr_tok->next;
-	if (work_on_filename(shell, curr_tok, &new->filename) == -1)
+	if (setup_redir_filename(shell, curr_tok, new) == -1)
 		return (-1);
 	if (!curr_cmd->redirections)
 		curr_cmd->redirections = new;
@@ -70,8 +96,7 @@ int	work_on_filename(t_shell *shell, t_tokens *tok_name, char **name)
 		if (expand_variable_name(shell, &tok_name->value, 1) == -1)
 			return (-1);
 	}
-	if (tok_name->value[0] == 0)
-		return (0);
+	// Empty filename check is done in setup_redir_filename()
 	*name = ar_strdup(shell->arena, tok_name->value);
 	if (!*name)
 		return (err_msg_n_return_value("strdup failed for redir filename\n",

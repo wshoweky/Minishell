@@ -20,7 +20,11 @@ int	exe_cmd(t_shell *shell, t_cmd_table *cmd_table)
 {
 	if (!cmd_table || !cmd_table->list_of_cmds || !shell)
 		return (0);
-	// if (handle heredocs(shell, cmd_table) != 0)
+	if (handle_heredocs(shell, cmd_table) != 0)
+	{
+		cleanup_heredoc_files(cmd_table);
+		return (1);
+	}
 	if (cmd_table->cmd_count > 1)
 	{
 		execute_pipeline(shell, cmd_table);

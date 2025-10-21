@@ -63,3 +63,37 @@ void	free_partial_env(t_shell *shell, int count)
 		free(shell->env[i++]);
 	free(shell->env);
 }
+
+/**
+** cleanup_heredoc_files - Remove all temporary heredoc files
+**
+** CLEANUP STRATEGY:
+** 1. Traverse all commands in command table
+** 2. For each command with heredoc_filename: unlink() the file
+** 3. Set filename to NULL to prevent double-cleanup
+**
+** WHY UNLINK: Removes file from filesystem, frees disk space
+** WHEN CALLED: After command execution completes (success or failure)
+**
+**   cmd_table - Command table with potential heredoc files
+*/
+void	cleanup_heredoc_files(t_cmd_table *cmd_table)
+{
+	t_cmd	*current_cmd;
+
+	if (!cmd_table)
+		return ;
+	current_cmd = cmd_table->list_of_cmds;
+	while (current_cmd)
+	{
+		if (current_cmd->heredoc_filename)
+		{
+			/* Remove temporary file from filesystem */
+			if (unlink(current_cmd->heredoc_filename) == -1)
+				perror("minishell: heredoc cleanup");
+			/* Prevent double-cleanup */
+			current_cmd->heredoc_filename = NULL;
+		}
+		current_cmd = current_cmd->next_cmd;
+	}
+}

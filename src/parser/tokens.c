@@ -58,11 +58,14 @@ void	skip_whitespace(char *input, int *i)
 **   Returns head of token list or NULL on error
 */
 t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
-				t_tokens **head)
+			t_tokens **head)
 {
 	t_tokens	*new_token;
 	char		*token_value;
+	char		*pre_process_value;
+	int			start_i;
 
+	start_i = *i;
 	new_token = NULL;
 	token_value = extract_next_token(arena, input, i);
 	if (!token_value) // Error handling
@@ -70,6 +73,12 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 	new_token = create_token(arena, token_value);
 	if (!new_token) // Error handling
 		return (NULL);
+	pre_process_value = ft_substr(input, start_i, *i - start_i);
+	if (pre_process_value)
+	{
+		new_token->was_quoted = has_quotes(pre_process_value);
+		free(pre_process_value);
+	}
 	add_to_end(head, new_token);
 	// No need to free token_value as it's in the arena
 	return (*head);
@@ -98,4 +107,24 @@ char	*extract_next_token(t_arena *arena, char *input, int *i)
 	if (chop_up_input(arena, input, i, &string) == -1)
 		return (NULL);
 	return (check_for_quoted_string(arena, string));
+}
+
+/*
+** Check if the string has any quotes
+** Returns 1 if yes, 0 if no
+*/
+int		has_quotes(char *str)
+{
+	int	i;
+
+	if (!str)
+		return (0);
+	i = 0;
+	while (str[i])
+	{
+		if (str[i] == '\'' || str[i] == '"')
+			return (1);
+		i++;
+	}
+	return (0);
 }

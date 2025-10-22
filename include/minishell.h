@@ -44,16 +44,16 @@ typedef struct s_redir
 }	t_redir;
 
 // Command structure
-typedef struct	s_cmd
+typedef struct s_cmd
 {
 	char			**cmd_av;
 	t_redir			*redirections;  //to be used if there is redirections
 	char			*heredoc_filename; // Temporary file for heredoc input
 	struct s_cmd	*next_cmd;		//to be used if there is pipe
-} t_cmd;
+}	t_cmd;
 
 // Command table structure
-typedef struct	s_cmd_table
+typedef struct s_cmd_table
 {
 	int		cmd_count;
 	t_cmd	*list_of_cmds;
@@ -64,7 +64,6 @@ typedef struct s_var
 	char			*name;
 	char			*value;
 	int				equal_sign;
-	int				push_to_env;
 	struct s_var	*next_var;
 }	t_var;
 
@@ -105,7 +104,7 @@ typedef struct s_shell
 	//int		heredoc_counter;	// Counter for unique heredoc filenames
 	t_var	*vars;
 	int		heredoc_counter;	// Counter for unique heredoc filenames
-} t_shell;
+}	t_shell;
 
 # include "exe.h"			 // execution
 // Playground functions
@@ -173,7 +172,8 @@ int				check_current_token(t_shell *shell, t_tokens *token,
 					t_cmd **current_cmd, t_cmd_table *table);
 int				check_token_word(t_shell *shell, t_tokens *token,
 					t_cmd *current_cmd);
-int				expand_variable_name(t_shell *shell, char **original_string, int in_redir);
+int				expand_variable_name(t_shell *shell, char **original_string,
+					int in_redir);
 int				var_in_redir_outside_2xquotes(char *tok_value);
 int				add_argv(t_arena *arena, t_cmd *command, char *expansion);
 void			get_old_argv(char **old, char **new, size_t *i);
@@ -185,7 +185,8 @@ int				dollar_sign_encounter(t_shell *shell, char *input, size_t *i,
 					char **text);
 int				other_character(t_arena *arena, char **expand_text,
 					char current_char, int *in_quote);
-int				build_var_name(t_shell *shell, char *input, size_t *i, char **var_name);
+int				build_var_name(t_shell *shell, char *input, size_t *i,
+					char **var_name);
 int				transform_var_name(t_shell *shell, char **text, char *var_name);
 
 //	Redirection functions
@@ -193,6 +194,7 @@ int				transform_var_name(t_shell *shell, char **text, char *var_name);
 int				is_redirection(t_token_type check);
 int				make_redir(t_shell *shell, t_tokens *curr_tok, t_cmd *curr_cmd);
 void			set_redir_type(t_token_type tok_type, t_token_type *redir_type);
-int				work_on_filename(t_shell *shell, t_tokens *tok_name, char **name);
+int				work_on_filename(t_shell *shell, t_tokens *tok_name,
+					char **name);
 
 #endif

@@ -1,5 +1,12 @@
 #include "minishell.h"
 
+/*Entry point of the "export" function
+- If no argument after export, print out all exported variables. Otherwise:
+- Ensure there is no flag for export
+- Work on each variable following "export" with helper function
+
+Return: 0 on success, -1 on errors
+*/
 int	builtin_export(t_shell *shell, t_cmd *cmd)
 {
 	char	*name;
@@ -27,6 +34,11 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 	return (0);
 }
 
+/*Print out exported variables that were saved in the t_shell struct,
+format based on if variable has a value assigned or not
+
+Always return (0) for builtin_export() to return (0)
+*/
 int	plain_export(t_shell *shell)
 {
 	t_var	*print_this;
@@ -44,6 +56,15 @@ int	plain_export(t_shell *shell)
 	return (0);
 }
 
+/*Process the argument to export
+- Parse name and value into t_var in memory arena
+- Skip if name is "_"
+- Copy data to heap t_var for persistence between commands
+- Add to shell's exported variables list
+- If variable has a value assigned, update shell environment
+
+Return: 0 on success, -1 on errors
+*/
 int	export_this_var(t_shell *shell, char *arg)
 {
 	t_var	*arena_var;
@@ -52,26 +73,31 @@ int	export_this_var(t_shell *shell, char *arg)
 	arena_var = ar_alloc(shell->arena, sizeof(t_var));
 	if (!arena_var)
 		return (err_msg_n_return_value("Allocation failed for a t_var struct\n",
-			-1));
+				-1));
 	if (find_name_and_value(shell, arg, &arena_var) == -1)
 		return (-1);
+	if (!ft_strcmp(arena_var->name, "_"))
+		return (0);
 	shell_var = ft_calloc(1, sizeof(t_var));
 	if (!shell_var)
-		return (err_msg_n_return_value("Calloc failed for a t_var struct\n", -1));
+		return (err_msg_n_return_value("Calloc failed for t_var struct\n", -1));
 	if (copy_var_fr_arena_to_shell(arena_var, shell_var) == -1)
 		return (-1);
-	if (register_to_shell_vars(shell, shell_var) == -1)
-		return (-1);
+	register_to_shell_vars(shell, shell_var);
 	if (ft_strchr(arg, '='))
 	{
 		if (!set_shell_env_value(shell, shell_var->name, shell_var->value))
 			return (err_msg_n_return_value("Fail to export var to shell env\n",
-				-1));
-		shell_var->push_to_env = 1;
+					-1));
 	}
 	return (0);
 }
 
+/*Duplicating the data from the arena variable to the heap allocated variable
+(helper function of export_this_var())
+
+Return: 0 on success, -1 on errors
+*/
 int	copy_var_fr_arena_to_shell(t_var *arena_var, t_var *shell_var)
 {
 	shell_var->name = ft_strdup(arena_var->name);
@@ -83,61 +109,3 @@ int	copy_var_fr_arena_to_shell(t_var *arena_var, t_var *shell_var)
 	shell_var->equal_sign = arena_var->equal_sign;
 	return (0);
 }
-
-int	register_to_shell_vars(t_shell *shell, t_var *var)
-{
-	t_var	*find_place;
-	t_var	*behind_this;
-
-	if (!shell->vars)
-		shell->vars = var; 
-	else
-	{
-		if (ft_strcmp(var->name, shell->vars->name) <= 0)
-		{
-			if (ft_strcmp(var->name, shell->vars->name) == 0)
-			{
-				if (!var->equal_sign)
-				{
-					free_1_var(&var);
-					var = shell->vars;
-					return (1);
-				}
-				var->next_var = shell->vars->next_var;
-				free_1_var(&shell->vars);
-				shell->vars = var;
-				return (0);
-			}
-			var->next_var = shell->vars;
-			shell->vars = var;
-			return (0);
-		}
-		behind_this = shell->vars;
-		find_place = shell->vars->next_var;
-		while (find_place && ft_strcmp(find_place->name, var->name) < 0)
-		{
-			behind_this = find_place;
-			find_place = find_place->next_var;
-		}
-		if (find_place && ft_strcmp(find_place->name, var->name) == 0)
-		{
-			if (ft_strcmp(var->name, "_") != 0)
-			{
-				if (!var->equal_sign)
-				{
-					free_1_var(&var);
-					var = find_place;
-					return (1);
-				}
-				behind_this->next_var = var;
-				var->next_var = find_place->next_var;
-				free_1_var(&find_place);
-				return (0);
-			}
-		}
-		var->next_var = find_place;
-		behind_this->next_var = var;
-	}
-	return (0);
-}
-

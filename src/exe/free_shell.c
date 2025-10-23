@@ -26,7 +26,42 @@ void	free_shell(t_shell *shell)
 	free(shell->user);
 	free(shell->shell_name);
 	free_arena(shell->arena);
+	free_list_of_vars(&shell->vars);
 	free(shell);
+}
+
+void	free_list_of_vars(t_var **var)
+{
+	t_var	*tmp;
+
+	if (var)
+	{
+		while (*var)
+		{
+			tmp = (*var)->next_var;
+			free_1_var(var);
+			*var = tmp;
+		}
+	}
+}
+
+void	free_1_var(t_var **var)
+{
+	if (*var)
+	{
+		if ((*var)->name)
+		{
+			free ((*var)->name);
+			(*var)->name = NULL;
+		}
+		if ((*var)->value)
+		{
+			free ((*var)->value);
+			(*var)->value = NULL;
+		}
+		free (*var);
+		*var = NULL;
+	}
 }
 
 /**

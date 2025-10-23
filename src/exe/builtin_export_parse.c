@@ -43,7 +43,7 @@ int	this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var)
 	if (ft_strchr((*var)->name, '$') || ft_strchr((*var)->name, '&'))
 		if (expand_variable_name(shell, &(*var)->name, 0) == -1)
 			return (-1);
-	if ((*var)->name[0] == 0
+	if ((*var)->name[0] == 0 || ft_isdigit((*var)->name[0])
 		|| !ft_strcmp((*var)->name, "&") || !ft_strcmp((*var)->name, "&&"))
 		return (err_msg_n_return_value("Not a valid identifier\n", -1));
 	return (0);

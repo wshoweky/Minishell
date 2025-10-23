@@ -1,5 +1,23 @@
 #include "minishell.h"
 
+int	copy_vars_fr_env_to_export_list(t_shell *shell)
+{
+	int		i;
+	char	*copy;
+
+	i = 0;
+	while (i < shell->env_count)
+	{
+		copy = ar_strdup(shell->arena, shell->env[i]);
+		if (!copy)
+			return (err_msg_n_return_value("Copying env failed\n", -1));
+		if (export_this_var(shell, copy) == -1)
+			return (-1);
+		i++;
+	}
+	return (0);
+}
+
 /*Entry point of the "export" function
 - If no argument after export, print out all exported variables. Otherwise:
 - Ensure there is no flag for export
@@ -9,13 +27,11 @@ Return: 0 on success, -1 on errors
 */
 int	builtin_export(t_shell *shell, t_cmd *cmd)
 {
-	char	*name;
-	char	*value;
 	size_t	i;
 
-	name = NULL;
-	value = NULL;
 	i = 1;
+	if (copy_vars_fr_env_to_export_list(shell) == -1)
+		return (-1);
 	if (!cmd->cmd_av[1])
 		return (plain_export(shell));
 	while (cmd->cmd_av[i])

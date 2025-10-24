@@ -100,6 +100,35 @@ int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 	return (status);
 }
 
+static int	handle_eof_error(char *delimiter)
+{
+	ft_printf("minishell: warning: here-document delimited by ");
+	ft_printf("end-of-file (wanted `%s')\n", delimiter);
+	return (1);
+}
+
+static int	process_heredoc_line(t_shell *shell, t_redir *redir, int fd,
+		char *line)
+{
+	char	*expanded_line;
+
+	if (redir->expand_heredoc)
+		expanded_line = expand_heredoc_line(shell, line);
+	else
+		expanded_line = ar_strdup(shell->arena, line);
+	if (!expanded_line)
+	{
+		free(line);
+		return (1);
+	}
+	if (write_heredoc_line(fd, expanded_line) != 0)
+	{
+		free(line);
+		return (1);
+	}
+	return (0);
+}
+
 /**
 ** collect_heredoc_input - Interactive input collection for heredoc
 **
@@ -122,43 +151,21 @@ int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd)
 {
 	char	*line;
-	char	*expanded_line;
 	char	*delimiter;
 
 	delimiter = redir->filename;
 	while (1337)
 	{
-		/* Display heredoc prompt */
 		line = readline("> ");
-		/* Handle EOF (Ctrl+D) */
 		if (!line)
-		{
-			ft_printf("minishell: warning: here-document delimited by ");
-			ft_printf("end-of-file (wanted `%s')\n", delimiter);
-			return (1);
-		}
-		/* Check if line matches delimiter exactly */
+			return (handle_eof_error(delimiter));
 		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
 			return (0);
 		}
-		/* Expand variables only if delimiter was NOT quoted */
-		if (redir->expand_heredoc)
-			expanded_line = expand_heredoc_line(shell, line);
-		else
-			expanded_line = ar_strdup(shell->arena, line);
-		if (!expanded_line)
-		{
-			free(line);
+		if (process_heredoc_line(shell, redir, fd, line) != 0)
 			return (1);
-		}
-		/* Write line (expanded or literal) to temporary file */
-		if (write_heredoc_line(fd, expanded_line) != 0)
-		{
-			free(line);
-			return (1);
-		}
 		free(line);
 	}
 }

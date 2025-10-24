@@ -9,12 +9,8 @@ Return: 0 on success, -1 on errors
 */
 int	builtin_export(t_shell *shell, t_cmd *cmd)
 {
-	char	*name;
-	char	*value;
 	size_t	i;
 
-	name = NULL;
-	value = NULL;
 	i = 1;
 	if (!cmd->cmd_av[1])
 		return (plain_export(shell));

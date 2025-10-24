@@ -1,5 +1,8 @@
 #include "minishell.h"
 
+static char	*search_in_path(t_shell *shell, char *cmd, char **path_dirs);
+static char	*handle_absolute_path(t_shell *shell, char *cmd);
+
 /*
 ** find_executable - Find executable path for command
 **
@@ -19,24 +22,53 @@ char	*find_executable(t_shell *shell, char *cmd)
 {
 	char	*path_env;
 	char	**path_dirs;
-	char	*full_path;
-	int		i;
 
 	if (!cmd || !shell)
 		return (NULL);
-	// If command contains '/' it's a path (absolute or relative)
 	if (ft_strchr(cmd, '/'))
-	{
-		if (is_executable(cmd))
-			return (ar_strdup(shell->arena, cmd));
-		return (NULL);
-	}
+		return (handle_absolute_path(shell, cmd));
 	path_env = get_shell_env_value(shell, "PATH");
 	if (!path_env)
 		return (NULL);
 	path_dirs = ar_split(shell->arena, path_env, ':');
 	if (!path_dirs)
 		return (NULL);
+	return (search_in_path(shell, cmd, path_dirs));
+}
+
+/*
+** handle_absolute_path - Handle absolute or relative path commands
+**
+** PARAMETERS:
+**   shell - Shell state with arena
+**   cmd   - Command with path separator
+**
+** RETURN VALUE:
+**   Returns duplicated path if executable, NULL otherwise
+*/
+static char	*handle_absolute_path(t_shell *shell, char *cmd)
+{
+	if (is_executable(cmd))
+		return (ar_strdup(shell->arena, cmd));
+	return (NULL);
+}
+
+/*
+** search_in_path - Search for command in PATH directories
+**
+** PARAMETERS:
+**   shell     - Shell state with arena
+**   cmd       - Command name
+**   path_dirs - Array of PATH directories
+**
+** RETURN VALUE:
+**   Returns full path if found, NULL otherwise
+*/
+static char	*search_in_path(t_shell *shell, char *cmd, char **path_dirs)
+{
+	char	*full_path;
+	int		i;
+
 	i = 0;
 	while (path_dirs[i])
 	{
@@ -110,14 +142,12 @@ char	*build_path(t_shell *shell, char *dir, char *file)
 	if (!dir || !file || !shell)
 		return (NULL);
 	dir_len = ft_strlen(dir);
-	// Add slash if needed
 	if (dir_len > 0 && dir[dir_len - 1] != '/')
 	{
 		dir_with_slash = ar_strjoin(shell->arena, dir, "/");
 		if (!dir_with_slash)
 			return (NULL);
 		path = ar_strjoin(shell->arena, dir_with_slash, file);
-		// No need to free dir_with_slash - it's in arena
 	}
 	else
 		path = ar_strjoin(shell->arena, dir, file);

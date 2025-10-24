@@ -106,10 +106,8 @@ void	cleanup_heredoc_files(t_cmd_table *cmd_table)
 	{
 		if (current_cmd->heredoc_filename)
 		{
-			/* Remove temporary file from filesystem */
 			if (unlink(current_cmd->heredoc_filename) == -1)
 				perror("minishell: heredoc cleanup");
-			/* Prevent double-cleanup */
 			current_cmd->heredoc_filename = NULL;
 		}
 		current_cmd = current_cmd->next_cmd;

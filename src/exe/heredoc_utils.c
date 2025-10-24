@@ -177,13 +177,11 @@ int	write_heredoc_line(int fd, char *line)
 	if (!line)
 		return (0);
 	len = ft_strlen(line);
-	/* Write line content */
 	if (write(fd, line, len) != (ssize_t)len)
 	{
 		perror("minishell: heredoc: write failed");
 		return (1);
 	}
-	/* Write newline to preserve line structure */
 	if (write(fd, "\n", 1) != 1)
 	{
 		perror("minishell: heredoc: write failed");

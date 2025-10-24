@@ -1,5 +1,8 @@
 #include "minishell.h"
 
+static int	find_last_valid_cmd(t_shell *shell, int cmd_count);
+static void	process_child_exit_status(t_shell *shell, int status);
+
 /**
 ** alloc_pipe_array - Allocate array of pipe file descriptors
 **
@@ -25,15 +28,12 @@ int	**alloc_pipe_array(t_shell *shell, int cmd_count)
 	int	**pipe_array;
 	int	i;
 
-	/* N commands need (N-1) pipes for connections */
 	pipes_needed = cmd_count - 1;
 	if (pipes_needed <= 0)
 		return (NULL);
-	/* Allocate array of pointers to pipe pairs */
 	pipe_array = ar_alloc(shell->arena, sizeof(int *) * pipes_needed);
 	if (!pipe_array)
 		return (NULL);
-	/* Allocate each pipe pair [read_fd, write_fd] */
 	i = 0;
 	while (i < pipes_needed)
 	{
@@ -90,26 +90,24 @@ void	setup_pipe_fds(t_shell *shell, int cmd_index, int cmd_count)
  */
 void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd)
 {
-	int i;
-	int pipes_needed;
+	int	i;
+	int	pipes_needed;
 
 	i = 0;
 	pipes_needed = cmd_count - 1;
 	while (i < pipes_needed)
 	{
-		// Parent process or pipe not connected to this command: close both ends
 		if (current_cmd == -1 || (current_cmd != i && current_cmd != i + 1))
 		{
-			close(shell->pipe_array[i][0]); // Close read end
-			close(shell->pipe_array[i][1]); // Close write end
+			close(shell->pipe_array[i][0]);
+			close(shell->pipe_array[i][1]);
 		}
 		else
 		{
-			// For child process, close only unused pipe ends:
-			if (current_cmd == i + 1)           // Command reads from this pipe
-				close(shell->pipe_array[i][1]); // Close write end
-			if (current_cmd == i)               // Command writes to this pipe
-				close(shell->pipe_array[i][0]); // Close read end
+			if (current_cmd == i + 1)
+				close(shell->pipe_array[i][1]);
+			if (current_cmd == i)
+				close(shell->pipe_array[i][0]);
 		}
 		i++;
 	}
@@ -122,9 +120,11 @@ void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd)
 ** - Must wait for ALL children to prevent zombie processes
 ** - Children may exit in any order, but we wait sequentially (0→N)
 ** - Only the LAST command's exit status matters (bash behavior)
-** - waitpid() blocks if child still running, returns immediately if already exited
+** - waitpid() blocks if child still running,
+**	returns immediately if already exited
 **
-** WHY SEQUENTIAL WAIT: Simple, deterministic, and easy to identify last command.
+** WHY SEQUENTIAL WAIT: Simple, deterministic,
+**	and easy to identify last command.
 ** Waiting order doesn't affect correctness - only matters that we wait for ALL.
 **
 **   shell     - Shell state with pipe PIDs
@@ -136,39 +136,56 @@ void	wait_all_children(t_shell *shell, int cmd_count)
 	int	status;
 	int	last_valid_cmd_index;
 
-	/* Find the index of the last successfully forked command */
-	last_valid_cmd_index = -1;
+	last_valid_cmd_index = find_last_valid_cmd(shell, cmd_count);
+	i = 0;
+	while (i < cmd_count)
+	{
+		if (shell->pipe_pids[i] > 0)
+		{
+			waitpid(shell->pipe_pids[i], &status, 0);
+			if (i == last_valid_cmd_index)
+				process_child_exit_status(shell, status);
+		}
+		i++;
+	}
+}
+
+/**
+** find_last_valid_cmd - Find index of last successfully forked command
+**
+**   shell     - Shell state with pipe PIDs
+**   cmd_count - Number of commands
+**
+**   Returns: Index of last valid command, or -1 if none found
+*/
+static int	find_last_valid_cmd(t_shell *shell, int cmd_count)
+{
+	int	i;
+
 	i = cmd_count - 1;
 	while (i >= 0)
 	{
 		if (shell->pipe_pids[i] > 0)
-		{
-			last_valid_cmd_index = i;
-			break ;
-		}
+			return (i);
 		i--;
 	}
-	
-	/* Wait for all successfully forked children */
-	i = 0;
-	while (i < cmd_count)
-	{
-		/* Only wait for valid PIDs */
-		if (shell->pipe_pids[i] > 0)
-		{
-			waitpid(shell->pipe_pids[i], &status, 0);
-			/* Take exit status from the last valid command (rightmost in pipeline) */
-			if (i == last_valid_cmd_index)
-			{
-				/* Extract exit status from wait status */
-				if (WIFEXITED(status))
-					shell->last_exit_status = WEXITSTATUS(status);
-				else if (WIFSIGNALED(status))
-					shell->last_exit_status = 128 + WTERMSIG(status);
-				else
-					shell->last_exit_status = 1;
-			}
-		}
-		i++;
-	}
+	return (-1);
+}
+
+/**
+** process_child_exit_status - Extract and store exit status from child
+**
+** Called only for the last command in pipeline to get final exit status.
+**
+**   shell  - Shell state to update
+**   status - Wait status from waitpid
+*/
+static void	process_child_exit_status(t_shell *shell, int status)
+{
+	if (WIFEXITED(status))
+		shell->last_exit_status = WEXITSTATUS(status);
+	else if (WIFSIGNALED(status))
+		shell->last_exit_status = 128 + WTERMSIG(status);
+	else
+		shell->last_exit_status = 1;
 }

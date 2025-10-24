@@ -30,6 +30,7 @@ int	setup_redirections(t_cmd *cmd)
 	}
 	return (0);
 }
+
 /*
 ** setup_single_redirection - Setup a single redirection
 **
@@ -59,6 +60,7 @@ static int	setup_single_redirection(t_redir *redir, t_cmd *cmd)
 		return (handle_heredoc_file(cmd->heredoc_filename));
 	return (-1); // Unknown redirection type
 }
+
 /*
 ** handle_input_redirection - Handle input redirection (<)
 **
@@ -92,6 +94,7 @@ int	handle_input_redirection(char *filename)
 	close(fd);
 	return (0);
 }
+
 /*
 ** handle_output_redirection - Handle output redirection (>, >>)
 **
@@ -170,24 +173,3 @@ int	handle_heredoc_file(char *filename)
 	close(fd);
 	return (0);
 }
-// /*
-// ** handle_heredoc - Handle heredoc redirection (<<)
-// **
-// ** DESCRIPTION:
-// **   Creates temporary file for heredoc content and redirects stdin to it.
-// **   TODO: Implement heredoc functionality.
-// **
-// ** PARAMETERS:
-// **   delimiter - Heredoc delimiter string
-// **
-// ** RETURN VALUE:
-// **   Returns 0 on success, -1 on error
-// */
-// int	handle_heredoc(char *delimiter)
-// {
-// 	(void)delimiter; // Suppress unused parameter warning
-	
-// 	// TODO: Implement heredoc functionality
-// 	ft_printf("minishell: heredoc not yet implemented\n");
-// 	return (-1);
-// }

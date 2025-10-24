@@ -11,7 +11,7 @@ int	copy_vars_fr_env_to_export_list(t_shell *shell)
 		copy = ar_strdup(shell->arena, shell->env[i]);
 		if (!copy)
 			return (err_msg_n_return_value("Copying env failed\n", -1));
-		if (export_this_var(shell, copy) == -1)
+		if (export_this_var(shell, copy, 1) == -1)
 			return (-1);
 		i++;
 	}
@@ -30,8 +30,9 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 	size_t	i;
 
 	i = 1;
-	if (copy_vars_fr_env_to_export_list(shell) == -1)
-		return (-1);
+	if (!shell->vars)
+		if (copy_vars_fr_env_to_export_list(shell) == -1)
+			return (-1);
 	if (!cmd->cmd_av[1])
 		return (plain_export(shell));
 	while (cmd->cmd_av[i])
@@ -43,7 +44,7 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 	i = 1;
 	while (cmd->cmd_av[i])
 	{
-		if (export_this_var(shell, cmd->cmd_av[i]) == -1)
+		if (export_this_var(shell, cmd->cmd_av[i], 0) == -1)
 			return (-1);
 		i++;
 	}
@@ -81,7 +82,7 @@ int	plain_export(t_shell *shell)
 
 Return: 0 on success, -1 on errors
 */
-int	export_this_var(t_shell *shell, char *arg)
+int	export_this_var(t_shell *shell, char *arg, int initial_copy)
 {
 	t_var	*arena_var;
 	t_var	*shell_var;
@@ -92,7 +93,7 @@ int	export_this_var(t_shell *shell, char *arg)
 				-1));
 	if (find_name_and_value(shell, arg, &arena_var) == -1)
 		return (-1);
-	if (!ft_strcmp(arena_var->name, "_"))
+	if (!ft_strcmp(arena_var->name, "_") && initial_copy == 0) //check this!!
 		return (0);
 	shell_var = ft_calloc(1, sizeof(t_var));
 	if (!shell_var)

@@ -74,7 +74,7 @@ int	set_shell_env_value(t_shell *shell, char *name, char *value)
 **   shell - Shell state structure
 **   name  - Variable name to remove
 **
-**   Returns: 1 on success, 0 if variable not found
+**   Returns: 1 on success, 0 if variable not found, -1 on errors
 */
 int	unset_shell_env_value(t_shell *shell, char *name)
 {
@@ -82,9 +82,11 @@ int	unset_shell_env_value(t_shell *shell, char *name)
 	int	found_index;
 
 	if (!shell || !name)
-		return (0);
+		return (-1);
 	found_index = find_env_index(shell, name);
-	if (found_index < 0)
+	if (found_index == -1)
+		return (-1);
+	else if (found_index == -2)
 		return (0);
 	free(shell->env[found_index]);
 	i = found_index;

@@ -51,6 +51,7 @@ int		update_this_fella(t_var *var, t_var *find, t_var *behind);
 
 int		unset_this_var(t_shell *shell, char *input);
 void	unset_from_shell_vars(t_shell *shell, char *name);
+void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
 
 // Executable path resolution
 char	*find_executable(t_shell *shell, char *cmd);

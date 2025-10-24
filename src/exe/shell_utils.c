@@ -35,7 +35,7 @@ char	*create_env_string(char *name, char *value)
 **   shell - Shell state structure
 **   name  - Variable name to find
 **
-**   Returns: Index if found, -1 if not found
+**   Returns: Index if found, -1 if errors, -2 if not found
 */
 int	find_env_index(t_shell *shell, char *name)
 {
@@ -53,7 +53,7 @@ int	find_env_index(t_shell *shell, char *name)
 			return (i);
 		i++;
 	}
-	return (-1);
+	return (-2);
 }
 
 /**

@@ -38,7 +38,7 @@ int		builtin_exit(t_cmd *cmd);
 
 int		copy_vars_fr_env_to_export_list(t_shell *shell);
 int		plain_export(t_shell *shell);
-int		export_this_var(t_shell *shell, char *arg);
+int		export_this_var(t_shell *shell, char *arg, int initial_copy);
 int		find_name_and_value(t_shell *shell, char *arg, t_var **var);
 int		this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var);
 int		this_is_value(t_shell *shell, char *arg, size_t *i, t_var **var);

@@ -1,5 +1,10 @@
 #include "minishell.h"
 
+/*Meant for first time running export or unset.
+Copy all of the env variables and build the export list
+
+Return: 0 on success, -1 on errors
+*/
 int	copy_vars_fr_env_to_export_list(t_shell *shell)
 {
 	int		i;
@@ -75,7 +80,7 @@ int	plain_export(t_shell *shell)
 
 /*Process the argument to export
 - Parse name and value into t_var in memory arena
-- Skip if name is "_"
+- Copy everything from env list in the beginning, otherwise skip if name is "_"
 - Copy data to heap t_var for persistence between commands
 - Add to shell's exported variables list
 - If variable has a value assigned, update shell environment
@@ -93,7 +98,7 @@ int	export_this_var(t_shell *shell, char *arg, int initial_copy)
 				-1));
 	if (find_name_and_value(shell, arg, &arena_var) == -1)
 		return (-1);
-	if (!ft_strcmp(arena_var->name, "_") && initial_copy == 0) //check this!!
+	if (!ft_strcmp(arena_var->name, "_") && !initial_copy)
 		return (0);
 	shell_var = ft_calloc(1, sizeof(t_var));
 	if (!shell_var)
@@ -101,7 +106,7 @@ int	export_this_var(t_shell *shell, char *arg, int initial_copy)
 	if (copy_var_fr_arena_to_shell(arena_var, shell_var) == -1)
 		return (-1);
 	register_to_shell_vars(shell, shell_var);
-	if (ft_strchr(arg, '='))
+	if (ft_strchr(arg, '=') && !initial_copy)
 	{
 		if (!set_shell_env_value(shell, shell_var->name, shell_var->value))
 			return (err_msg_n_return_value("Fail to export var to shell env\n",

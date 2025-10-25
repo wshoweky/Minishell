@@ -82,8 +82,8 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     ✅ builtin_pwd(): WORKING - Correctly implemented
     ✅ builtin_env(): WORKING - Prints environment variables
     ⚠️  builtin_exit(): BASIC - Works but needs exit code validation and error handling
-    🔧 [TODO] builtin_export(): Not implemented yet
-    🔧 [TODO] builtin_unset(): Not implemented yet
+    ✅ builtin_export(): WORKING, but might miss edge cases, you never know :D
+    ✅ builtin_unset(): WORKING, but also might miss edge cases
 
 ✅ [COMPLETED] External command execution infrastructure
     - PATH resolution implemented (path_utils.c)
@@ -219,13 +219,13 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 7. Enhance builtin_exit() - Add exit code validation and error handling
 
 ⭐ MEDIUM PRIORITY (Complete Built-ins):
-8. Implement builtin_export() - Set/export environment variables
-9. Implement builtin_unset() - Remove environment variables
+8. ✅ Implement builtin_export() - Set/export environment variables
+9. ✅ Implement builtin_unset() - Remove environment variables
 10. Add error handling for command not found (exit 127)
 11. Add error handling for permission denied (exit 126)
 
 💡 POLISH & FEATURES:
-12. Implement variable expansion for $? (exit status)
+12. ✅ Implement variable expansion for $? (exit status)
 13. Add comprehensive error messages
 14. Handle signal interrupts (Ctrl+C, Ctrl+\, Ctrl+D)
 15. Advanced features and bonus items

@@ -156,6 +156,8 @@ int	exe_builtin(t_cmd *cmd, t_shell *shell)
 		return (builtin_exit(cmd));
 	else if (ft_strcmp(cmd_name, "export") == 0)
 		return (builtin_export(shell, cmd));
+	else if (ft_strcmp(cmd_name, "unset") == 0)
+		return (builtin_unset(shell, cmd));
 	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
 	return (1);
 }

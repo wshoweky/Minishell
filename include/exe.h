@@ -26,32 +26,39 @@ int							is_builtin(char *cmd);
 int							exe_builtin(t_cmd *cmd, t_shell *shell);
 
 // Individual built-in implementations
-int		builtin_echo(t_cmd *cmd);
-int		builtin_pwd(t_cmd *cmd);
-int		builtin_cd(t_cmd *cmd);
-int		builtin_env(t_shell *shell);
-int		builtin_export(t_shell *shell, t_cmd *cmd);
-int		builtin_unset(t_shell *shell, t_cmd *cmd);
-int		builtin_exit(t_cmd *cmd);
+int							builtin_echo(t_cmd *cmd);
+int							builtin_pwd(t_cmd *cmd);
+int							builtin_cd(t_cmd *cmd);
+int							builtin_env(t_shell *shell);
+int							builtin_export(t_shell *shell, t_cmd *cmd);
+int							builtin_unset(t_shell *shell, t_cmd *cmd);
+int							builtin_exit(t_cmd *cmd);
 
 // Export helper functions
 
-int		copy_vars_fr_env_to_export_list(t_shell *shell);
-int		plain_export(t_shell *shell);
-int		export_this_var(t_shell *shell, char *arg, int initial_copy);
-int		find_name_and_value(t_shell *shell, char *arg, t_var **var);
-int		this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var);
-int		this_is_value(t_shell *shell, char *arg, size_t *i, t_var **var);
-int		copy_var_fr_arena_to_shell(t_var *arena_var, t_var *shell_var);
-int		register_to_shell_vars(t_shell *shell, t_var *var);
-int		destined_to_be_first(t_shell *shell, t_var *var);
-int		update_this_fella(t_var *var, t_var *find, t_var *behind);
+int							copy_vars_fr_env_to_export_list(t_shell *shell);
+int							plain_export(t_shell *shell);
+int							export_this_var(t_shell *shell, char *arg,
+								int initial_copy);
+int							find_name_and_value(t_shell *shell, char *arg,
+								t_var **var);
+int							this_is_name(t_shell *shell, char *arg, size_t *i,
+								t_var **var);
+int							this_is_value(t_shell *shell, char *arg, size_t *i,
+								t_var **var);
+int							copy_var_fr_arena_to_shell(t_var *arena_var,
+								t_var *shell_var);
+int							register_to_shell_vars(t_shell *shell, t_var *var);
+int							destined_to_be_first(t_shell *shell, t_var *var);
+int							update_this_fella(t_var *var, t_var *find,
+								t_var *behind);
 
 // Unset helper functions
 
-int		unset_this_var(t_shell *shell, char *input);
-void	unset_from_shell_vars(t_shell *shell, char *name);
-void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
+int							unset_this_var(t_shell *shell, char *input);
+void						unset_from_shell_vars(t_shell *shell, char *name);
+void						perform_exorcism_on_doppelganger(t_shell *shell,
+								char *name);
 
 // Executable path resolution
 char						*find_executable(t_shell *shell, char *cmd);
@@ -108,7 +115,6 @@ int							resize_env_if_needed(t_shell *shell);
 int							update_shell_cwd(t_shell *shell);
 
 // Heredoc utilities
-
 int							handle_heredocs(t_shell *shell,
 								t_cmd_table *cmd_table);
 int							handle_heredoc_file(char *heredoc_filename);
@@ -119,12 +125,18 @@ int							collect_heredoc_input(t_shell *shell,
 char						*generate_filename(t_shell *shell);
 
 //	Heredoc functions
-
 char						*expand_heredoc_line(t_shell *shell, char *line);
 char						*generate_filename(t_shell *shell);
 int							write_heredoc_line(int fd, char *line);
 char						*strip_heredoc_delimiter_quotes(t_arena *arena,
 								char *delimiter);
 void						cleanup_heredoc_files(t_cmd_table *cmd_table);
+
+// Signal handling
+void						setup_signal_handlers(void);
+void						handle_sigint(int signo);
+void						restore_interactive_signals(void);
+void						reset_signals_for_child(void);
+int							disable_echoctl(void);
 
 #endif

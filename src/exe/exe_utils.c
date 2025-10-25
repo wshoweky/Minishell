@@ -109,6 +109,7 @@ int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 	}
 	if (pid == 0)
 	{
+		// reset_signals_for_child(); // Reset signals for child process
 		if (setup_redirections(cmd) != 0)
 			exit(1);
 		exit(exe_builtin(cmd, shell));
@@ -170,5 +171,7 @@ int	wait_and_get_status(pid_t pid)
 	waitpid(pid, &status, 0);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
+	if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
 	return (1);
 }

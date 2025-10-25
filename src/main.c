@@ -30,6 +30,9 @@ int	main(int ac, char **av, char **env)
 		ft_printf("Failed to initialize shell\n");
 		return (1);
 	}
+	// disable_echoctl();
+	// Setup signal handlers for interactive shell
+	// setup_signal_handlers();
 	while (1337)
 	{
 		input = readline(get_colored_prompt());  // Allocates memory for input, must be freed

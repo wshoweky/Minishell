@@ -4,6 +4,7 @@
 # include <stdio.h>    // printf, perror
 # include <fcntl.h>    // open
 # include <signal.h>   // signals
+# include <termios.h>   // terminal attributes
 # include <time.h>     // time sleep usleep
 # include <errno.h>    // ENOENT
 # include <sys/wait.h> // wait, waitpid
@@ -14,6 +15,7 @@
 # include <termios.h>   // terminal interface
 # include "../libft/libft.h"
 
+extern volatile sig_atomic_t	g_signal; // Global variable to track signal state
 
 // Token types
 typedef enum e_token_type

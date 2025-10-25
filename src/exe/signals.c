@@ -15,6 +15,27 @@
 // 	return (0);
 // }
 
+// void	reset_signals_for_child(void)
+// {
+// 	signal(SIGINT, SIG_DFL);  // Reset SIGINT to default behavior
+// 	signal(SIGQUIT, SIG_DFL); // Reset SIGQUIT to default behavior
+// }
+
+// void	restore_interactive_signals(void)
+// {
+// 	struct sigaction	sa;
+
+// 	sa.sa_handler = handle_sigint; // Custom handler for SIGINT
+// 	sigemptyset(&sa.sa_mask); // No additional signals blocked during handler
+// 	sa.sa_flags = SA_RESTART; // Restart interrupted syscalls
+// 	sigaction(SIGINT, &sa, NULL); // Apply SIGINT handler
+// 	sa.sa_handler = SIG_IGN; // Ignore SIGQUIT
+// 	sa.sa_flags = 0; // No special flags
+// 	sigaction(SIGQUIT, &sa, NULL); // Apply SIGQUIT handler
+// 	rl_event_hook = NULL; // Clear readline event hook
+// 	g_signal = 0; // Reset global signal state
+// }
+
 // void	handle_sigint(int sig)
 // {
 // 	g_signal = sig; // Update global signal state

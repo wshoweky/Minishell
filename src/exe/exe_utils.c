@@ -39,6 +39,7 @@ int	is_non_forkable_builtin(char *cmd_name)
 */
 void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 {
+	reset_signals_for_child(); // Reset signals for child process
 	if (setup_redirections(cmd) != 0)
 		exit(1);
 	if (execve(path, cmd->cmd_av, shell->env) == -1)
@@ -109,7 +110,7 @@ int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 	}
 	if (pid == 0)
 	{
-		// reset_signals_for_child(); // Reset signals for child process
+		reset_signals_for_child(); // Reset signals for child process
 		if (setup_redirections(cmd) != 0)
 			exit(1);
 		exit(exe_builtin(cmd, shell));

@@ -133,10 +133,13 @@ char						*strip_heredoc_delimiter_quotes(t_arena *arena,
 void						cleanup_heredoc_files(t_cmd_table *cmd_table);
 
 // Signal handling
-void						setup_signal_handlers(void);
+int						setup_signal_handlers(void);
 void						handle_sigint(int signo);
 void						restore_interactive_signals(void);
 void						reset_signals_for_child(void);
 int							disable_echoctl(void);
+int							heredoc_event_hook(void);
+void						setup_heredoc_signals(void);
+void						handle_heredoc_sigint(int signum);
 
 #endif

@@ -18,25 +18,20 @@ int	dispatch_builtin(t_cmd *cmd, t_shell *shell);
 */
 int	exe_cmd(t_shell *shell, t_cmd_table *cmd_table)
 {
-	int	exit_status;
-
 	if (!cmd_table || !cmd_table->list_of_cmds || !shell)
 		return (0);
 	if (handle_heredocs(shell, cmd_table) != 0)
 	{
 		cleanup_heredoc_files(cmd_table);
-		return (1);
+		return (shell->last_exit_status);
 	}
 	/* Execute the command(s) */
 	if (cmd_table->cmd_count > 1)
-	{
 		execute_pipeline(shell, cmd_table);
-		exit_status = shell->last_exit_status;
-	}
 	else
-		exit_status = exe_single_cmd(shell, cmd_table->list_of_cmds);
+		shell->last_exit_status = exe_single_cmd(shell, cmd_table->list_of_cmds);
 	cleanup_heredoc_files(cmd_table);
-	return (exit_status);
+	return (shell->last_exit_status);
 }
 
 /*
@@ -164,6 +159,5 @@ int	exe_builtin(t_cmd *cmd, t_shell *shell)
 		return (builtin_export(shell, cmd));
 	else if (ft_strcmp(cmd_name, "unset") == 0)
 		return (builtin_unset(shell, cmd));
-	ft_printf("Built-in '%s' not yet implemented\n", cmd_name);
 	return (1);
 }

@@ -82,7 +82,7 @@ char	*expand_heredoc_line(t_shell *shell, char *line)
 	}
 	return (expanded);
 }
-
+void	parse_heredoc_delimiter(t_arena *arena, char *delimiter, char **result);
 /**
 ** strip_heredoc_delimiter_quotes - Remove all quotes from heredoc delimiter
 **
@@ -102,24 +102,37 @@ char	*expand_heredoc_line(t_shell *shell, char *line)
 char	*strip_heredoc_delimiter_quotes(t_arena *arena, char *delimiter)
 {
 	char	*result;
-	int		i;
-	int		j;
 
 	if (!delimiter)
 		return (NULL);
 	result = ar_alloc(arena, ft_strlen(delimiter) + 1);
 	if (!result)
 		return (NULL);
+	parse_heredoc_delimiter(arena, delimiter, &result);
+	return (result);
+}
+
+void	parse_heredoc_delimiter(t_arena *arena, char *delimiter, char **result)
+{
+	char	quote;
+	int		in_quote;
+	int		i;
+
 	i = 0;
-	j = 0;
+	in_quote = 0;
 	while (delimiter[i])
 	{
-		if (delimiter[i] != '\'' && delimiter[i] != '"')
-			result[j++] = delimiter[i];
+		if (!in_quote && (delimiter[i] == '"' || delimiter[i] == '\''))
+		{
+			in_quote = 1;
+			quote = delimiter[i];
+		}
+		else if (in_quote && delimiter[i] == quote)
+			in_quote = 0;
+		else
+			*result = ar_add_char_to_str(arena, *result, delimiter[i]);
 		i++;
 	}
-	result[j] = '\0';
-	return (result);
 }
 
 /**

@@ -23,8 +23,18 @@ static int	setup_redir_filename(t_shell *shell, t_tokens *tok,
 	if (new->tok_type == TOKEN_HEREDOC)
 	{
 		new->expand_heredoc = !tok->was_quoted;
-		new->filename = strip_heredoc_delimiter_quotes(shell->arena,
+		if (ft_strchr(tok->value, '$') || ft_strchr(tok->value, '&'))
+		{	
+			new->filename = strip_heredoc_delimiter_quotes(shell->arena, 
 				tok->value);
+		}
+		else
+		{
+			new->filename = ar_strdup(shell->arena, tok->value);
+			if (!new->filename)
+				return (err_msg_n_return_value("strdup failed for heredoc eof "
+					"with no expansion\n", -1));
+		}
 	}
 	else
 	{

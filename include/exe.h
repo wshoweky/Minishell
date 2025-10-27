@@ -26,39 +26,32 @@ int							is_builtin(char *cmd);
 int							exe_builtin(t_cmd *cmd, t_shell *shell);
 
 // Individual built-in implementations
-int							builtin_echo(t_cmd *cmd);
-int							builtin_pwd(t_cmd *cmd);
-int							builtin_cd(t_cmd *cmd);
-int							builtin_env(t_shell *shell);
-int							builtin_export(t_shell *shell, t_cmd *cmd);
-int							builtin_unset(t_shell *shell, t_cmd *cmd);
-int							builtin_exit(t_cmd *cmd);
+int		builtin_echo(t_cmd *cmd);
+int		builtin_pwd(t_cmd *cmd);
+int		builtin_cd(t_cmd *cmd);
+int		builtin_env(t_shell *shell);
+int		builtin_export(t_shell *shell, t_cmd *cmd);
+int		builtin_unset(t_shell *shell, t_cmd *cmd);
+int		builtin_exit(t_cmd *cmd);
 
 // Export helper functions
 
-int							copy_vars_fr_env_to_export_list(t_shell *shell);
-int							plain_export(t_shell *shell);
-int							export_this_var(t_shell *shell, char *arg,
-								int initial_copy);
-int							find_name_and_value(t_shell *shell, char *arg,
-								t_var **var);
-int							this_is_name(t_shell *shell, char *arg, size_t *i,
-								t_var **var);
-int							this_is_value(t_shell *shell, char *arg, size_t *i,
-								t_var **var);
-int							copy_var_fr_arena_to_shell(t_var *arena_var,
-								t_var *shell_var);
-int							register_to_shell_vars(t_shell *shell, t_var *var);
-int							destined_to_be_first(t_shell *shell, t_var *var);
-int							update_this_fella(t_var *var, t_var *find,
-								t_var *behind);
+int		copy_vars_fr_env_to_export_list(t_shell *shell);
+int		plain_export(t_shell *shell);
+int		export_this_var(t_shell *shell, char *arg, int initial_copy);
+int		find_name_and_value(t_shell *shell, char *arg, t_var **var);
+int		this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var);
+int		this_is_value(t_shell *shell, char *arg, size_t *i, t_var **var);
+int		copy_var_fr_arena_to_shell(t_var *arena_var, t_var *shell_var);
+int		register_to_shell_vars(t_shell *shell, t_var *var);
+int		destined_to_be_first(t_shell *shell, t_var *var);
+int		update_this_fella(t_var *var, t_var *find, t_var *behind);
 
 // Unset helper functions
 
-int							unset_this_var(t_shell *shell, char *input);
-void						unset_from_shell_vars(t_shell *shell, char *name);
-void						perform_exorcism_on_doppelganger(t_shell *shell,
-								char *name);
+int		unset_this_var(t_shell *shell, char *input);
+void	unset_from_shell_vars(t_shell *shell, char *name);
+void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
 
 // Executable path resolution
 char						*find_executable(t_shell *shell, char *cmd);

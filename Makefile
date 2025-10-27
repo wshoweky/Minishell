@@ -3,7 +3,7 @@ NAME = minishell
 CC = cc 
 
 
-CFLAG = -Wall -Wextra -Werror -g3 -O0 -ggdb3 #-fno-omit-frame-pointer -fsanitize=address
+CFLAG = -Wall -Wextra -Werror #-g3 -O0 -ggdb3 #-fno-omit-frame-pointer -fsanitize=address
 
 # Colors for output
 RED = \033[31m
@@ -44,7 +44,9 @@ SRC = src/main.c \
 	  src/exe/pipeline.c \
 	  src/exe/pipe_utils.c \
 	  src/exe/heredoc.c \
-	  src/exe/heredoc_utils.c
+	  src/exe/heredoc_utils.c \
+	  src/exe/signals.c \
+	  src/exe/signals_for_heredoc.c
 	
 
 

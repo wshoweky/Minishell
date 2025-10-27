@@ -87,17 +87,52 @@ int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 
 	if (!shell || !redir || !filename)
 		return (1);
-	/* Create temporary file for writing heredoc content */
 	fd = open(filename, O_CREAT | O_TRUNC | O_WRONLY, 0644);
 	if (fd == -1)
 	{
 		perror("minishell: heredoc: failed to create temporary file");
 		return (1);
 	}
-	/* Collect user input until delimiter is found */
 	status = collect_heredoc_input(shell, redir, fd);
 	close(fd);
 	return (status);
+}
+
+static int	handle_eof_error(t_shell *shell, char *delimiter)
+{
+	if (!g_signal)
+	{
+		ft_printf("minishell: warning: here-document delimited by ");
+		ft_printf("end-of-file (wanted `%s')\n", delimiter);
+	}
+	shell->last_exit_status = 0;
+	return (1);
+}
+
+static int	process_heredoc_line(t_shell *shell, t_redir *redir, int fd,
+		char *line)
+{
+	char	*expanded_line;
+
+	if (!line || !redir || !shell)
+		return (1);
+	if (redir->expand_heredoc)
+		expanded_line = expand_heredoc_line(shell, line);
+	else
+		expanded_line = ar_strdup(shell->arena, line);
+	if (!expanded_line)
+	{
+		if (line)
+			free(line);
+		return (1);
+	}
+	if (write_heredoc_line(fd, expanded_line) != 0)
+	{
+		if (line)
+			free(line);
+		return (1);
+	}
+	return (0);
 }
 
 /**
@@ -122,43 +157,38 @@ int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd)
 {
 	char	*line;
-	char	*expanded_line;
 	char	*delimiter;
 
+	setup_heredoc_signals();
 	delimiter = redir->filename;
 	while (1337)
 	{
-		/* Display heredoc prompt */
 		line = readline("> ");
-		/* Handle EOF (Ctrl+D) */
-		if (!line)
+		if (g_signal == SIGINT)
 		{
-			ft_printf("minishell: warning: here-document delimited by ");
-			ft_printf("end-of-file (wanted `%s')\n", delimiter);
+			if (line)
+				free(line);
+			restore_interactive_signals();
+			shell->last_exit_status = 130;
 			return (1);
 		}
-		/* Check if line matches delimiter exactly */
+		if (!line)
+		{
+			restore_interactive_signals();
+			return (handle_eof_error(shell, delimiter));
+		}
 		if (ft_strcmp(line, delimiter) == 0)
 		{
 			free(line);
+			restore_interactive_signals();
 			return (0);
 		}
-		/* Expand variables only if delimiter was NOT quoted */
-		if (redir->expand_heredoc)
-			expanded_line = expand_heredoc_line(shell, line);
-		else
-			expanded_line = ar_strdup(shell->arena, line);
-		if (!expanded_line)
+		if (process_heredoc_line(shell, redir, fd, line) != 0)
 		{
-			free(line);
-			return (1);
-		}
-		/* Write line (expanded or literal) to temporary file */
-		if (write_heredoc_line(fd, expanded_line) != 0)
-		{
-			free(line);
+			restore_interactive_signals();
 			return (1);
 		}
 		free(line);
 	}
 }
+

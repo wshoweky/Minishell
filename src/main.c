@@ -1,7 +1,4 @@
 #include "minishell.h"
-//#include "exe.h"
-
-// follow and update the todo_list.txt ✨
 
 static const char	*get_colored_prompt(void);
 
@@ -21,13 +18,18 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_cmd_table	*cmd_table;
 	t_shell		*shell;
-	int			exit_status;
 
-	exit_status = 0;
 	shell = init_shell(ac, av, env);
 	if (!shell)
 	{
 		ft_printf("Failed to initialize shell\n");
+		return (1);
+	}
+	disable_echoctl();
+	if (setup_signal_handlers() == -1)
+	{
+		ft_printf("Failed to set up signal handlers\n");
+		free_shell(shell);
 		return (1);
 	}
 	while (1337)
@@ -57,19 +59,17 @@ int	main(int ac, char **av, char **env)
 			cmd_table = register_to_table(shell, tokens);
 			if (cmd_table)
 			{
-				exit_status = exe_cmd(shell, cmd_table);
-				shell->last_exit_status = exit_status;
-				ft_printf("Command executed with exit status: %d\n", exit_status);
+				exe_cmd(shell, cmd_table);
+				ft_printf("Command executed with exit status: %d\n",
+					shell->last_exit_status);
 			}
-			// No need to free tokens or cmd_table as they're in the arena
 			free(input);
 		}
-		// Reset arena for next command
 		ar_reset(shell->arena);
+		g_signal = 0;
 	}
-	// Cleanup arena and shell before exit
 	free_shell(shell);
-	return (exit_status);
+	return (shell->last_exit_status);
 }
 
 

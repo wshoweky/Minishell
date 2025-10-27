@@ -5,14 +5,14 @@
 **
 ** Why Arrays Instead of Linked Lists?
 ** ==================================
-** 
+**
 ** 1. RANDOM ACCESS: Pipeline execution requires O(1) access by command index
 **    - Command i needs pipe[i-1] for input and pipe[i] for output
 **    - Linked lists would require O(n) traversal for each access
 **
 ** 2. INDEX-BASED LOGIC: Pipeline connections are fundamentally indexed:
 **    - cmd[0]: stdin → pipe[0]
-**    - cmd[1]: pipe[0] → pipe[1] 
+**    - cmd[1]: pipe[0] → pipe[1]
 **    - cmd[2]: pipe[1] → pipe[2]
 **    - cmd[n]: pipe[n-1] → stdout
 **
@@ -25,8 +25,12 @@
 
 static int	init_pipeline(t_shell *shell, int cmd_count);
 static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table);
-static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i, int cmd_count);
+static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
+				int cmd_count);
 static void	close_partial_pipes(t_shell *shell, int pipes_created);
+static int	create_pipe_for_cmd(t_shell *shell, int i, int cmd_count);
+static int	process_pipeline_cmd(t_shell *shell, t_cmd **cmd, int i,
+				int cmd_count);
 
 /**
 ** execute_pipeline - Execute a pipeline of commands
@@ -50,17 +54,12 @@ void	execute_pipeline(t_shell *shell, t_cmd_table *cmd_table)
 	if (!cmd_table || !cmd_table->list_of_cmds)
 		return ;
 	cmd_count = cmd_table->cmd_count;
-	/* Initialize arrays for pipes and PIDs - using arrays for O(1) access */
 	if (!init_pipeline(shell, cmd_count))
 		return ;
-	/* Initialize successful fork counter */
 	shell->children_forked = 0;
-	/* Fork all commands and set up pipe connections */
 	execute_pipeline_loop(shell, cmd_table);
-	/* Parent closes all pipe ends (children have their own copies) */
 	if (shell->children_forked > 0)
 		close_unused_pipes(shell, cmd_count, -1);
-	/* Wait for all children and get exit status from last command */
 	if (shell->children_forked > 0)
 		wait_all_children(shell, cmd_count);
 }
@@ -83,13 +82,12 @@ void	execute_pipeline(t_shell *shell, t_cmd_table *cmd_table)
 */
 static int	init_pipeline(t_shell *shell, int cmd_count)
 {
-	/* Allocate array of pipe file descriptor pairs */
 	shell->pipe_array = alloc_pipe_array(shell, cmd_count);
-	/* Allocate array to track child process PIDs */
 	shell->pipe_pids = ar_alloc(shell->arena, sizeof(int) * cmd_count);
 	if (!shell->pipe_pids || !shell->pipe_array)
 	{
-		write(STDERR_FILENO, "minishell: pipeline: memory allocation failed\n", 47);
+		write(STDERR_FILENO, "minishell: pipeline: memory allocation failed\n",
+			47);
 		shell->last_exit_status = 1;
 		return (0);
 	}
@@ -123,25 +121,59 @@ static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table)
 	i = 0;
 	while (i < cmd_count && current_cmd)
 	{
-		if (i < cmd_count - 1)
-		{
-			if (pipe(shell->pipe_array[i]) < 0)
-			{
-				perror("minishell: pipe");
-				shell->last_exit_status = 1;
-				close_partial_pipes(shell, i);
-				return ;
-			}
-		}
-		fork_pipeline_child(shell, current_cmd, i, cmd_count);
-		if (shell->pipe_pids[i] < 0)
-		{
-			close_partial_pipes(shell, i + 1);
+		if (process_pipeline_cmd(shell, &current_cmd, i, cmd_count) == -1)
 			return ;
-		}
-		current_cmd = current_cmd->next_cmd;
 		i++;
 	}
+}
+
+/**
+** create_pipe_for_cmd - Create pipe for command if not last in pipeline
+**
+**   shell     - Shell state structure
+**   i         - Current command index
+**   cmd_count - Total number of commands
+**
+**   Returns: 0 on success, -1 on error
+*/
+static int	create_pipe_for_cmd(t_shell *shell, int i, int cmd_count)
+{
+	if (i < cmd_count - 1)
+	{
+		if (pipe(shell->pipe_array[i]) < 0)
+		{
+			perror("minishell: pipe");
+			shell->last_exit_status = 1;
+			close_partial_pipes(shell, i);
+			return (-1);
+		}
+	}
+	return (0);
+}
+
+/**
+** process_pipeline_cmd - Process single command in pipeline
+**
+**   shell     - Shell state structure
+**   cmd       - Pointer to current command (will be advanced)
+**   i         - Current command index
+**   cmd_count - Total number of commands
+**
+**   Returns: 0 on success, -1 on error
+*/
+static int	process_pipeline_cmd(t_shell *shell, t_cmd **cmd, int i,
+		int cmd_count)
+{
+	if (create_pipe_for_cmd(shell, i, cmd_count) == -1)
+		return (-1);
+	fork_pipeline_child(shell, *cmd, i, cmd_count);
+	if (shell->pipe_pids[i] < 0)
+	{
+		close_partial_pipes(shell, i + 1);
+		return (-1);
+	}
+	*cmd = (*cmd)->next_cmd;
+	return (0);
 }
 
 /**
@@ -160,18 +192,15 @@ static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table)
 **   i         - Command index in pipeline (0-based)
 **   cmd_count - Total number of commands
 */
-static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i, int cmd_count)
+static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
+		int cmd_count)
 {
 	shell->pipe_pids[i] = fork();
 	if (shell->pipe_pids[i] == 0)
 	{
-		/* CHILD PROCESS: Set up pipe connections based on position */
 		setup_pipe_fds(shell, i, cmd_count);
-		/* Close all pipe ends not needed by this command */
 		close_unused_pipes(shell, cmd_count, i);
-		/* Execute the command (this function handles builtins vs external) */
 		exe_single_cmd(shell, cmd);
-		/* Child must exit to avoid continuing pipeline loop */
 		exit(shell->last_exit_status);
 	}
 	else if (shell->pipe_pids[i] < 0)
@@ -201,9 +230,8 @@ static void	close_partial_pipes(t_shell *shell, int pipes_created)
 	i = 0;
 	while (i < pipes_created)
 	{
-		/* Close both ends of successfully created pipes */
-		close(shell->pipe_array[i][0]);  /* Close read end */
-		close(shell->pipe_array[i][1]);  /* Close write end */
+		close(shell->pipe_array[i][0]);
+		close(shell->pipe_array[i][1]);
 		i++;
 	}
 }

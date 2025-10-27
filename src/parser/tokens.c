@@ -58,7 +58,7 @@ void	skip_whitespace(char *input, int *i)
 **   Returns head of token list or NULL on error
 */
 t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
-			t_tokens **head)
+		t_tokens **head)
 {
 	t_tokens	*new_token;
 	char		*token_value;
@@ -68,10 +68,10 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 	start_i = *i;
 	new_token = NULL;
 	token_value = extract_next_token(arena, input, i);
-	if (!token_value) // Error handling
+	if (!token_value)
 		return (NULL);
 	new_token = create_token(arena, token_value);
-	if (!new_token) // Error handling
+	if (!new_token)
 		return (NULL);
 	pre_process_value = ft_substr(input, start_i, *i - start_i);
 	if (pre_process_value)
@@ -80,7 +80,6 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 		free(pre_process_value);
 	}
 	add_to_end(head, new_token);
-	// No need to free token_value as it's in the arena
 	return (*head);
 }
 
@@ -113,7 +112,7 @@ char	*extract_next_token(t_arena *arena, char *input, int *i)
 ** Check if the string has any quotes
 ** Returns 1 if yes, 0 if no
 */
-int		has_quotes(char *str)
+int	has_quotes(char *str)
 {
 	int	i;
 

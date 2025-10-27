@@ -1,0 +1,59 @@
+# Compiled binaries
+minishell
+a.out
+
+# Object files
+*.o
+*.a
+
+# Debug files
+*.dSYM/
+vgcore.*
+
+# Test files
+test
+test.txt
+ls
+output.txt
+input.txt
+debug_in
+debug_out
+
+# Valgrind output
+valgrind-out.txt
+*.log
+
+# Core dumps
+core
+core.*
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Editor files
+*.swp
+*.swo
+*~
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+.*.tmp
+
+# Personal notes and debug files
+debug.txt
+notes.txt
+todo_list.txt
+t_shell.txt
+builtins.txt
+
+# Readline history
+.minishell_history
+
+# Compiled libft
+libft/libft.a
+libft/**/*.o

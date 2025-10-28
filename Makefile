@@ -23,7 +23,8 @@ SRC = src/main.c \
  	  src/parser/build_cmd_table.c \
 	  src/parser/build_cmd_table_redir.c \
 	  src/parser/build_cmd_table_word.c \
-	  src/parser/build_cmd_table_var.c \
+	  src/parser/build_cmdtbl_var_1.c \
+	  src/parser/build_cmdtbl_var_2.c \
 	  src/parser/arena.c \
 	  src/parser/arena_utils.c \
 	  src/parser/arena_split.c \

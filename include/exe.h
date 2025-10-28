@@ -27,6 +27,7 @@ int		exe_builtin(t_cmd *cmd, t_shell *shell);
 
 // Individual built-in implementations
 int		builtin_echo(t_cmd *cmd);
+int		nl_flag_acceptable(char *cmd_av, int *newline);
 int		builtin_pwd(t_cmd *cmd);
 int		builtin_cd(t_cmd *cmd);
 int		builtin_env(t_shell *shell);

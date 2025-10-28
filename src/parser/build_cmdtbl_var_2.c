@@ -28,7 +28,7 @@ int	dollar_sign_encounter(t_shell *shell, char *input, size_t *i, char **text)
 		{
 			*text = ar_add_char_to_str(shell->arena, *text, '$');
 			if (!*text)
-				return (err_msg_n_return_value("Error adding $ to string\n", -1));
+				return (err_msg_n_return_value("Error adding $ to str\n", -1));
 		}
 	}
 	return (0);
@@ -53,8 +53,8 @@ int	build_var_name(t_shell *shell, char *input, size_t *i, char **var_name)
 		if (print_sign == 1)
 			return (0);
 	}
-	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' 
-		|| input[*i	+ 1] == '?')
+	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_'
+		|| input[*i + 1] == '?')
 	{
 		*var_name = ar_add_char_to_str(shell->arena, *var_name, input[*i + 1]);
 		if (!*var_name)

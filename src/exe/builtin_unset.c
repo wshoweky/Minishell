@@ -1,7 +1,7 @@
 #include "minishell.h"
 
 /*Entry point of the "unset" function
-- Start the shell->vars list if there was no list
+- Copy shell env variables to export list
 - If no argument after unset, do nothing. Otherwise:
 - Ensure there is no flag for unset
 - Work on each variable following "unset" with helper function
@@ -14,9 +14,8 @@ int	builtin_unset(t_shell *shell, t_cmd *cmd)
 
 	if (!cmd->cmd_av[1])
 		return (0);
-	if (!shell->vars)
-		if (copy_vars_fr_env_to_export_list(shell) == -1)
-			return (-1);
+	if (copy_vars_fr_env_to_export_list(shell) == -1)
+		return (-1);
 	i = 1;
 	while (cmd->cmd_av[i])
 	{

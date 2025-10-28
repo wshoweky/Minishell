@@ -38,7 +38,7 @@ int		builtin_exit(t_cmd *cmd);
 
 int		copy_vars_fr_env_to_export_list(t_shell *shell);
 int		plain_export(t_shell *shell);
-int		export_this_var(t_shell *shell, char *arg, int initial_copy);
+int		export_this_var(t_shell *shell, char *arg);
 int		find_name_and_value(t_shell *shell, char *arg, t_var **var);
 int		this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var);
 int		this_is_value(t_shell *shell, char *arg, size_t *i, t_var **var);
@@ -114,7 +114,8 @@ char	*generate_filename(t_shell *shell);
 char	*expand_heredoc_line(t_shell *shell, char *line);
 char	*generate_filename(t_shell *shell);
 int		write_heredoc_line(int fd, char *line);
-char	*strip_heredoc_delimiter_quotes(t_arena *arena, char *delimiter);
+char	*special_heredoc_delimiter(t_arena *arena, char *delimiter);
+int		parse_special_delimiter(t_arena *arena, char *delimiter, char **result);
 void	cleanup_heredoc_files(t_cmd_table *cmd_table);
 
 // Signal handling

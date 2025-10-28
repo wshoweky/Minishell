@@ -45,6 +45,7 @@ SRC = src/main.c \
 	  src/exe/pipe_utils.c \
 	  src/exe/heredoc.c \
 	  src/exe/heredoc_utils.c \
+	  src/exe/heredoc_delimiter_special.c \
 	  src/exe/signals.c \
 	  src/exe/signals_for_heredoc.c
 	

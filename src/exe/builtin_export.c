@@ -1,7 +1,7 @@
 #include "minishell.h"
 
-/*Meant for first time running export or unset.
-Copy all of the env variables and build the export list
+/* Copy the env variables (other than variable "_=[value]") to the export list
+(might have updated value from shell env)
 
 Return: 0 on success, -1 on errors
 */
@@ -16,7 +16,7 @@ int	copy_vars_fr_env_to_export_list(t_shell *shell)
 		copy = ar_strdup(shell->arena, shell->env[i]);
 		if (!copy)
 			return (err_msg_n_return_value("Copying env failed\n", -1));
-		if (export_this_var(shell, copy, 1) == -1)
+		if (export_this_var(shell, copy) == -1)
 			return (-1);
 		i++;
 	}
@@ -35,9 +35,8 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 	size_t	i;
 
 	i = 1;
-	if (!shell->vars)
-		if (copy_vars_fr_env_to_export_list(shell) == -1)
-			return (-1);
+	if (copy_vars_fr_env_to_export_list(shell) == -1)
+		return (-1);
 	if (!cmd->cmd_av[1])
 		return (plain_export(shell));
 	while (cmd->cmd_av[i])
@@ -49,7 +48,7 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 	i = 1;
 	while (cmd->cmd_av[i])
 	{
-		if (export_this_var(shell, cmd->cmd_av[i], 0) == -1)
+		if (export_this_var(shell, cmd->cmd_av[i]) == -1)
 			return (-1);
 		i++;
 	}
@@ -80,14 +79,14 @@ int	plain_export(t_shell *shell)
 
 /*Process the argument to export
 - Parse name and value into t_var in memory arena
-- Copy everything from env list in the beginning, otherwise skip if name is "_"
+- Skip if name is "_"
 - Copy data to heap t_var for persistence between commands
 - Add to shell's exported variables list
 - If variable has a value assigned, update shell environment
 
 Return: 0 on success, -1 on errors
 */
-int	export_this_var(t_shell *shell, char *arg, int initial_copy)
+int	export_this_var(t_shell *shell, char *arg)
 {
 	t_var	*arena_var;
 	t_var	*shell_var;
@@ -98,7 +97,7 @@ int	export_this_var(t_shell *shell, char *arg, int initial_copy)
 				-1));
 	if (find_name_and_value(shell, arg, &arena_var) == -1)
 		return (-1);
-	if (!ft_strcmp(arena_var->name, "_") && !initial_copy)
+	if (!ft_strcmp(arena_var->name, "_"))
 		return (0);
 	shell_var = ft_calloc(1, sizeof(t_var));
 	if (!shell_var)
@@ -106,7 +105,7 @@ int	export_this_var(t_shell *shell, char *arg, int initial_copy)
 	if (copy_var_fr_arena_to_shell(arena_var, shell_var) == -1)
 		return (-1);
 	register_to_shell_vars(shell, shell_var);
-	if (ft_strchr(arg, '=') && !initial_copy)
+	if (ft_strchr(arg, '='))
 	{
 		if (!set_shell_env_value(shell, shell_var->name, shell_var->value))
 			return (err_msg_n_return_value("Fail to export var to shell env\n",

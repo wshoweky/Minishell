@@ -97,7 +97,7 @@ int	resize_env_if_needed(t_shell *shell)
 **
 **   Returns: 1 on success, 0 on failure
 */
-int	update_shell_cwd(t_shell *shell)
+int	update_shell_cwd(t_shell *shell, char *old_dir)
 {
 	char	*new_cwd;
 	char	*old_cwd;
@@ -108,17 +108,17 @@ int	update_shell_cwd(t_shell *shell)
 	if (!new_cwd)
 		return (0);
 	old_cwd = shell->cwd;
-	shell->cwd = ft_strdup(new_cwd);
-	free(new_cwd);
-	if (!shell->cwd)
+	shell->cwd = new_cwd;
+	if (old_dir && !set_shell_env_value(shell, "OLDPWD", old_dir))
 	{
 		shell->cwd = old_cwd;
+		free(new_cwd);
 		return (0);
 	}
 	if (!set_shell_env_value(shell, "PWD", shell->cwd))
 	{
-		free(shell->cwd);
 		shell->cwd = old_cwd;
+		free(new_cwd);
 		return (0);
 	}
 	free(old_cwd);

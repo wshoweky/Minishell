@@ -25,11 +25,11 @@ int	exe_cmd(t_shell *shell, t_cmd_table *cmd_table)
 		cleanup_heredoc_files(cmd_table);
 		return (shell->last_exit_status);
 	}
-	/* Execute the command(s) */
 	if (cmd_table->cmd_count > 1)
 		execute_pipeline(shell, cmd_table);
 	else
-		shell->last_exit_status = exe_single_cmd(shell, cmd_table->list_of_cmds);
+		shell->last_exit_status = exe_single_cmd(shell,
+				cmd_table->list_of_cmds);
 	cleanup_heredoc_files(cmd_table);
 	return (shell->last_exit_status);
 }
@@ -57,11 +57,7 @@ int	dispatch_builtin(t_cmd *cmd, t_shell *shell)
 		return (0);
 	cmd_name = cmd->cmd_av[0];
 	if (is_non_forkable_builtin(cmd_name))
-	{
-		// Non-forkable builtins execute in parent process
-		// Redirections are ignored for these commands (like in bash)
 		return (exe_builtin(cmd, shell));
-	}
 	if (!cmd->redirections)
 		return (exe_builtin(cmd, shell));
 	return (exe_builtin_with_fork(cmd, shell));
@@ -146,7 +142,7 @@ int	exe_builtin(t_cmd *cmd, t_shell *shell)
 		return (0);
 	cmd_name = cmd->cmd_av[0];
 	if (ft_strcmp(cmd_name, "cd") == 0)
-		return (builtin_cd(cmd));
+		return (builtin_cd(shell, cmd));
 	else if (ft_strcmp(cmd_name, "echo") == 0)
 		return (builtin_echo(cmd));
 	else if (ft_strcmp(cmd_name, "pwd") == 0)

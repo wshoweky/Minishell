@@ -46,69 +46,33 @@ int	**alloc_pipe_array(t_shell *shell, int cmd_count)
 }
 
 /**
-** setup_pipe_fds - Setup input/output redirection for pipeline command
-**
-** PIPE CONNECTION LOGIC:
-** - Command 0: stdin → pipe[0]        (only output pipe)
-** - Command i: pipe[i-1] → pipe[i]    (input and output pipes)
-** - Command N: pipe[N-1] → stdout     (only input pipe)
-**
-** WHY INDEX-BASED: Each command's position determines which pipes to use.
-** This is why arrays are perfect - direct calculation of pipe indices.
-**
-**   shell     - Shell state with pipe arrays
-**   cmd_index - Current command index (0-based)
-**   cmd_count - Total number of commands
-*/
-void	setup_pipe_fds(t_shell *shell, int cmd_index, int cmd_count)
-{
-	/* Connect stdin to previous command's output pipe (except first command) */
-	if (cmd_index > 0)
-	{
-		/* Read from pipe[cmd_index-1] - previous command writes here */
-		dup2(shell->pipe_array[cmd_index - 1][0], STDIN_FILENO);
-	}
-	/* Connect stdout to next command's input pipe (except last command) */
-	if (cmd_index < cmd_count - 1)
-	{
-		/* Write to pipe[cmd_index] - next command reads from here */
-		dup2(shell->pipe_array[cmd_index][1], STDOUT_FILENO);
-	}
-}
-
-/**
- * close_unused_pipes - Close pipe file descriptors not needed by process
+ * close_unused_pipes - Close pipe file descriptors
  *
- * Pipeline structure: cmd0 -> pipe[0] -> cmd1 -> pipe[1] -> cmd2 -> ...
- * Each command needs only specific pipe ends based on its position:
- * - cmd[i] needs pipe[i-1] for reading (input) if i > 0
- * - cmd[i] needs pipe[i] for writing (output) if not last command
+ * USAGE SCENARIOS:
+ * 1. Child process (after dup2): Close ALL pipes (pipes_to_close = cmd_count
+	- 1)
+ *    - Safe because dup2() already copied needed FDs to stdin/stdout
+	* 2. Parent on error: Close only successfully created pipes
+ *    - Prevents FD leaks when pipe creation/fork fails midway
+ *
+ * WHY CLOSE ALL IN CHILD: Child processes inherit ALL pipe FDs from parent.
+ * Keeping unnecessary FDs open causes:
+ * 1. File descriptor leaks
+ * 2. Pipes not closing when they should (writers still exist)
+ * 3. Deadlocks (readers waiting for data from pipes with extra writers)
  *
  * @shell: Shell state with pipe arrays
- * @cmd_count: Total number of commands
- * @current_cmd: Current command index (-1 for parent process)
+ * @pipes_to_close: Number of pipes to close (0 to pipes_to_close-1)
  */
-void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd)
+void	close_unused_pipes(t_shell *shell, int pipes_to_close)
 {
 	int	i;
-	int	pipes_needed;
 
 	i = 0;
-	pipes_needed = cmd_count - 1;
-	while (i < pipes_needed)
+	while (i < pipes_to_close)
 	{
-		if (current_cmd == -1 || (current_cmd != i && current_cmd != i + 1))
-		{
-			close(shell->pipe_array[i][0]);
-			close(shell->pipe_array[i][1]);
-		}
-		else
-		{
-			if (current_cmd == i + 1)
-				close(shell->pipe_array[i][1]);
-			if (current_cmd == i)
-				close(shell->pipe_array[i][0]);
-		}
+		close(shell->pipe_array[i][0]);
+		close(shell->pipe_array[i][1]);
 		i++;
 	}
 }

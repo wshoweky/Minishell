@@ -12,7 +12,6 @@
 # include <readline/readline.h> // readline()
 # include <readline/history.h> // add_history()
 # include "arena.h"			// memory arena
-# include <termios.h>   // terminal interface
 # include "../libft/libft.h"
 
 extern volatile sig_atomic_t	g_signal; // Global variable to track signal state

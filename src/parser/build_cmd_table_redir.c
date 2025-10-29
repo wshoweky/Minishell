@@ -12,7 +12,8 @@ int	is_redirection(t_token_type check)
 
 /* Setup filename for redirection (helper for make_redir)
 **
-** For heredoc: strips quotes from delimiter and sets expansion flag
+** For heredoc: For strings without $ or &, quotes have already been cleared.
+Otherwise, strips quotes from delimiter and sets expansion flag
 ** For other redirections: handles variable expansion in filename
 **
 ** Return: 0 on success, -1 on errors
@@ -23,8 +24,15 @@ static int	setup_redir_filename(t_shell *shell, t_tokens *tok,
 	if (new->tok_type == TOKEN_HEREDOC)
 	{
 		new->expand_heredoc = !tok->was_quoted;
-		new->filename = strip_heredoc_delimiter_quotes(shell->arena,
-				tok->value);
+		if (ft_strchr(tok->value, '$') || ft_strchr(tok->value, '&'))
+			new->filename = special_heredoc_delimiter(shell->arena, tok->value);
+		else
+		{
+			new->filename = ar_strdup(shell->arena, tok->value);
+			if (!new->filename)
+				return (err_msg_n_return_value("strdup failed for heredoc eof "
+					"with no expansion\n", -1));
+		}
 	}
 	else
 	{

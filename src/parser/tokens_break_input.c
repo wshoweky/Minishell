@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/04 16:59:39 by gita              #+#    #+#             */
-/*   Updated: 2025/10/04 21:27:36 by gita             ###   ########.fr       */
+/*   Updated: 2025/10/29 17:18:15 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,6 +81,9 @@ int	char_outside_quotes(t_arena *arena, char **string, char current_char,
 	}
 	else if (current_char == '"' || current_char == '\'')
 	{
+		if (*string && (ft_strcmp(*string, "<") || ft_strcmp(*string, "<<")
+			|| ft_strcmp(*string, ">") || ft_strcmp(*string, ">>")))
+			return (0);
 		if (char_is_quote(arena, string, current_char, in_quotes) == -1)
 			return (-1);
 	}

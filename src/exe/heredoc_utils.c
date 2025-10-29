@@ -84,45 +84,6 @@ char	*expand_heredoc_line(t_shell *shell, char *line)
 }
 
 /**
-** strip_heredoc_delimiter_quotes - Remove all quotes from heredoc delimiter
-**
-** BASH BEHAVIOR:
-** - Quotes are removed from delimiter: "$USER" → $USER
-** - But their presence disables variable expansion in content
-**
-** EXAMPLES:
-**   "$USER" → $USER
-**   'EOF'   → EOF
-**   E"O"F   → EOF
-**
-**   delimiter - Original delimiter string (may contain quotes)
-**
-**   Returns: Arena-allocated string with quotes removed
-*/
-char	*strip_heredoc_delimiter_quotes(t_arena *arena, char *delimiter)
-{
-	char	*result;
-	int		i;
-	int		j;
-
-	if (!delimiter)
-		return (NULL);
-	result = ar_alloc(arena, ft_strlen(delimiter) + 1);
-	if (!result)
-		return (NULL);
-	i = 0;
-	j = 0;
-	while (delimiter[i])
-	{
-		if (delimiter[i] != '\'' && delimiter[i] != '"')
-			result[j++] = delimiter[i];
-		i++;
-	}
-	result[j] = '\0';
-	return (result);
-}
-
-/**
 ** generate_filename - Create unique temporary filename for heredoc
 **
 ** FILENAME STRATEGY:

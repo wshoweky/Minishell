@@ -190,6 +190,7 @@ int				other_character(t_arena *arena, char **expand_text,
 					char current_char, int *in_quote);
 int				build_var_name(t_shell *shell, char *input, size_t *i,
 					char **var_name);
+int				check_dollar_sign_position(char *input, size_t *i);
 int				transform_var_name(t_shell *shell, char **text, char *var_name);
 
 //	Redirection functions

@@ -21,13 +21,13 @@ int	builtin_echo(t_cmd *cmd)
 		return (0);
 	newline = 1;
 	i = 1;
-	// Check for -n flag
-	if (cmd->cmd_av[1] && ft_strcmp(cmd->cmd_av[1], "-n") == 0)
+	while (cmd->cmd_av[i] && cmd->cmd_av[i][0] == '-'
+			&& cmd->cmd_av[i][1] == 'n')
 	{
-		newline = 0;
-		i = 2;
+		if (nl_flag_acceptable(cmd->cmd_av[i], &newline) == -1)
+			break ;
+		i++;
 	}
-	// Print arguments
 	while (cmd->cmd_av[i])
 	{
 		ft_printf("%s", cmd->cmd_av[i]);
@@ -37,6 +37,26 @@ int	builtin_echo(t_cmd *cmd)
 	}
 	if (newline)
 		ft_printf("\n");
+	return (0);
+}
+
+/*Check if following -n, argument either ends or only contains 'n' character
+to determine if argument is a valid no-new-line flag or not
+
+Return: 0 for valid flag, -1 for invalid
+*/
+int	nl_flag_acceptable(char *cmd_av, int *newline)
+{
+	int	j;
+
+	j = 2;
+	while (cmd_av[j])
+	{
+		if (cmd_av[j] != 'n')
+			return (-1);
+		j++;
+	}
+	*newline = 0;
 	return (0);
 }
 

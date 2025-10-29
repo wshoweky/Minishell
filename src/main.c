@@ -18,6 +18,7 @@ int	main(int ac, char **av, char **env)
 	t_tokens	*tokens;
 	t_cmd_table	*cmd_table;
 	t_shell		*shell;
+	int			exit_code;
 
 	shell = init_shell(ac, av, env);
 	if (!shell)
@@ -68,8 +69,9 @@ int	main(int ac, char **av, char **env)
 		ar_reset(shell->arena);
 		g_signal = 0;
 	}
+	exit_code = shell->last_exit_status;
 	free_shell(shell);
-	return (shell->last_exit_status);
+	return (exit_code);
 }
 
 

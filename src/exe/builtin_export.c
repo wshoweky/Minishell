@@ -28,7 +28,7 @@ int	copy_vars_fr_env_to_export_list(t_shell *shell)
 - Ensure there is no flag for export
 - Work on each variable following "export" with helper function
 
-Return: 0 on success, -1 on errors
+Return: 0 on success, 1 on errors
 */
 int	builtin_export(t_shell *shell, t_cmd *cmd)
 {
@@ -36,20 +36,20 @@ int	builtin_export(t_shell *shell, t_cmd *cmd)
 
 	i = 1;
 	if (copy_vars_fr_env_to_export_list(shell) == -1)
-		return (-1);
+		return (1);
 	if (!cmd->cmd_av[1])
 		return (plain_export(shell));
 	while (cmd->cmd_av[i])
 	{
 		if (cmd->cmd_av[i][0] == '-')
-			return (err_msg_n_return_value("No export option supported\n", -1));
+			return (err_msg_n_return_value("No export option supported\n", 1));
 		i++;
 	}
 	i = 1;
 	while (cmd->cmd_av[i])
 	{
 		if (export_this_var(shell, cmd->cmd_av[i]) == -1)
-			return (-1);
+			return (1);
 		i++;
 	}
 	return (0);

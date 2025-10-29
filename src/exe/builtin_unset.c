@@ -6,7 +6,7 @@
 - Ensure there is no flag for unset
 - Work on each variable following "unset" with helper function
 
-Return: 0 on success, -1 on errors
+Return: 0 on success, 1 on errors
 */
 int	builtin_unset(t_shell *shell, t_cmd *cmd)
 {
@@ -15,12 +15,12 @@ int	builtin_unset(t_shell *shell, t_cmd *cmd)
 	if (!cmd->cmd_av[1])
 		return (0);
 	if (copy_vars_fr_env_to_export_list(shell) == -1)
-		return (-1);
+		return (1);
 	i = 1;
 	while (cmd->cmd_av[i])
 	{
 		if (cmd->cmd_av[i][0] == '-')
-			return (err_msg_n_return_value("No export option supported\n", -1));
+			return (err_msg_n_return_value("No export option supported\n", 1));
 		i++;
 	}
 	i = 1;
@@ -28,7 +28,7 @@ int	builtin_unset(t_shell *shell, t_cmd *cmd)
 	{
 		if (ft_strcmp(cmd->cmd_av[i], "_") != 0)
 			if (unset_this_var(shell, cmd->cmd_av[i]) == -1)
-				return (-1);
+				return (1);
 		i++;
 	}
 	return (0);

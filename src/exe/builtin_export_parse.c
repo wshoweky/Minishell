@@ -32,6 +32,8 @@ int	this_is_name(t_shell *shell, char *arg, size_t *i, t_var **var)
 {
 	while (arg[*i] && arg[*i] != '=')
 	{
+		if (!(ft_isalnum(arg[*i]) || arg[*i] == '_'))
+			return (err_msg_n_return_value("Not a valid identifier\n", -1));
 		(*var)->name = ar_add_char_to_str(shell->arena, (*var)->name, arg[*i]);
 		if (!(*var)->name)
 			return (err_msg_n_return_value("Error allocating memory for var "

@@ -2,15 +2,15 @@
 
 static const char	*get_colored_prompt(void);
 
-static  void	print_tokens(t_tokens *head)// Debug function to print the token list
-{
-	while (head)
-	{
-		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
-		ft_printf("\n");
-		head = head->next;
-	}
-}
+// static  void	print_tokens(t_tokens *head)// Debug function to print the token list
+// {
+// 	while (head)
+// 	{
+// 		ft_printf("Token: '%s' | Type: %s", head->value, get_token_type_name(head->type));
+// 		ft_printf("\n");
+// 		head = head->next;
+// 	}
+// }
 
 int	main(int ac, char **av, char **env)
 {
@@ -51,18 +51,18 @@ int	main(int ac, char **av, char **env)
 		tokens = tokenize_input(shell->arena, input);
 		if (!tokens)
 		{
-			ft_printf("Error in tokenization!\n");
+			// ft_printf("Error in tokenization!\n");
 			free(input);
 		}
 		else
 		{
-			print_tokens(tokens);
+			// print_tokens(tokens);
 			cmd_table = register_to_table(shell, tokens);
 			if (cmd_table)
 			{
 				exe_cmd(shell, cmd_table);
-				ft_printf("Command executed with exit status: %d\n",
-					shell->last_exit_status);
+				// ft_printf("Command executed with exit status: %d\n",
+				// 	shell->last_exit_status);
 			}
 			free(input);
 		}

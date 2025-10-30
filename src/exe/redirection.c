@@ -48,8 +48,8 @@ static int	setup_single_redirection(t_redir *redir, t_cmd *cmd)
 {
 	if (!redir || !redir->filename)
 		return (-1);
-	printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
-		redir->tok_type, redir->filename);
+	// printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
+	// 	redir->tok_type, redir->filename);
 	if (redir->tok_type == TOKEN_REDIRECT_OUT) // >
 		return (handle_output_redirection(redir->filename, 0));
 	else if (redir->tok_type == TOKEN_APPEND) // >>

@@ -25,11 +25,8 @@
 
 static int	init_pipeline(t_shell *shell, int cmd_count);
 static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table);
+static void	fork_all_children(t_shell *shell, t_cmd_table *cmd_table);
 static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
-				int cmd_count);
-static void	close_partial_pipes(t_shell *shell, int pipes_created);
-static int	create_pipe_for_cmd(t_shell *shell, int i, int cmd_count);
-static int	process_pipeline_cmd(t_shell *shell, t_cmd **cmd, int i,
 				int cmd_count);
 
 /**
@@ -59,9 +56,10 @@ void	execute_pipeline(t_shell *shell, t_cmd_table *cmd_table)
 	shell->children_forked = 0;
 	execute_pipeline_loop(shell, cmd_table);
 	if (shell->children_forked > 0)
-		close_unused_pipes(shell, cmd_count, -1);
-	if (shell->children_forked > 0)
+	{
+		close_unused_pipes(shell, cmd_count - 1);
 		wait_all_children(shell, cmd_count);
+	}
 }
 
 /**
@@ -97,20 +95,44 @@ static int	init_pipeline(t_shell *shell, int cmd_count)
 /**
 ** execute_pipeline_loop - Fork and execute each command in pipeline
 **
-** PIPELINE FORKING STRATEGY:
-** For each command in the pipeline:
-** 1. Create pipe for communication with next command (if not last)
-** 2. Fork child process
-** 3. Child: Set up pipe connections and execute command
-** 4. Parent: Continue to next command
+** PIPELINE EXECUTION STRATEGY (Two-Phase Approach):
+** Phase 1: Create ALL pipes before any forks
+** Phase 2: Fork all children
 **
-** WHY LOOP WITH INDEX: We need the command index for pipe connections.
-** Command i reads from pipe[i-1] and writes to pipe[i].
+** WHY TWO PHASES: Creating pipes during forking caused race conditions.
 **
 **   shell     - Shell state structure
 **   cmd_table - Command table with linked list of commands
 */
 static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table)
+{
+	int	i;
+
+	i = 0;
+	while (i < cmd_table->cmd_count - 1)
+	{
+		if (pipe(shell->pipe_array[i]) < 0)
+		{
+			perror("minishell: pipe");
+			shell->last_exit_status = 1;
+			close_unused_pipes(shell, i);
+			return ;
+		}
+		i++;
+	}
+	fork_all_children(shell, cmd_table);
+}
+
+/**
+** fork_all_children - Fork all child processes for pipeline
+**
+** PHASE 2: Forks each command in sequence.
+** Each child can safely dup2() from pre-existing pipes.
+**
+**   shell     - Shell state structure
+**   cmd_table - Command table with linked list of commands
+*/
+static void	fork_all_children(t_shell *shell, t_cmd_table *cmd_table)
 {
 	t_cmd	*current_cmd;
 	int		cmd_count;
@@ -121,59 +143,15 @@ static void	execute_pipeline_loop(t_shell *shell, t_cmd_table *cmd_table)
 	i = 0;
 	while (i < cmd_count && current_cmd)
 	{
-		if (process_pipeline_cmd(shell, &current_cmd, i, cmd_count) == -1)
+		fork_pipeline_child(shell, current_cmd, i, cmd_count);
+		if (shell->pipe_pids[i] < 0)
+		{
+			close_unused_pipes(shell, cmd_count - 1);
 			return ;
+		}
+		current_cmd = current_cmd->next_cmd;
 		i++;
 	}
-}
-
-/**
-** create_pipe_for_cmd - Create pipe for command if not last in pipeline
-**
-**   shell     - Shell state structure
-**   i         - Current command index
-**   cmd_count - Total number of commands
-**
-**   Returns: 0 on success, -1 on error
-*/
-static int	create_pipe_for_cmd(t_shell *shell, int i, int cmd_count)
-{
-	if (i < cmd_count - 1)
-	{
-		if (pipe(shell->pipe_array[i]) < 0)
-		{
-			perror("minishell: pipe");
-			shell->last_exit_status = 1;
-			close_partial_pipes(shell, i);
-			return (-1);
-		}
-	}
-	return (0);
-}
-
-/**
-** process_pipeline_cmd - Process single command in pipeline
-**
-**   shell     - Shell state structure
-**   cmd       - Pointer to current command (will be advanced)
-**   i         - Current command index
-**   cmd_count - Total number of commands
-**
-**   Returns: 0 on success, -1 on error
-*/
-static int	process_pipeline_cmd(t_shell *shell, t_cmd **cmd, int i,
-		int cmd_count)
-{
-	if (create_pipe_for_cmd(shell, i, cmd_count) == -1)
-		return (-1);
-	fork_pipeline_child(shell, *cmd, i, cmd_count);
-	if (shell->pipe_pids[i] < 0)
-	{
-		close_partial_pipes(shell, i + 1);
-		return (-1);
-	}
-	*cmd = (*cmd)->next_cmd;
-	return (0);
 }
 
 /**
@@ -185,7 +163,10 @@ static int	process_pipeline_cmd(t_shell *shell, t_cmd **cmd, int i,
 ** 3. Execute the command (builtin or external)
 ** 4. Exit with command's exit status
 **
-** PARENT PROCESS: Just stores the child PID for later waiting
+** PARENT PROCESS:
+** 1. Stores the child PID for later waiting
+** 2. Closes pipe ends that this command has finished reading/writing
+**    - After cmd[i] is forked, parent can close pipe[i-1] (child took it)
 **
 **   shell     - Shell state structure
 **   cmd       - Command to execute
@@ -198,10 +179,12 @@ static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
 	shell->pipe_pids[i] = fork();
 	if (shell->pipe_pids[i] == 0)
 	{
-		setup_pipe_fds(shell, i, cmd_count);
-		close_unused_pipes(shell, cmd_count, i);
-		exe_single_cmd(shell, cmd);
-		exit(shell->last_exit_status);
+		if (i > 0)
+			dup2(shell->pipe_array[i - 1][0], STDIN_FILENO);
+		if (i < cmd_count - 1)
+			dup2(shell->pipe_array[i][1], STDOUT_FILENO);
+		close_unused_pipes(shell, cmd_count - 1);
+		exit(exe_single_cmd(shell, cmd));
 	}
 	else if (shell->pipe_pids[i] < 0)
 	{
@@ -210,28 +193,4 @@ static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
 	}
 	else
 		shell->children_forked++;
-}
-
-/**
-** close_partial_pipes - Close pipes created before pipeline failure
-**
-** CLEANUP STRATEGY:
-** When pipeline creation fails (pipe() or fork() error), we need to close
-** any pipes that were successfully created in previous loop iterations.
-** This prevents file descriptor leaks.
-**
-**   shell         - Shell state with pipe arrays
-**   pipes_created - Number of pipes successfully created (0-based)
-*/
-static void	close_partial_pipes(t_shell *shell, int pipes_created)
-{
-	int	i;
-
-	i = 0;
-	while (i < pipes_created)
-	{
-		close(shell->pipe_array[i][0]);
-		close(shell->pipe_array[i][1]);
-		i++;
-	}
 }

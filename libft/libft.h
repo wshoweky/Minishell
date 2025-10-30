@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/22 18:24:26 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/07/28 14:28:14 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/10/28 11:27:40 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@ typedef struct s_list
 
 //String Prototypes
 int		ft_isdigit(int c);
+int		ft_isnumeric(char *str);
 int		ft_isalpha(int c);
 int		ft_isalnum(int c);
 int		ft_isascii(int c);

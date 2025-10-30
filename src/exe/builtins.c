@@ -22,7 +22,7 @@ int	builtin_echo(t_cmd *cmd)
 	newline = 1;
 	i = 1;
 	while (cmd->cmd_av[i] && cmd->cmd_av[i][0] == '-'
-			&& cmd->cmd_av[i][1] == 'n')
+		&& cmd->cmd_av[i][1] == 'n')
 	{
 		if (nl_flag_acceptable(cmd->cmd_av[i], &newline) == -1)
 			break ;
@@ -73,7 +73,7 @@ int	builtin_pwd(t_cmd *cmd)
 {
 	char	*cwd;
 
-	(void)cmd; // Suppress unused parameter warning
+	(void)cmd;
 	cwd = getcwd(NULL, 0);
 	if (!cwd)
 	{
@@ -82,42 +82,6 @@ int	builtin_pwd(t_cmd *cmd)
 	}
 	ft_printf("%s\n", cwd);
 	free(cwd);
-	return (0);
-}
-
-/*
-** builtin_cd - Implementation of cd command
-**
-** DESCRIPTION:
-**   Changes current directory. Only supports single path argument.
-**
-** RETURN VALUE:
-**   Returns 0 on success, 1 on error
-*/
-int	builtin_cd(t_cmd *cmd)
-{
-	char	*path;
-
-	if (!cmd || !cmd->cmd_av)
-		return (1);
-	// cd with no arguments - go to HOME
-	if (!cmd->cmd_av[1])
-	{
-		ft_printf("cd: no argument provided\n");
-		return (1);
-	}
-	// cd with multiple arguments - error
-	if (cmd->cmd_av[2])
-	{
-		ft_printf("cd: too many arguments\n");
-		return (1);
-	}
-	path = cmd->cmd_av[1];
-	if (chdir(path) != 0)
-	{
-		perror("cd");
-		return (1);
-	}
 	return (0);
 }
 
@@ -150,18 +114,39 @@ int	builtin_env(t_shell *shell)
 **
 ** DESCRIPTION:
 **   Exits the shell with optional exit code.
+**   Validates arguments:
+**   - Too many arguments: returns error without exiting
+**   - Non-numeric argument: exits with code 2
+**   - Valid number: exits with code % 256
 **
 ** RETURN VALUE:
-**   Does not return - exits the program
+**   Does not return on success - exits the program
+**   Returns 1 if too many arguments
 */
 int	builtin_exit(t_cmd *cmd)
 {
-	int	exit_code;
+	unsigned int	exit_code;
+	long			long_code;
 
-	exit_code = 0;
-	if (cmd && cmd->cmd_av && cmd->cmd_av[1])
-		exit_code = ft_atoi(cmd->cmd_av[1]);
+	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[1])
+	{
+		ft_printf("exit\n");
+		exit(0);
+	}
+	if (cmd->cmd_av[2])
+	{
+		ft_printf("minishell: exit: too many arguments\n");
+		return (1);
+	}
+	if (!ft_isnumeric(cmd->cmd_av[1]))
+	{
+		ft_printf("exit\n");
+		ft_printf("minishell: exit: %s: numeric argument required\n",
+			cmd->cmd_av[1]);
+		exit(2);
+	}
+	long_code = ft_atoi(cmd->cmd_av[1]);
+	exit_code = (unsigned int)(long_code % 256);
 	ft_printf("exit\n");
 	exit(exit_code);
 }
-

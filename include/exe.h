@@ -1,10 +1,6 @@
 #ifndef EXE_H
 # define EXE_H
 
-// # include <sys/stat.h>  // For struct stat
-// # include <sys/wait.h>  // For pid_t and wait functions
-// # include <unistd.h>    // For fork, execve, etc.
-
 // Type aliases for 42 norm compliance
 typedef struct stat			t_stat;
 typedef struct s_cmd_table	t_cmd_table;
@@ -29,14 +25,14 @@ int		exe_builtin(t_cmd *cmd, t_shell *shell);
 int		builtin_echo(t_cmd *cmd);
 int		nl_flag_acceptable(char *cmd_av, int *newline);
 int		builtin_pwd(t_cmd *cmd);
-int		builtin_cd(t_cmd *cmd);
+int		builtin_cd(t_shell *shell, t_cmd *cmd);
 int		builtin_env(t_shell *shell);
 int		builtin_export(t_shell *shell, t_cmd *cmd);
 int		builtin_unset(t_shell *shell, t_cmd *cmd);
 int		builtin_exit(t_cmd *cmd);
 
 // Export helper functions
-
+char	*get_env_value(char **env, char *name);
 int		copy_vars_fr_env_to_export_list(t_shell *shell);
 int		plain_export(t_shell *shell);
 int		export_this_var(t_shell *shell, char *arg);
@@ -49,7 +45,6 @@ int		destined_to_be_first(t_shell *shell, t_var *var);
 int		update_this_fella(t_var *var, t_var *find, t_var *behind);
 
 // Unset helper functions
-
 int		unset_this_var(t_shell *shell, char *input);
 void	unset_from_shell_vars(t_shell *shell, char *name);
 void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
@@ -59,32 +54,20 @@ char	*find_executable(t_shell *shell, char *cmd);
 int		is_executable(char *path);
 char	*build_path(t_shell *shell, char *dir, char *file);
 
-// Environment variable utilities
-char	*get_env_value(char **env, char *name);
-// int		set_env_value(char ***env, char *name, char *value);
-// int		unset_env_value(char ***env, char *name);
-
 // Process creation and management
-// pid_t	create_child_process(void);
-// int		wait_for_child(pid_t pid);
-// void	setup_child_process(t_cmd *cmd, char **env);
-void	execute_child_process(t_shell *shell, t_cmd *cmd,
-			char *path);
+void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path);
 int		wait_and_get_status(pid_t pid);
 
 // Redirection handling
 int		setup_redirections(t_cmd *cmd);
 int		handle_input_redirection(char *filename);
-int		handle_output_redirection(char *filename,
-			int append);
-// int		handle_heredoc(char *delimiter);
+int		handle_output_redirection(char *filename, int append);
 
 // Pipeline execution
 void	execute_pipeline(t_shell *shell, t_cmd_table *cmd_table);
 int		**alloc_pipe_array(t_shell *shell, int cmd_count);
-void	setup_pipe_fds(t_shell *shell, int cmd_index, int cmd_count);
 void	wait_all_children(t_shell *shell, int cmd_count);
-void	close_unused_pipes(t_shell *shell, int cmd_count, int current_cmd);
+void	close_unused_pipes(t_shell *shell, int pipes_to_close);
 
 // Shell initialization and management
 t_shell	*init_shell(int ac, char **av, char **env);
@@ -102,7 +85,7 @@ int		unset_shell_env_value(t_shell *shell, char *name);
 char	*create_env_string(char *name, char *value);
 int		find_env_index(t_shell *shell, char *name);
 int		resize_env_if_needed(t_shell *shell);
-int		update_shell_cwd(t_shell *shell);
+int		update_shell_cwd(t_shell *shell, char *old_dir);
 
 // Heredoc utilities
 int		handle_heredocs(t_shell *shell, t_cmd_table *cmd_table);

@@ -70,69 +70,82 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Fork when needed for builtins with redirections
     - Proper handling of non-forkable builtins (cd, exit, export, unset)
 
-✅ [COMPLETED] Basic redirection infrastructure
+✅ [COMPLETED] Redirection infrastructure
     - setup_redirections() implemented in redirection.c
     - handle_input_redirection() for < (WORKING)
     - handle_output_redirection() for > and >> (WORKING)
+    - handle_heredoc_file() for << (WORKING with temp files)
     - File opening with proper flags and permissions
 
-🔧 [CRITICAL] Built-in implementations - NEEDS FIXES
-    ⚠️  builtin_echo(): PARTIAL - Only handles single -n flag, needs multiple flag support
-    ⚠️  builtin_cd(): BASIC - Works for paths, missing HOME and OLDPWD (cd -, cd with no args)
+✅ [COMPLETED] Built-in implementations
+    ✅ builtin_echo(): FULLY WORKING - Handles multiple -n flags correctly (nl_flag_acceptable)
+    ✅ builtin_cd(): FULLY WORKING - Full support for paths, HOME (cd), and OLDPWD (cd -)
     ✅ builtin_pwd(): WORKING - Correctly implemented
     ✅ builtin_env(): WORKING - Prints environment variables
-    ⚠️  builtin_exit(): BASIC - Works but needs exit code validation and error handling
-    ✅ builtin_export(): WORKING, but might miss edge cases, you never know :D
-    ✅ builtin_unset(): WORKING, but also might miss edge cases
+    ✅ builtin_exit(): FULLY WORKING - Numeric validation, too many args check, proper exit codes
+    ✅ builtin_export(): WORKING - Sets and exports variables (needs edge case testing)
+    ✅ builtin_unset(): WORKING - Removes variables (needs edge case testing)
 
-✅ [COMPLETED] External command execution infrastructure
+✅ [COMPLETED] External command execution
     - PATH resolution implemented (path_utils.c)
     - Command searching in PATH directories
-    - exe_single_cmd() dispatcher for single commands
-
-🔧 [TODO] External command execution
     - fork() and execve() for external programs
-    - Handle command not found errors (exit 127)
-    - Handle permission denied errors (exit 126)
+    - Command not found errors (exit 127) implemented
+    - Permission denied errors (exit 126) implemented
     - Proper process management and exit status collection
 
-🔧 [TODO] Pipeline execution
-    - Create pipes between commands
-    - Handle multiple processes in pipeline
-    - Wait for all processes and collect exit codes
-    - Note: Currently shows "pipelines not yet implemented" message
+✅ [COMPLETED] Pipeline execution
+    - Pipe creation between commands (alloc_pipe_array)
+    - Multiple process handling in pipeline
+    - Proper pipe file descriptor management
+    - Wait for all processes and collect exit codes (wait_all_children)
+    - Close unused pipes appropriately
+    - Pipeline loop execution (execute_pipeline_loop)
 
-🔧 [TODO] Heredoc implementation
-    - handle_heredoc() stub exists but not implemented
-    - Read input until delimiter is found
-    - Handle variable expansion in heredoc (if required)
-    - Create temporary files or use pipes
+✅ [COMPLETED] Heredoc implementation
+    - handle_heredocs() processes all heredocs before execution
+    - Temporary file creation for heredoc content
+    - Variable expansion in heredoc content (when delimiter unquoted)
+    - Delimiter quote handling (quoted = no expansion)
+    - Signal handling during heredoc input (Ctrl+C with setup_heredoc_signals)
+    - Event hook for clean readline interruption (heredoc_event_hook)
+    - Cleanup of heredoc temporary files
 
-🔧 [TODO] Wildcard expansion
+✅ [COMPLETED] Signal handling for interactive mode
+    - Handle Ctrl+C (SIGINT) in main prompt - handle_sigint() with redisplay
+    - Handle Ctrl+\ (SIGQUIT) - ignored in interactive mode (SIG_IGN)
+    - Handle Ctrl+C during heredoc - special handler without prompt redisplay
+    - Signal restoration after heredoc (restore_interactive_signals)
+    - Reset signals for child processes (reset_signals_for_child)
+    - Disabled ECHOCTL for clean terminal output
+    - Global signal flag (g_signal) for safe signal state tracking
+
+✅ [COMPLETED] Built-in validation and error handling
+    - builtin_exit() numeric argument validation (ft_isnumeric)
+    - builtin_echo() multiple -n flags handling (nl_flag_acceptable)
+    - builtin_exit() too many arguments check
+    - Proper exit code calculation (modulo 256)
+
+🔧 [TODO] Testing and verification
+    - Handle Ctrl+D (EOF) edge cases - graceful shell exit (readline returns NULL)
+    - Test signal behavior in complex pipelines
+    - Verify exit status 130 on SIGINT during heredoc
+    - Test all built-in edge cases comprehensively
+
+🔧 [TODO] Wildcard expansion (BONUS)
     - Use glob() function for * expansion
     - Handle no matches (return literal *)
     - Sort expanded filenames
 
-🔧 [TODO] Logical operators execution
+🔧 [TODO] Logical operators execution (BONUS)
     - Implement && (execute next only if current succeeds)
     - Implement || (execute next only if current fails)
     - Handle short-circuit evaluation
 
-🔧 [TODO] Signal handling
-    - Handle Ctrl+C (SIGINT) - interrupt current command
-    - Handle Ctrl+\ (SIGQUIT) - ignore in interactive mode
-    - Handle Ctrl+D (EOF) - exit shell gracefully
-
-🔧 [TODO] Subshell execution
+🔧 [TODO] Subshell execution (BONUS)
     - Create child process for subshell
     - Execute commands in isolated environment
     - Return subshell exit status
-
-🔧 [TODO] Error handling
-    - Set $? exit status correctly
-    - Handle command not found (127)
-    - Handle permission denied (126)
-    - Handle other execution errors
 
 🛠️ INFRASTRUCTURE & UTILITIES
 =============================
@@ -187,7 +200,7 @@ MINISHELL TODO LIST - Separated Concerns Architecture
     - Test bonus features if implemented
     - Edge case validation
 
-📋 CURRENT STATUS (Updated: October 5, 2025)
+📋 CURRENT STATUS (Updated: October 29, 2025)
 ============================================
 ✅ Tokenizer complete with arena memory management
 ✅ Quote handling with type differentiation implemented  
@@ -196,39 +209,214 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 ✅ Variable expansion with quote context awareness (expand_variable_name())
 ✅ Redirection parsing (>, >>, <, <<) in parser
 ✅ Redirection execution for input (<) and output (>, >>) - WORKING!
+✅ Heredoc execution - FULLY IMPLEMENTED with temp files and signal handling!
+✅ Pipeline execution - FULLY IMPLEMENTED with proper pipe management!
+✅ External command execution - WORKING with fork/execve!
 ✅ Built-in command framework with fork management
 ✅ Path resolution system working (exe/path_utils.c)
 ✅ Single command execution dispatcher
 ✅ Development tooling enhanced (Makefile with valgrind/cppcheck)
-⚠️  Built-in commands: basic implementations exist, need enhancements
-⏳ Heredoc execution (stub exists, not implemented)
-⏳ Pipeline execution (recognized but not implemented)
-⏳ External command execution (infrastructure ready, execution pending)
+✅ All built-in commands FULLY IMPLEMENTED and working!
+✅ Signal handling COMPLETE (Ctrl+C, Ctrl+\, heredoc signals, child reset)
+✅ builtin_echo() with multiple -n flag support (nl_flag_acceptable)
+✅ builtin_exit() with full validation (numeric check, too many args, proper codes)
+✅ builtin_cd() - ENHANCED with HOME and OLDPWD support (refactored to <25 lines)
+✅ Code refactored to meet 42 norm requirements (<25 lines per function)
 
 🎯 NEXT IMMEDIATE STEPS - UPDATED PRIORITIES
 ============================================
-🚨 CRITICAL (Complete Core Functionality):
-1. Implement external command execution with fork/execve
-2. Complete heredoc implementation (handle_heredoc())
-3. Implement pipeline execution (execute_pipeline())
+🚨 CRITICAL (Testing & Edge Cases):
+1. Comprehensive testing of all built-ins
+   - Test builtin_export() edge cases (invalid names, complex values, no args display)
+   - Test builtin_unset() edge cases (multiple vars, invalid names, protected vars)
+   - Test builtin_echo() with various -n combinations (-n, -nn, -nnn, mixed)
+   - Test builtin_exit() with edge cases (LONG_MAX, negative, overflow)
+2. Pipeline and redirection stress testing
+   - Long pipelines (5+ commands)
+   - Multiple redirections per command
+   - Pipeline + heredoc combinations
+   - Redirection order testing
 
-🔥 HIGH PRIORITY (Enhance Built-ins):
-4. Enhance builtin_cd() - Add HOME directory support (cd with no args)
-5. Enhance builtin_cd() - Add OLDPWD support (cd -) and PWD updates
-6. Enhance builtin_echo() - Handle multiple -n flags correctly
-7. Enhance builtin_exit() - Add exit code validation and error handling
+🔥 HIGH PRIORITY (Signal & Error Handling):
+3. Signal behavior verification
+   - Test Ctrl+D (EOF) handling in main loop
+   - Verify exit status 130 after Ctrl+C in heredoc
+   - Test signals during pipeline execution
+   - Verify signal reset in child processes
+4. Exit status management ($?)
+   - Ensure $? updates correctly after each command
+   - Test with pipelines (should be last command's exit)
+   - Test with built-ins vs external commands
+   - Test with interrupted commands (130)
 
-⭐ MEDIUM PRIORITY (Complete Built-ins):
-8. ✅ Implement builtin_export() - Set/export environment variables
-9. ✅ Implement builtin_unset() - Remove environment variables
-10. Add error handling for command not found (exit 127)
-11. Add error handling for permission denied (exit 126)
+⭐ MEDIUM PRIORITY (Memory & Robustness):
+5. Memory leak comprehensive testing
+   - Run extensive valgrind sessions
+   - Test long-running sessions with many commands
+   - Test heredoc and pipeline memory cleanup
+   - Verify arena reset between commands
+6. Error message consistency
+   - Match bash error message formats
+   - Proper error output to stderr
+   - Consistent error codes (126, 127, etc.)
 
-💡 POLISH & FEATURES:
-12. ✅ Implement variable expansion for $? (exit status)
-13. Add comprehensive error messages
-14. Handle signal interrupts (Ctrl+C, Ctrl+\, Ctrl+D)
-15. Advanced features and bonus items
+💡 POLISH & BONUS FEATURES:
+7. Advanced redirection edge cases
+   - Ambiguous redirect detection
+   - Multiple same-type redirections
+   - Invalid file permissions
+8. Wildcard expansion (BONUS - if time permits)
+   - Implement glob() for * expansion
+   - Handle no matches
+   - Sort results
+9. Logical operators (BONUS - if time permits)
+   - Implement && (AND operator)
+   - Implement || (OR operator)
+   - Short-circuit evaluation
+
+🎯 NEXT IMMEDIATE STEPS - UPDATED PRIORITIES
+============================================
+🚨 CRITICAL (Testing & Edge Cases):
+1. Comprehensive testing of all built-ins
+   - Test builtin_export() edge cases (invalid names, complex values, no args display)
+   - Test builtin_unset() edge cases (multiple vars, invalid names, protected vars)
+   - Test builtin_echo() with various -n combinations (-n, -nn, -nnn, mixed)
+   - Test builtin_exit() with edge cases (LONG_MAX, negative, overflow)
+2. Pipeline and redirection stress testing
+   - Long pipelines (5+ commands)
+   - Multiple redirections per command
+   - Pipeline + heredoc combinations
+   - Redirection order testing
+
+🔥 HIGH PRIORITY (Signal & Error Handling):
+3. Signal behavior verification
+   - Test Ctrl+D (EOF) handling in main loop
+   - Verify exit status 130 after Ctrl+C in heredoc
+   - Test signals during pipeline execution
+   - Verify signal reset in child processes
+4. Exit status management ($?)
+   - Ensure $? updates correctly after each command
+   - Test with pipelines (should be last command's exit)
+   - Test with built-ins vs external commands
+   - Test with interrupted commands (130)
+
+⭐ MEDIUM PRIORITY (Memory & Robustness):
+5. Memory leak comprehensive testing
+   - Run extensive valgrind sessions
+   - Test long-running sessions with many commands
+   - Test heredoc and pipeline memory cleanup
+   - Verify arena reset between commands
+6. Error message consistency
+   - Match bash error message formats
+   - Proper error output to stderr
+   - Consistent error codes (126, 127, etc.)
+
+💡 POLISH & BONUS FEATURES:
+7. Advanced redirection edge cases
+   - Ambiguous redirect detection
+   - Multiple same-type redirections
+   - Invalid file permissions
+8. Wildcard expansion (BONUS - if time permits)
+   - Implement glob() for * expansion
+   - Handle no matches
+   - Sort results
+9. Logical operators (BONUS - if time permits)
+   - Implement && (AND operator)
+   - Implement || (OR operator)
+   - Short-circuit evaluation
+
+⭐ MEDIUM PRIORITY (Error Handling & Polish):
+7. Comprehensive error handling for external commands
+   - Command not found (exit 127) - verify implementation
+   - Permission denied (exit 126) - verify implementation
+   - Executable detection and error messages
+8. Exit status management ($?)
+   - Ensure $? is updated correctly after each command
+   - Test with pipelines (should be last command's exit)
+9. Memory leak checks
+   - Run extensive valgrind tests
+   - Fix any leaks in arena or shell cleanup
+   - Test with long-running sessions
+
+💡 POLISH & ADVANCED FEATURES:
+10. Advanced redirection combinations
+    - Multiple redirections per command
+    - Redirection order handling
+    - Error cases (ambiguous redirect)
+11. Wildcard expansion (if bonus)
+    - Implement glob() for * expansion
+    - Handle no matches
+    - Sort results
+12. Logical operators (if bonus)
+    - Implement && (AND operator)
+    - Implement || (OR operator)
+    - Short-circuit evaluation
+13. Subshells (if bonus)
+    - Parse and execute (cmd1; cmd2)
+    - Nested subshells
+
+🧪 TESTING & VALIDATION (CRITICAL BEFORE SUBMISSION):
+14. Comprehensive built-in testing
+    - Test each built-in with edge cases
+    - Compare behavior with bash
+    - Document any intentional differences
+15. Pipeline stress testing
+    - Long pipelines (5+ commands)
+    - Pipeline with redirections
+    - Pipeline with built-ins and external commands
+16. Memory leak testing
+    - Long sessions with many commands
+    - Repeated heredocs and pipelines
+    - Stress test arena allocation/reset
+17. Subject compliance verification
+    - Check all mandatory features work
+    - Test all error cases mentioned in subject
+    - Verify norm compliance (norminette)
+
+📝 RECENT ACHIEVEMENTS (October 2025)
+=====================================
+✅ Fixed redirection bugs (linked list corruption in debug function)
+✅ Refactored multiple functions to meet 42 norm:
+   - execute_pipeline_loop: 37→15 lines
+   - wait_all_children: 41→16 lines  
+   - find_executable: 31→15 lines
+   - builtin_cd: 40→16 lines (split into 4 functions)
+✅ Removed redundant code and parameters
+✅ Implemented full heredoc with expansion and signal handling
+✅ Implemented complete pipeline execution with proper pipe management
+✅ Added .gitignore for clean repository
+✅ Fixed git rebase conflicts and pushed successfully
+✅ Fixed function signature mismatch (export_this_var)
+✅ Implemented comprehensive signal handling:
+   - Interactive mode signals (handle_sigint for Ctrl+C)
+   - Heredoc mode signals (handle_heredoc_sigint, heredoc_event_hook)
+   - Signal restoration (restore_interactive_signals)
+   - Child process signal reset (reset_signals_for_child)
+   - Disabled ECHOCTL for clean terminal
+✅ Enhanced builtin_echo() with multiple -n flag support
+✅ Enhanced builtin_exit() with full validation:
+   - Numeric argument check (ft_isnumeric)
+   - Too many arguments error
+   - Proper exit code calculation (modulo 256)
+   - Non-numeric argument error (exit 2)
+
+🚀 Remember: "Make it work, make it right, make it fast!"
+💡 Current Focus: Comprehensive testing and edge case validation
+🎯 Next Phase: Subject compliance verification, stress testing
+✨ Final Phase: Bonus features (if time permits), final polish
+
+📊 PROJECT STATISTICS (UPDATED):
+- Lexer/Parser: ~95% complete
+- Executor: ~95% complete (all core features implemented!)
+- Built-ins: ~95% complete (all working, edge case testing needed)
+- Signal Handling: ~90% complete (all handlers done, Ctrl+D edge case testing)
+- Overall: ~93% complete
+
+🎯 ESTIMATED COMPLETION:
+- Mandatory features: 3-5 days (comprehensive testing + edge cases)
+- Subject compliance check: 1-2 days
+- With bonus features: 1-2 weeks additional
+- Final polish and validation: Ongoing
 
 📝 NOTES & INSIGHTS
 ===================
@@ -240,26 +428,24 @@ MINISHELL TODO LIST - Separated Concerns Architecture
 - All command names are WORD tokens regardless of type (built-in vs external)
 - Non-forkable builtins (cd, exit, export, unset) must run in parent process
 - Forkable builtins (echo, pwd, env) can fork when redirections are needed
+- Signal handling uses sigaction (more reliable than signal())
+- Global sig_atomic_t variable for safe signal state tracking
+- Heredoc uses special signal handling with rl_event_hook for clean interruption
+- ECHOCTL disabled to prevent ^C from appearing in terminal
 
 🔧 DEVELOPMENT TOOLS:
 - Enhanced Makefile with colored output and comprehensive targets
 - Valgrind integration with file descriptor tracking (--track-fds=yes)
 - Comprehensive cppcheck static analysis (--enable=all --inconclusive)
 - Professional development workflow established
+- .gitignore configured for clean repository
 
 🧪 QUALITY ASSURANCE:
 - Code structured with clear separation of concerns
 - Memory management validated with arena system (no leaks detected)
-- Redirection system tested and working for basic cases
+- All functions refactored to meet 42 norm (<25 lines)
+- Redirection system tested and working
+- Pipeline execution tested and working
 - Variable expansion implemented with quote awareness
+- Signal handling tested for interactive and heredoc modes
 
-📊 PROJECT STATISTICS:
-- Lexer/Parser: ~90% complete
-- Executor: ~40% complete (basic framework + redirections done)
-- Built-ins: ~50% complete (basic versions exist, need enhancements)
-- Overall: ~60% complete
-
-🚀 Remember: "Make it work, make it right, make it fast!"
-💡 Current Focus: Complete core execution (external commands, pipes, heredoc)
-🎯 Next Phase: Polish built-ins and add comprehensive error handling
-✨ Final Phase: Signal handling, bonus features, and extensive testing

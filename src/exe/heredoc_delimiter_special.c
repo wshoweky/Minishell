@@ -65,3 +65,17 @@ int	parse_special_delimiter(t_arena *arena, char *delimiter, char **result)
 	}
 	return (0);
 }
+
+/* check_delimiter_match - Check if line matches heredoc delimiter
+** Returns: 1 if match (heredoc complete), 0 if no match
+*/
+int	check_delimiter_match(char *line, char *delimiter)
+{
+	if (ft_strcmp(line, delimiter) == 0)
+	{
+		free(line);
+		restore_interactive_signals();
+		return (1);
+	}
+	return (0);
+}

@@ -1,38 +1,8 @@
 #include "minishell.h"
 
-/*
-** HEREDOC IMPLEMENTATION STRATEGY:
-**
-** Why Temporary Files Instead of Buffers?
-** =======================================
-**
-** 1. NO SIZE LIMITS: Files can handle gigabytes, buffers are limited (64KB)
-** 2. MEMORY EFFICIENCY: Only current line in RAM, rest on disk
-** 3. REAL SHELL BEHAVIOR: Bash/Zsh use temporary files for large heredocs
-** 4. CLEAN ARCHITECTURE: File-based approach integrates well with redirections
-**
-** Implementation Flow:
-** 1. During parsing: Create temporary file for each heredoc
-** 2. Collect user input: Write directly to temporary file
-** 3. During execution: Use temporary file as input redirection
-** 4. After execution: Clean up temporary files with unlink()
-*/
-/**
-** handle_heredocs - Process all heredocs in command table
-**
-** HEREDOC PROCESSING FLOW:
-** 1. Find all TOKEN_HEREDOC redirections in all commands
-** 2. For each heredoc: create temporary file and collect user input
-** 3. Store filename in cmd->heredoc_filename for later use
-** 4. Return success/failure status
-**
-** WHY BEFORE EXECUTION: Heredocs must be processed during parsing
-** because they require interactive user input before command execution.
-**
-**   shell     - Shell state with heredoc counter
-**   cmd_table - Command table to process
-**
-**   Returns: 0 on success, 1 on failure
+/* handle_heredocs - Process all heredocs in command table before execution
+** Creates temp files and collects user input for each heredoc.
+** Returns: 0 on success, 1 on failure
 */
 int	handle_heredocs(t_shell *shell, t_cmd_table *cmd_table)
 {
@@ -63,22 +33,9 @@ int	handle_heredocs(t_shell *shell, t_cmd_table *cmd_table)
 	return (0);
 }
 
-/**
-** process_heredoc_input - Create temporary file and collect user input
-**
-** FILE CREATION AND INPUT COLLECTION:
-** 1. Create temporary file with write permissions (0644)
-** 2. Collect user input line by line using readline
-** 3. Write each line to file until delimiter is found
-** 4. Close file (will be reopened for reading during execution)
-**
-** ERROR HANDLING: If file creation fails, report to stderr
-**
-**   shell    - Shell state for variable expansion
-**   redir    - Redirection with delimiter (redir->filename)
-**   filename - Path to temporary file
-**
-**   Returns: 0 on success, 1 on failure
+/* process_heredoc_input - Create temp file and collect heredoc input
+** Opens file, collects input until delimiter, closes file.
+** Returns: 0 on success, 1 on failure
 */
 int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 {
@@ -98,6 +55,9 @@ int	process_heredoc_input(t_shell *shell, t_redir *redir, char *filename)
 	return (status);
 }
 
+/* handle_eof_error - Handle EOF without delimiter in heredoc
+** Prints warning and sets exit status to 0 (bash behavior).
+*/
 static int	handle_eof_error(t_shell *shell, char *delimiter)
 {
 	if (!g_signal)
@@ -109,6 +69,9 @@ static int	handle_eof_error(t_shell *shell, char *delimiter)
 	return (1);
 }
 
+/* process_heredoc_line - Expand variables if needed and write line to file
+** Returns: 0 on success, 1 on failure
+*/
 static int	process_heredoc_line(t_shell *shell, t_redir *redir, int fd,
 		char *line)
 {
@@ -135,24 +98,9 @@ static int	process_heredoc_line(t_shell *shell, t_redir *redir, int fd,
 	return (0);
 }
 
-/**
-** collect_heredoc_input - Interactive input collection for heredoc
-**
-** INPUT COLLECTION LOOP:
-** 1. Display "> " prompt (standard heredoc prompt)
-** 2. Read line with readline (handles EOF gracefully)
-** 3. Check if line matches delimiter (exact match)
-** 4. If not delimiter: expand variables and write to file
-** 5. Continue until delimiter found or EOF
-**
-** VARIABLE EXPANSION: Heredocs support $VAR expansion (like bash)
-** EOF HANDLING: Warn about missing delimiter (bash behavior)
-**
-**   shell - Shell state for variable expansion
-**   redir - Redirection with delimiter
-**   fd    - File descriptor to write to
-**
-**   Returns: 0 on success, 1 on EOF without delimiter
+/* collect_heredoc_input - Read heredoc input until delimiter or EOF/interrupt
+** Displays "> " prompt, reads lines, expands variables, writes to file.
+** Returns: 0 on success, 1 on EOF/interrupt
 */
 int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd)
 {
@@ -161,28 +109,18 @@ int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd)
 
 	setup_heredoc_signals();
 	delimiter = redir->filename;
-	while (1337)
+	while (1)
 	{
 		line = readline("> ");
 		if (g_signal == SIGINT)
-		{
-			if (line)
-				free(line);
-			restore_interactive_signals();
-			shell->last_exit_status = 130;
-			return (1);
-		}
+			return (handle_heredoc_interrupt(shell, line));
 		if (!line)
 		{
 			restore_interactive_signals();
 			return (handle_eof_error(shell, delimiter));
 		}
-		if (ft_strcmp(line, delimiter) == 0)
-		{
-			free(line);
-			restore_interactive_signals();
+		if (check_delimiter_match(line, delimiter))
 			return (0);
-		}
 		if (process_heredoc_line(shell, redir, fd, line) != 0)
 		{
 			restore_interactive_signals();

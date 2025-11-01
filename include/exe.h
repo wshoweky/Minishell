@@ -52,6 +52,7 @@ void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
 // Executable path resolution
 char	*find_executable(t_shell *shell, char *cmd);
 int		is_executable(char *path);
+int		is_regular_file(char *path);
 char	*build_path(t_shell *shell, char *dir, char *file);
 
 // Process creation and management
@@ -100,6 +101,7 @@ char	*generate_filename(t_shell *shell);
 int		write_heredoc_line(int fd, char *line);
 char	*special_heredoc_delimiter(t_arena *arena, char *delimiter);
 int		parse_special_delimiter(t_arena *arena, char *delimiter, char **result);
+int		check_delimiter_match(char *line, char *delimiter);
 void	cleanup_heredoc_files(t_cmd_table *cmd_table);
 
 // Signal handling
@@ -109,6 +111,7 @@ void	restore_interactive_signals(void);
 void	reset_signals_for_child(void);
 int		disable_echoctl(void);
 int		heredoc_event_hook(void);
+int		handle_heredoc_interrupt(t_shell *shell, char *line);
 void	setup_heredoc_signals(void);
 void	handle_heredoc_sigint(int signum);
 

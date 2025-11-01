@@ -71,3 +71,15 @@ void	setup_heredoc_signals(void)
 	rl_event_hook = &heredoc_event_hook;
 	g_signal = 0;
 }
+
+/* handle_heredoc_interrupt - Handle Ctrl+C during heredoc input
+** Sets exit status to 130 and returns 1.
+*/
+int	handle_heredoc_interrupt(t_shell *shell, char *line)
+{
+	if (line)
+		free(line);
+	restore_interactive_signals();
+	shell->last_exit_status = 130;
+	return (1);
+}

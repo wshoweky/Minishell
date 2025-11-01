@@ -44,17 +44,23 @@ char	*find_executable(t_shell *shell, char *cmd)
 **   cmd   - Command with path separator
 **
 ** RETURN VALUE:
-**   Returns duplicated path if executable, NULL otherwise
+**   Returns duplicated path if file exists, NULL otherwise
+**   (Permission check is done later in exe_external_cmd)
 */
 static char	*handle_absolute_path(t_shell *shell, char *cmd)
 {
-	if (is_executable(cmd))
+	if (is_regular_file(cmd))
 		return (ar_strdup(shell->arena, cmd));
 	return (NULL);
 }
 
 /*
 ** search_in_path - Search for command in PATH directories
+**
+** DESCRIPTION:
+**   Searches for command file in PATH directories.
+**   Returns first match found, even if not executable.
+**   Permission check is done later in exe_external_cmd.
 **
 ** PARAMETERS:
 **   shell     - Shell state with arena
@@ -73,8 +79,13 @@ static char	*search_in_path(t_shell *shell, char *cmd, char **path_dirs)
 	while (path_dirs[i])
 	{
 		full_path = build_path(shell, path_dirs[i], cmd);
-		if (full_path && is_executable(full_path))
-			return (full_path);
+		if (full_path)
+		{
+			if (is_executable(full_path))
+				return (full_path);
+			if (is_regular_file(full_path))
+				return (full_path);
+		}
 		i++;
 	}
 	return (NULL);
@@ -96,91 +107,37 @@ int	is_executable(char *path)
 {
 	t_stat	file_stat;
 
-	// Basic input validation - null path is not executable
 	if (!path)
 		return (0);
-	// Use stat() system call to get file metadata
-	// stat() fills the file_stat structure with file information
-	// Returns 0 on success, -1 on failure (file doesn't exist, no permissions,	etc.)
 	if (stat(path, &file_stat) != 0)
 		return (0);
-	// Check two conditions for executability:
-	// 1. S_ISREG(file_stat.st_mode): Is it a regular file? (not directory,symlink, etc.)
-	//    - S_ISREG is a macro that checks file type bits in st_mode
-	//    - st_mode contains both file type and permission information
-	// 2. (file_stat.st_mode & S_IXUSR): Does the user (owner) have execute permission?
-	//    - S_IXUSR is the "user execute" permission bit (octal 0100)
-	//    - Bitwise AND (&) checks if this specific bit is set
-	//    - Only checks owner permissions, not group or others
 	if (S_ISREG(file_stat.st_mode) && (file_stat.st_mode & S_IXUSR))
 		return (1);
-	// File exists but is either not a regular file or not executable by owner
 	return (0);
 }
 
 /*
-** build_path - Build full path from directory and filename
+** is_regular_file - Check if path is a regular file
 **
 ** DESCRIPTION:
-**   Concatenates directory path with filename using '/'.
-**   Uses arena allocation for memory management.
+**   Checks if file exists and is a regular file (not directory, etc.)
+**   Does NOT check execute permission.
 **
 ** PARAMETERS:
-**   arena - Memory arena for allocations
-**   dir  - Directory path
-**   file - Filename
+**   path - Path to check
 **
 ** RETURN VALUE:
-**   Returns allocated full path or NULL on error
+**   Returns 1 if regular file exists, 0 otherwise
 */
-char	*build_path(t_shell *shell, char *dir, char *file)
+int	is_regular_file(char *path)
 {
-	char	*dir_with_slash;
-	char	*path;
-	int		dir_len;
+	t_stat	file_stat;
 
-	if (!dir || !file || !shell)
-		return (NULL);
-	dir_len = ft_strlen(dir);
-	if (dir_len > 0 && dir[dir_len - 1] != '/')
-	{
-		dir_with_slash = ar_strjoin(shell->arena, dir, "/");
-		if (!dir_with_slash)
-			return (NULL);
-		path = ar_strjoin(shell->arena, dir_with_slash, file);
-	}
-	else
-		path = ar_strjoin(shell->arena, dir, file);
-	return (path);
-}
-
-/*
-** get_env_value - Get environment variable value
-**
-** DESCRIPTION:
-**   Searches environment array for variable and returns its value.
-**
-** PARAMETERS:
-**   env  - Environment variables array
-**   name - Variable name to find
-**
-** RETURN VALUE:
-**   Returns value string or NULL if not found
-*/
-char	*get_env_value(char **env, char *name)
-{
-	int	i;
-	int	name_len;
-
-	if (!env || !name)
-		return (NULL);
-	name_len = ft_strlen(name);
-	i = 0;
-	while (env[i])
-	{
-		if (ft_strncmp(env[i], name, name_len) == 0 && env[i][name_len] == '=')
-			return (&env[i][name_len + 1]);
-		i++;
-	}
-	return (NULL);
+	if (!path)
+		return (0);
+	if (stat(path, &file_stat) != 0)
+		return (0);
+	if (S_ISREG(file_stat.st_mode))
+		return (1);
+	return (0);
 }

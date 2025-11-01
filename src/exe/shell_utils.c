@@ -124,3 +124,28 @@ int	update_shell_cwd(t_shell *shell, char *old_dir)
 	free(old_cwd);
 	return (1);
 }
+
+/*
+** wait_and_get_status - Wait for child and extract exit status
+**
+** DESCRIPTION:
+**   Waits for child process and extracts exit status.
+**   Handles both normal exit and signal termination.
+**
+** PARAMETERS:
+**   pid - Child process ID
+**
+** RETURN VALUE:
+**   Returns child's exit status
+*/
+int	wait_and_get_status(pid_t pid)
+{
+	int	status;
+
+	waitpid(pid, &status, 0);
+	if (WIFEXITED(status))
+		return (WEXITSTATUS(status));
+	if (WIFSIGNALED(status))
+		return (128 + WTERMSIG(status));
+	return (1);
+}

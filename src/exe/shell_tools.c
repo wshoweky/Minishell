@@ -95,7 +95,73 @@ int	unset_shell_env_value(t_shell *shell, char *name)
 		shell->env[i] = shell->env[i + 1];
 		i++;
 	}
-	// pre-decrement count and NULL-terminate the array!
 	shell->env[--shell->env_count] = NULL;
 	return (1);
+}
+
+/*
+** get_env_value - Get environment variable value
+**
+** DESCRIPTION:
+**   Searches environment array for variable and returns its value.
+**
+** PARAMETERS:
+**   env  - Environment variables array
+**   name - Variable name to find
+**
+** RETURN VALUE:
+**   Returns value string or NULL if not found
+*/
+char	*get_env_value(char **env, char *name)
+{
+	int	i;
+	int	name_len;
+
+	if (!env || !name)
+		return (NULL);
+	name_len = ft_strlen(name);
+	i = 0;
+	while (env[i])
+	{
+		if (ft_strncmp(env[i], name, name_len) == 0 && env[i][name_len] == '=')
+			return (&env[i][name_len + 1]);
+		i++;
+	}
+	return (NULL);
+}
+
+/*
+** build_path - Build full path from directory and filename
+**
+** DESCRIPTION:
+**   Concatenates directory path with filename using '/'.
+**   Uses arena allocation for memory management.
+**
+** PARAMETERS:
+**   arena - Memory arena for allocations
+**   dir  - Directory path
+**   file - Filename
+**
+** RETURN VALUE:
+**   Returns allocated full path or NULL on error
+*/
+char	*build_path(t_shell *shell, char *dir, char *file)
+{
+	char	*dir_with_slash;
+	char	*path;
+	int		dir_len;
+
+	if (!dir || !file || !shell)
+		return (NULL);
+	dir_len = ft_strlen(dir);
+	if (dir_len > 0 && dir[dir_len - 1] != '/')
+	{
+		dir_with_slash = ar_strjoin(shell->arena, dir, "/");
+		if (!dir_with_slash)
+			return (NULL);
+		path = ar_strjoin(shell->arena, dir_with_slash, file);
+	}
+	else
+		path = ar_strjoin(shell->arena, dir, file);
+	return (path);
 }

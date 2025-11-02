@@ -60,7 +60,7 @@ void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 **   cmd   - Command structure
 **
 ** RETURN VALUE:
-**   Returns exit status: 127 if not found, 126 if no permission, child status otherwise
+**   Returns: 127 if not found, 126 if no permission, child status otherwise
 */
 int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 {
@@ -70,12 +70,12 @@ int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 	executable_path = find_executable(shell, cmd->cmd_av[0]);
 	if (!executable_path)
 	{
-		ft_printf("minishell: %s: command not found\n", cmd->cmd_av[0]);
+		print_error("minishell", cmd->cmd_av[0], "command not found");
 		return (127);
 	}
 	if (!is_executable(executable_path))
 	{
-		ft_printf("minishell: %s: Permission denied\n", cmd->cmd_av[0]);
+		print_error("minishell", cmd->cmd_av[0], "Permission denied");
 		return (126);
 	}
 	pid = fork();

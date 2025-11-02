@@ -59,7 +59,7 @@ int	parse_special_delimiter(t_arena *arena, char *delimiter, char **result)
 			*result = ar_add_char_to_str(arena, *result, delimiter[i]);
 			if (!*result)
 				return (err_msg_n_return_value("Failed while building "
-					"heredoc eof\n", -1));
+						"heredoc eof\n", -1));
 		}
 		i++;
 	}
@@ -76,6 +76,35 @@ int	check_delimiter_match(char *line, char *delimiter)
 		free(line);
 		restore_interactive_signals();
 		return (1);
+	}
+	return (0);
+}
+
+int	expand_dollar_sign(t_shell *shell, char *input, size_t *i, char **text)
+{
+	char	*var_name;
+
+	var_name = NULL;
+	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' || input[*i
+			+ 1] == '?')
+	{
+		var_name = ar_add_char_to_str(shell->arena, var_name, input[*i + 1]);
+		if (!var_name)
+			return (err_msg_n_return_value("Error building var name\n", -1));
+		(*i)++;
+		if (var_name[0] == '?' && input[*i + 1])
+			break ;
+	}
+	if (var_name)
+	{
+		if (transform_var_name(shell, text, var_name) == -1)
+			return (-1);
+	}
+	else
+	{
+		*text = ar_add_char_to_str(shell->arena, *text, '$');
+		if (!*text)
+			return (err_msg_n_return_value("Error adding $ to string\n", -1));
 	}
 	return (0);
 }

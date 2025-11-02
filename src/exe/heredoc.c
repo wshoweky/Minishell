@@ -62,8 +62,10 @@ static int	handle_eof_error(t_shell *shell, char *delimiter)
 {
 	if (!g_signal)
 	{
-		ft_printf("minishell: warning: here-document delimited by ");
-		ft_printf("end-of-file (wanted `%s')\n", delimiter);
+		ft_putstr_fd("minishell: warning: here-document delimited by ", 2);
+		ft_putstr_fd("end-of-file (wanted `", 2);
+		ft_putstr_fd(delimiter, 2);
+		ft_putstr_fd("')\n", 2);
 	}
 	shell->last_exit_status = 0;
 	return (1);
@@ -129,4 +131,3 @@ int	collect_heredoc_input(t_shell *shell, t_redir *redir, int fd)
 		free(line);
 	}
 }
-

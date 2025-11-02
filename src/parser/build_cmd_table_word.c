@@ -17,6 +17,8 @@ int	check_token_word(t_shell *shell, t_tokens *token, t_cmd *current_cmd)
 	if (ft_strchr(token->value, '$') || ft_strchr(token->value, '&'))
 		if (expand_variable_name(shell, &token->value, 0) == -1)
 			return (-1);
+	if ((!token->value || !token->value[0]) && !token->was_quoted)
+		return (0);
 	if (add_argv(shell->arena, current_cmd, token->value) == -1)
 		return (-1);
 	return (0);

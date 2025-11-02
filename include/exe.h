@@ -5,6 +5,7 @@
 typedef struct stat			t_stat;
 typedef struct s_cmd_table	t_cmd_table;
 typedef struct s_cmd		t_cmd;
+typedef struct s_redir		t_redir;
 typedef struct s_shell		t_shell;
 typedef struct s_var		t_var;
 
@@ -32,7 +33,6 @@ int		builtin_unset(t_shell *shell, t_cmd *cmd);
 int		builtin_exit(t_cmd *cmd);
 
 // Export helper functions
-char	*get_env_value(char **env, char *name);
 int		copy_vars_fr_env_to_export_list(t_shell *shell);
 int		plain_export(t_shell *shell);
 int		export_this_var(t_shell *shell, char *arg);
@@ -84,6 +84,7 @@ int		unset_shell_env_value(t_shell *shell, char *name);
 
 // Shell utility functions
 char	*create_env_string(char *name, char *value);
+void	print_error(char *prefix, char *cmd, char *msg);
 int		find_env_index(t_shell *shell, char *name);
 int		resize_env_if_needed(t_shell *shell);
 int		update_shell_cwd(t_shell *shell, char *old_dir);
@@ -93,6 +94,7 @@ int		handle_heredocs(t_shell *shell, t_cmd_table *cmd_table);
 int		handle_heredoc_file(char *heredoc_filename);
 int		process_heredoc_input(t_shell *shell, t_redir *redir, char *filename);
 int		collect_heredoc_input(t_shell *shell, t_redir *redir, int fd);
+int		expand_dollar_sign(t_shell *shell, char *input, size_t *i, char **text);
 char	*generate_filename(t_shell *shell);
 
 //	Heredoc functions
@@ -107,6 +109,7 @@ void	cleanup_heredoc_files(t_cmd_table *cmd_table);
 // Signal handling
 int		setup_signal_handlers(void);
 void	handle_sigint(int signo);
+void	handle_signal_status(t_shell *shell);
 void	restore_interactive_signals(void);
 void	reset_signals_for_child(void);
 int		disable_echoctl(void);

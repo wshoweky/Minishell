@@ -131,6 +131,7 @@ int	update_shell_cwd(t_shell *shell, char *old_dir)
 ** DESCRIPTION:
 **   Waits for child process and extracts exit status.
 **   Handles both normal exit and signal termination.
+**   Ignores SIGINT while waiting to prevent double prompt.
 **
 ** PARAMETERS:
 **   pid - Child process ID
@@ -140,9 +141,16 @@ int	update_shell_cwd(t_shell *shell, char *old_dir)
 */
 int	wait_and_get_status(pid_t pid)
 {
-	int	status;
+	int					status;
+	struct sigaction	sa_ignore;
+	struct sigaction	sa_old;
 
+	sa_ignore.sa_handler = SIG_IGN;
+	sigemptyset(&sa_ignore.sa_mask);
+	sa_ignore.sa_flags = 0;
+	sigaction(SIGINT, &sa_ignore, &sa_old);
 	waitpid(pid, &status, 0);
+	sigaction(SIGINT, &sa_old, NULL);
 	if (WIFEXITED(status))
 		return (WEXITSTATUS(status));
 	if (WIFSIGNALED(status))

@@ -34,7 +34,7 @@ int	builtin_unset(t_shell *shell, t_cmd *cmd)
 	return (0);
 }
 
-/*Unset each argument in both shell env and export lists if, after 
+/*Unset each argument in both shell env and export lists if, after
 doing expansion if needed, variable name matches the existing variable name
 (helper function of builtin_unset())
 
@@ -45,8 +45,8 @@ int	unset_this_var(t_shell *shell, char *input)
 	if (ft_strchr(input, '$') || ft_strchr(input, '&'))
 		if (expand_variable_name(shell, &input, 0) == -1)
 			return (-1);
-	if (ft_isdigit(input[0]) 
-		|| !ft_strcmp(input, "&") || !ft_strcmp(input, "&&"))
+	if (ft_isdigit(input[0]) || !ft_strcmp(input, "&") || !ft_strcmp(input,
+			"&&"))
 		return (err_msg_n_return_value("Not a valid identifier\n", -1));
 	if (unset_shell_env_value(shell, input) == -1)
 		return (err_msg_n_return_value("Failed to unset var from shell env\n",

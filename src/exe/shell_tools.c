@@ -100,37 +100,6 @@ int	unset_shell_env_value(t_shell *shell, char *name)
 }
 
 /*
-** get_env_value - Get environment variable value
-**
-** DESCRIPTION:
-**   Searches environment array for variable and returns its value.
-**
-** PARAMETERS:
-**   env  - Environment variables array
-**   name - Variable name to find
-**
-** RETURN VALUE:
-**   Returns value string or NULL if not found
-*/
-char	*get_env_value(char **env, char *name)
-{
-	int	i;
-	int	name_len;
-
-	if (!env || !name)
-		return (NULL);
-	name_len = ft_strlen(name);
-	i = 0;
-	while (env[i])
-	{
-		if (ft_strncmp(env[i], name, name_len) == 0 && env[i][name_len] == '=')
-			return (&env[i][name_len + 1]);
-		i++;
-	}
-	return (NULL);
-}
-
-/*
 ** build_path - Build full path from directory and filename
 **
 ** DESCRIPTION:
@@ -164,4 +133,33 @@ char	*build_path(t_shell *shell, char *dir, char *file)
 	else
 		path = ar_strjoin(shell->arena, dir, file);
 	return (path);
+}
+
+/*
+** print_error - Print error message to stderr
+**
+**   Prints formatted error message to stderr (fd 2) so it's visible
+**   in pipelines instead of being piped to the next command.
+**
+**   prefix - Error prefix (e.g., "minishell")
+**   cmd    - Command name that caused error
+**   msg    - Error message
+*/
+void	print_error(char *prefix, char *cmd, char *msg)
+{
+	if (prefix)
+	{
+		ft_putstr_fd(prefix, 2);
+		ft_putstr_fd(": ", 2);
+	}
+	if (cmd)
+	{
+		ft_putstr_fd(cmd, 2);
+		ft_putstr_fd(": ", 2);
+	}
+	if (msg)
+	{
+		ft_putstr_fd(msg, 2);
+		ft_putstr_fd("\n", 2);
+	}
 }

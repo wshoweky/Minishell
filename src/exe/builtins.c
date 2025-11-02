@@ -135,14 +135,15 @@ int	builtin_exit(t_cmd *cmd)
 	}
 	if (cmd->cmd_av[2])
 	{
-		ft_printf("minishell: exit: too many arguments\n");
+		print_error("minishell", "exit", "too many arguments");
 		return (1);
 	}
 	if (!ft_isnumeric(cmd->cmd_av[1]))
 	{
 		ft_printf("exit\n");
-		ft_printf("minishell: exit: %s: numeric argument required\n",
-			cmd->cmd_av[1]);
+		ft_putstr_fd("minishell: exit: ", 2);
+		ft_putstr_fd(cmd->cmd_av[1], 2);
+		ft_putstr_fd(": numeric argument required\n", 2);
 		exit(2);
 	}
 	long_code = ft_atoi(cmd->cmd_av[1]);

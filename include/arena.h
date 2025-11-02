@@ -1,7 +1,6 @@
 #ifndef ARENA_H
 # define ARENA_H
 
-//# include "minishell.h" can't be included here due to circular dependency
 # define AR_SIZE 2097152 // 2MB
 
 typedef struct s_arena

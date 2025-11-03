@@ -77,6 +77,8 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 	if (pre_process_value)
 	{
 		new_token->was_quoted = has_quotes(pre_process_value);
+		if (new_token->type != TOKEN_WORD && new_token->was_quoted)
+			new_token->type = TOKEN_WORD;
 		free(pre_process_value);
 	}
 	add_to_end(head, new_token);

@@ -51,7 +51,7 @@ static void	shell_loop(t_shell *shell)
 		ft_printf("exit\n");
 		exit_status = shell->last_exit_status;
 		free_shell(shell);
-		exit(shell->last_exit_status);
+		exit(exit_status);
 	}
 	handle_signal_status(shell);
 	if (*input)

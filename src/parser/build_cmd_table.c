@@ -71,7 +71,10 @@ int	register_to_table(t_shell *shell, t_tokens *list_of_toks,
 	{
 		check = check_current_token(shell, current_tok, &current_cmd, table);
 		if (check == -1 || check == 2)
+		{
+			table = NULL;
 			return (check);
+		}
 		current_tok = current_tok->next;
 	}
 	// print_cmd_table(table); ft_printf ("------------\n\n");

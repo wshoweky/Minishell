@@ -1,29 +1,16 @@
-#include "minishell.h"
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exe_utils.c                                        :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 17:38:43 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 17:38:49 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
 
-/*
-** is_non_forkable_builtin - Check if builtin must not fork
-**
-** DESCRIPTION:
-**   Checks if a builtin command affects parent shell state.
-**
-** PARAMETERS:
-**   cmd_name - Command name to check
-**
-** RETURN VALUE:
-**   Returns 1 if command must not fork, 0 otherwise
-*/
-int	is_non_forkable_builtin(char *cmd_name)
-{
-	if (ft_strcmp(cmd_name, "cd") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "exit") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "export") == 0)
-		return (1);
-	if (ft_strcmp(cmd_name, "unset") == 0)
-		return (1);
-	return (0);
-}
+#include "minishell.h"
 
 /*
 ** execute_child_process - Execute command in child process
@@ -50,6 +37,39 @@ void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 }
 
 /*
+** validate_executable_path - Validate if path is executable
+**
+** DESCRIPTION:
+**   Checks if path exists, is not a directory, and has execute permissions.
+**
+** PARAMETERS:
+**   cmd_name - Command name for error messages
+**   path     - Path to validate
+**
+** RETURN VALUE:
+**   Returns: 0 if valid, 127 if not found, 126 if directory/no permission
+*/
+static int	validate_executable_path(char *cmd_name, char *path)
+{
+	if (!path)
+	{
+		print_error("minishell", cmd_name, "command not found");
+		return (127);
+	}
+	if (is_directory(path))
+	{
+		print_error("minishell", cmd_name, "Is a directory");
+		return (126);
+	}
+	if (!is_executable(path))
+	{
+		print_error("minishell", cmd_name, "Permission denied");
+		return (126);
+	}
+	return (0);
+}
+
+/*
 ** exe_external_cmd - Execute external program
 **
 ** DESCRIPTION:
@@ -66,18 +86,13 @@ int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 {
 	pid_t	pid;
 	char	*executable_path;
+	int		validation_status;
 
 	executable_path = find_executable(shell, cmd->cmd_av[0]);
-	if (!executable_path)
-	{
-		print_error("minishell", cmd->cmd_av[0], "command not found");
-		return (127);
-	}
-	if (!is_executable(executable_path))
-	{
-		print_error("minishell", cmd->cmd_av[0], "Permission denied");
-		return (126);
-	}
+	validation_status = validate_executable_path(cmd->cmd_av[0],
+			executable_path);
+	if (validation_status != 0)
+		return (validation_status);
 	pid = fork();
 	if (pid < 0)
 	{

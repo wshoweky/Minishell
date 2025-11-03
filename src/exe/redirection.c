@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   redirection.c                                      :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 17:42:55 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 20:12:36 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -17,8 +29,6 @@ static int	setup_single_redirection(t_redir *redir, t_cmd *cmd)
 {
 	if (!redir || !redir->filename)
 		return (-1);
-	// printf("DEBUG: Setting up redirection: type= %d, file= %s\n",
-	// 	redir->tok_type, redir->filename);
 	if (redir->tok_type == TOKEN_REDIRECT_OUT)
 		return (handle_output_redirection(redir->filename, 0));
 	else if (redir->tok_type == TOKEN_APPEND)

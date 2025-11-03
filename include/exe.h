@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   exe.h                                              :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 20:55:02 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 20:55:03 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef EXE_H
 # define EXE_H
 
@@ -53,6 +65,7 @@ void	perform_exorcism_on_doppelganger(t_shell *shell, char *name);
 char	*find_executable(t_shell *shell, char *cmd);
 int		is_executable(char *path);
 int		is_regular_file(char *path);
+int		is_directory(char *path);
 char	*build_path(t_shell *shell, char *dir, char *file);
 
 // Process creation and management

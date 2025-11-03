@@ -67,7 +67,7 @@ static int	process_input(t_shell *shell, char *input)
 	t_cmd_table	*cmd_table;
 	int			possible_error;
 
-	tokens = tokenize_input(shell->arena, input);
+	tokens = tokenize_input(shell, input);
 	if (!tokens)
 		return (1);
 	cmd_table = ar_alloc(shell->arena, sizeof(t_cmd_table));

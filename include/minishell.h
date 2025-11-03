@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   minishell.h                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 20:55:10 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 20:55:17 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/03 22:40:15 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,10 +101,10 @@ typedef struct s_shell
 }	t_shell;
 
 // Tokenization functions
-char			*get_token_type_name(t_token_type type);
-t_tokens		*tokenize_input(t_arena *arena, char *input);
+// char			*get_token_type_name(t_token_type type);
+t_tokens		*tokenize_input(t_shell *shell, char *input);
 void			skip_whitespace(char *input, int *i);
-t_tokens		*process_single_token(t_arena *arena, char *input, int *i,
+t_tokens		*process_single_token(t_shell *shell, char *input, int *i,
 					t_tokens **head);
 t_tokens		*create_token(t_arena *arena, char *word);
 t_token_type	get_token_type(char *str);
@@ -112,12 +112,12 @@ void			add_to_end(t_tokens **head, t_tokens *new_node);
 int				has_quotes(char *str);
 
 // Parsing input for correct tokenization functions
-char			*extract_next_token(t_arena *arena, char *input, int *i);
-int				chop_up_input(t_arena *arena, char *input, int *i,
+char			*extract_next_token(t_shell *shell, char *input, int *i);
+int				chop_up_input(t_shell *shell, char *input, int *i,
 					char **string);
-int				char_in_quotes(t_arena *arena, char **string,
+int				char_in_quotes(t_shell *shell, char **string,
 					char current_char, int *in_quotes);
-int				char_outside_quotes(t_arena *arena, char **string,
+int				char_outside_quotes(t_shell *shell, char **string,
 					char current_char, int *in_quotes);
 int				char_is_quote(t_arena *arena, char **string, char current_char,
 					int *in_quotes);
@@ -125,11 +125,11 @@ int				char_normal_outside_quotes(t_arena *arena, char **string,
 					char current_char);
 
 // Special token extraction functions
-int				extract_special_token(t_arena *arena, char **string,
+int				extract_special_token(t_shell *shell, char **string,
 					char current);
-int				extract_pipe_token(t_arena *arena, char **string);
-int				extract_redirect_in_token(t_arena *arena, char **string);
-int				extract_redirect_out_token(t_arena *arena, char **string);
+int				extract_pipe_token(t_shell *shell, char **string);
+int				extract_redirect_in_token(t_shell *shell, char **string);
+int				extract_redirect_out_token(t_shell *shell, char **string);
 
 // Quotes in string check and modify functions
 char			*check_for_quoted_string(t_arena *arena, char *str);

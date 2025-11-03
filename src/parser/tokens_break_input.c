@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/04 16:59:39 by gita              #+#    #+#             */
-/*   Updated: 2025/10/30 17:08:20 by gita             ###   ########.fr       */
+/*   Updated: 2025/11/03 22:37:37 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,7 +18,7 @@
 
  Return: 0 on success, -1 on errors
 */
-int	chop_up_input(t_arena *arena, char *input, int *i, char **string)
+int	chop_up_input(t_shell *shell, char *input, int *i, char **string)
 {
 	int	in_quotes;
 	int	need_break;
@@ -28,14 +28,14 @@ int	chop_up_input(t_arena *arena, char *input, int *i, char **string)
 	{
 		if (in_quotes)
 		{
-			if (char_in_quotes(arena, string, input[*i], &in_quotes) == -1)
+			if (char_in_quotes(shell, string, input[*i], &in_quotes) == -1)
 				return (-1);
 		}
 		else
 		{
-			need_break = char_outside_quotes(arena, string, input[*i],
+			need_break = char_outside_quotes(shell, string, input[*i],
 					&in_quotes);
-			if (need_break == -1)
+			if (need_break == -1 || need_break == 2)
 				return (-1);
 			if (need_break == 1)
 				break ;
@@ -48,10 +48,10 @@ int	chop_up_input(t_arena *arena, char *input, int *i, char **string)
 /* Keep adding characters to the current string until seeing the closing quote
  Return: 0 on success, -1 on errors
 */
-int	char_in_quotes(t_arena *arena, char **string, char current_char,
+int	char_in_quotes(t_shell *shell, char **string, char current_char,
 	int *in_quotes)
 {
-	*string = ar_add_char_to_str(arena, *string, current_char);
+	*string = ar_add_char_to_str(shell->arena, *string, current_char);
 	if (!*string)
 		return (-1);
 	if ((current_char == '"' && *in_quotes == 2)
@@ -67,7 +67,7 @@ int	char_in_quotes(t_arena *arena, char **string, char current_char,
 
  Return: 1 to break token, 0 to continue building string, -1 on errors
 */
-int	char_outside_quotes(t_arena *arena, char **string, char current_char,
+int	char_outside_quotes(t_shell *shell, char **string, char current_char,
 	int *in_quotes)
 {
 	int	check;
@@ -77,14 +77,14 @@ int	char_outside_quotes(t_arena *arena, char **string, char current_char,
 		if (*string && ft_strcmp(*string, "<") && ft_strcmp(*string, ">"))
 			return (1);
 		else
-			return (extract_special_token(arena, string, current_char));
+			return (extract_special_token(shell, string, current_char));
 	}
 	else if (current_char == '"' || current_char == '\'')
 	{
 		if (*string && (!ft_strcmp(*string, "<") || !ft_strcmp(*string, "<<")
 			|| !ft_strcmp(*string, ">") || !ft_strcmp(*string, ">>")))
 			return (1);
-		if (char_is_quote(arena, string, current_char, in_quotes) == -1)
+		if (char_is_quote(shell->arena, string, current_char, in_quotes) == -1)
 			return (-1);
 	}
 	else if (current_char == ' ' || current_char == '\t'
@@ -92,7 +92,7 @@ int	char_outside_quotes(t_arena *arena, char **string, char current_char,
 		return (1);
 	else
 	{
-		check = char_normal_outside_quotes(arena, string, current_char);
+		check = char_normal_outside_quotes(shell->arena, string, current_char);
 		if (check != 0)
 			return (check);
 	}

@@ -102,7 +102,7 @@ t_cmd	*new_cmd_alloc(t_arena *arena)
 - Redirections: validate file name, then create redirection expansion
 - Words: pass to helper function for further processing
 
-Return: 0 on success, -1 on errors
+Return: 0 on success, -1 on errors, 2 on syntax error
 */
 int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
 	t_cmd_table *table)

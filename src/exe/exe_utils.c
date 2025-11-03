@@ -39,7 +39,7 @@ int	is_non_forkable_builtin(char *cmd_name)
 */
 void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 {
-	reset_signals_for_child(); // Reset signals for child process
+	reset_signals_for_child();
 	if (setup_redirections(cmd) != 0)
 		exit(1);
 	if (execve(path, cmd->cmd_av, shell->env) == -1)
@@ -60,7 +60,7 @@ void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 **   cmd   - Command structure
 **
 ** RETURN VALUE:
-**   Returns exit status: 127 if not found, child status otherwise
+**   Returns: 127 if not found, 126 if no permission, child status otherwise
 */
 int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 {
@@ -70,8 +70,13 @@ int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 	executable_path = find_executable(shell, cmd->cmd_av[0]);
 	if (!executable_path)
 	{
-		ft_printf("minishell: %s: command not found\n", cmd->cmd_av[0]);
+		print_error("minishell", cmd->cmd_av[0], "command not found");
 		return (127);
+	}
+	if (!is_executable(executable_path))
+	{
+		print_error("minishell", cmd->cmd_av[0], "Permission denied");
+		return (126);
 	}
 	pid = fork();
 	if (pid < 0)
@@ -110,7 +115,7 @@ int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 	}
 	if (pid == 0)
 	{
-		reset_signals_for_child(); // Reset signals for child process
+		reset_signals_for_child();
 		if (setup_redirections(cmd) != 0)
 			exit(1);
 		exit(exe_builtin(cmd, shell));
@@ -150,29 +155,4 @@ int	exe_redirection_only(t_cmd *cmd)
 		exit(0);
 	}
 	return (wait_and_get_status(pid));
-}
-
-/*
-** wait_and_get_status - Wait for child and extract exit status
-**
-** DESCRIPTION:
-**   Waits for child process and extracts exit status.
-**   Handles both normal exit and signal termination.
-**
-** PARAMETERS:
-**   pid - Child process ID
-**
-** RETURN VALUE:
-**   Returns child's exit status
-*/
-int	wait_and_get_status(pid_t pid)
-{
-	int	status;
-
-	waitpid(pid, &status, 0);
-	if (WIFEXITED(status))
-		return (WEXITSTATUS(status));
-	if (WIFSIGNALED(status))
-		return (128 + WTERMSIG(status));
-	return (1);
 }

@@ -95,7 +95,71 @@ int	unset_shell_env_value(t_shell *shell, char *name)
 		shell->env[i] = shell->env[i + 1];
 		i++;
 	}
-	// pre-decrement count and NULL-terminate the array!
 	shell->env[--shell->env_count] = NULL;
 	return (1);
+}
+
+/*
+** build_path - Build full path from directory and filename
+**
+** DESCRIPTION:
+**   Concatenates directory path with filename using '/'.
+**   Uses arena allocation for memory management.
+**
+** PARAMETERS:
+**   arena - Memory arena for allocations
+**   dir  - Directory path
+**   file - Filename
+**
+** RETURN VALUE:
+**   Returns allocated full path or NULL on error
+*/
+char	*build_path(t_shell *shell, char *dir, char *file)
+{
+	char	*dir_with_slash;
+	char	*path;
+	int		dir_len;
+
+	if (!dir || !file || !shell)
+		return (NULL);
+	dir_len = ft_strlen(dir);
+	if (dir_len > 0 && dir[dir_len - 1] != '/')
+	{
+		dir_with_slash = ar_strjoin(shell->arena, dir, "/");
+		if (!dir_with_slash)
+			return (NULL);
+		path = ar_strjoin(shell->arena, dir_with_slash, file);
+	}
+	else
+		path = ar_strjoin(shell->arena, dir, file);
+	return (path);
+}
+
+/*
+** print_error - Print error message to stderr
+**
+**   Prints formatted error message to stderr (fd 2) so it's visible
+**   in pipelines instead of being piped to the next command.
+**
+**   prefix - Error prefix (e.g., "minishell")
+**   cmd    - Command name that caused error
+**   msg    - Error message
+*/
+void	print_error(char *prefix, char *cmd, char *msg)
+{
+	if (prefix)
+	{
+		ft_putstr_fd(prefix, 2);
+		ft_putstr_fd(": ", 2);
+	}
+	if (cmd)
+	{
+		ft_putstr_fd(cmd, 2);
+		ft_putstr_fd(": ", 2);
+	}
+	if (msg)
+	{
+		ft_putstr_fd(msg, 2);
+		ft_putstr_fd("\n", 2);
+	}
 }

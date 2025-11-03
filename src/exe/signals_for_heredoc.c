@@ -60,7 +60,7 @@ int	heredoc_event_hook(void)
 */
 void	setup_heredoc_signals(void)
 {
-	struct sigaction sa;
+	struct sigaction	sa;
 
 	sa.sa_handler = &handle_heredoc_sigint;
 	sigemptyset(&sa.sa_mask);
@@ -70,4 +70,27 @@ void	setup_heredoc_signals(void)
 	sigaction(SIGQUIT, &sa, NULL);
 	rl_event_hook = &heredoc_event_hook;
 	g_signal = 0;
+}
+
+/* handle_heredoc_interrupt - Handle Ctrl+C during heredoc input
+** Sets exit status to 130 and returns 1.
+*/
+int	handle_heredoc_interrupt(t_shell *shell, char *line)
+{
+	if (line)
+		free(line);
+	restore_interactive_signals();
+	shell->last_exit_status = 130;
+	return (1);
+}
+
+// for main.c
+// handle_signal_status - Update shell exit status based on signal
+void	handle_signal_status(t_shell *shell)
+{
+	if (g_signal == SIGINT)
+	{
+		shell->last_exit_status = 130;
+		g_signal = 0;
+	}
 }

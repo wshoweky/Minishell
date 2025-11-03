@@ -1,35 +1,5 @@
 #include "minishell.h"
 
-static int	expand_dollar_sign(t_shell *shell, char *input, size_t *i,
-		char **text)
-{
-	char	*var_name;
-
-	var_name = NULL;
-	while (ft_isalnum(input[*i + 1]) || input[*i + 1] == '_' || input[*i
-			+ 1] == '?')
-	{
-		var_name = ar_add_char_to_str(shell->arena, var_name, input[*i + 1]);
-		if (!var_name)
-			return (err_msg_n_return_value("Error building var name\n", -1));
-		(*i)++;
-		if (var_name[0] == '?' && input[*i + 1])
-			break ;
-	}
-	if (var_name)
-	{
-		if (transform_var_name(shell, text, var_name) == -1)
-			return (-1);
-	}
-	else
-	{
-		*text = ar_add_char_to_str(shell->arena, *text, '$');
-		if (!*text)
-			return (err_msg_n_return_value("Error adding $ to string\n", -1));
-	}
-	return (0);
-}
-
 /**
 ** expand_heredoc_line - Expand variables in heredoc line
 **
@@ -84,37 +54,69 @@ char	*expand_heredoc_line(t_shell *shell, char *line)
 }
 
 /**
+** get_random_value - Get a random value from /dev/urandom
+**
+** RANDOMNESS SOURCE:
+**   Reads from /dev/urandom to get unpredictable values.
+**   This ensures unique filenames across multiple shell instances.
+**
+** RETURNS:
+**   Positive random value on success, or a fallback value on error
+*/
+static unsigned int	get_random_value(void)
+{
+	int				fd;
+	unsigned int	value;
+	ssize_t			bytes_read;
+
+	fd = open("/dev/urandom", O_RDONLY);
+	if (fd < 0)
+		return ((unsigned int)12345);
+	bytes_read = read(fd, &value, sizeof(value));
+	close(fd);
+	if (bytes_read != sizeof(value))
+		return ((unsigned int)12345);
+	return (value);
+}
+
+/**
 ** generate_filename - Create unique temporary filename for heredoc
 **
 ** FILENAME STRATEGY:
 ** - Uses /tmp directory (standard Unix temporary location)
-** - Includes shell PID for uniqueness across shell instances
-** - Includes counter for uniqueness within shell session
-** - Format: /tmp/.minishell_heredoc_PID_COUNTER
+** - Combines random value from /dev/urandom with incrementing counter
+** - Format: /tmp/.minishell_heredoc_[random]_[counter]
+**
+** UNIQUENESS:
+** - Random value prevents collision between concurrent shell instances
+** - Counter ensures uniqueness within a single shell session
+** - /dev/urandom provides cryptographically strong randomness
 **
 ** BENEFITS:
 ** - /tmp typically has fast filesystem (tmpfs/ramdisk)
 ** - /tmp cleaned automatically on reboot
 ** - Proper permissions (0600) for security
 **
-**   shell - Shell state containing PID and counter
+**   shell - Shell state containing counter
 **
 **   Returns: Arena-allocated filename string
 */
 char	*generate_filename(t_shell *shell)
 {
-	char	*filename;
-	char	*pid_str;
-	char	*counter_str;
+	char			*filename;
+	char			*random_str;
+	char			*counter_str;
+	unsigned int	random_value;
 
 	if (!shell || !shell->arena)
 		return (NULL);
-	pid_str = ar_itoa(shell->arena, shell->shell_pid);
+	random_value = get_random_value();
+	random_str = ar_itoa(shell->arena, (int)random_value);
 	counter_str = ar_itoa(shell->arena, shell->heredoc_counter++);
-	if (!pid_str || !counter_str)
+	if (!random_str || !counter_str)
 		return (NULL);
 	filename = ar_strdup(shell->arena, "/tmp/.minishell_heredoc_");
-	filename = ar_strjoin(shell->arena, filename, pid_str);
+	filename = ar_strjoin(shell->arena, filename, random_str);
 	filename = ar_strjoin(shell->arena, filename, "_");
 	filename = ar_strjoin(shell->arena, filename, counter_str);
 	return (filename);

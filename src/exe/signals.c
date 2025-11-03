@@ -1,6 +1,6 @@
 #include "minishell.h"
 
-volatile sig_atomic_t	g_signal = 0; // Global variable to track signal state
+volatile sig_atomic_t	g_signal = 0;
 
 /**
 ** disable_echoctl - Disable echoing of control characters

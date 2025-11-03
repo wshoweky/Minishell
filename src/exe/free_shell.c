@@ -22,9 +22,6 @@ void	free_shell(t_shell *shell)
 	}
 	free(shell->cwd);
 	free(shell->oldpwd);
-	free(shell->home);
-	free(shell->user);
-	free(shell->shell_name);
 	free_arena(shell->arena);
 	free_list_of_vars(&shell->vars);
 	free(shell);

@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/04/15 15:22:29 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/10/28 11:28:08 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/01 20:12:55 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,8 @@ int	ft_isnumeric(char *str)
 	i = 0;
 	if (str[i] == '-' || str[i] == '+')
 		i++;
+	if (i == 1 && str[i] == '\0')
+		return (0);
 	while (str[i])
 	{
 		if (!ft_isdigit(str[i]))

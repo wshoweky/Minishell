@@ -96,10 +96,16 @@ void	close_unused_pipes(t_shell *shell, int pipes_to_close)
 */
 void	wait_all_children(t_shell *shell, int cmd_count)
 {
-	int	i;
-	int	status;
-	int	last_valid_cmd_index;
+	int					i;
+	int					status;
+	int					last_valid_cmd_index;
+	struct sigaction	sa_ignore;
+	struct sigaction	sa_old;
 
+	sa_ignore.sa_handler = SIG_IGN;
+	sigemptyset(&sa_ignore.sa_mask);
+	sa_ignore.sa_flags = 0;
+	sigaction(SIGINT, &sa_ignore, &sa_old);
 	last_valid_cmd_index = find_last_valid_cmd(shell, cmd_count);
 	i = 0;
 	while (i < cmd_count)
@@ -112,6 +118,7 @@ void	wait_all_children(t_shell *shell, int cmd_count)
 		}
 		i++;
 	}
+	sigaction(SIGINT, &sa_old, NULL);
 }
 
 /**
@@ -149,7 +156,11 @@ static void	process_child_exit_status(t_shell *shell, int status)
 	if (WIFEXITED(status))
 		shell->last_exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
+	{
+		// if (WTERMSIG(status) == SIGINT)
+		// 	write(STDOUT_FILENO, "\n", 1);
 		shell->last_exit_status = 128 + WTERMSIG(status);
+	}
 	else
 		shell->last_exit_status = 1;
 }

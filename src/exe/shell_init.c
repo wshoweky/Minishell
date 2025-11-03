@@ -1,12 +1,7 @@
 #include "minishell.h"
 
-//#define INITIAL_ENV_CAPACITY 128
-
-// Static function prototypes
 static int	init_shell_env(t_shell *shell, char **env);
-static int	init_shell_variables(t_shell *shell, char **av);
 static void	init_shell_paths(t_shell *shell);
-static void	init_shell_user_info(t_shell *shell);
 
 /**
 ** init_shell - Initialize shell state structure
@@ -29,19 +24,22 @@ t_shell	*init_shell(int ac, char **av, char **env)
 		return (NULL);
 	if (!init_shell_env(shell, env))
 		return (free_shell(shell), NULL);
-	if (!init_shell_variables(shell, av))
+	init_shell_paths(shell);
+	if (!shell->cwd || !shell->oldpwd)
 		return (free_shell(shell), NULL);
 	shell->last_exit_status = 0;
 	shell->is_interactive = isatty(STDIN_FILENO);
-	shell->should_exit = 0;
+	if (shell->is_interactive)
+		disable_echoctl();
 	shell->arena = ar_init();
 	if (!shell->arena)
 	{
-		ft_printf("Failed to initialize memory arena\n");
+		print_error(NULL, NULL, "Failed to initialize memory arena");
 		free_shell(shell);
 		return (NULL);
 	}
 	(void)ac;
+	(void)av;
 	return (shell);
 }
 
@@ -79,7 +77,7 @@ static int	init_shell_env(t_shell *shell, char **env)
 }
 
 /**
-** init_shell_paths - Initialize shell path variables (CWD, OLDPWD, HOME)
+** init_shell_paths - Initialize shell path variables (CWD, OLDPWD)
 **
 **   shell - Shell state structure
 */
@@ -101,47 +99,4 @@ static void	init_shell_paths(t_shell *shell)
 		shell->oldpwd = ft_strdup(env_value);
 	else
 		shell->oldpwd = ft_strdup("");
-	env_value = get_shell_env_value(shell, "HOME");
-	if (env_value)
-		shell->home = ft_strdup(env_value);
-	else
-		shell->home = ft_strdup("/");
-}
-
-/**
-** init_shell_user_info - Initialize user and shell name variables
-**
-**   shell - Shell state structure
-*/
-static void	init_shell_user_info(t_shell *shell)
-{
-	char	*env_value;
-
-	env_value = get_shell_env_value(shell, "USER");
-	if (env_value)
-		shell->user = ft_strdup(env_value);
-	else
-		shell->user = ft_strdup("unknown");
-}
-
-/**
-** init_shell_variables - Initialize shell-specific variables
-**
-**   Sets up essential shell variables like PWD, HOME, USER, etc.
-**
-**   shell - Shell state structure
-**   av    - Argument vector from main()
-**
-**   Returns: 1 on success, 0 on failure
-*/
-static int	init_shell_variables(t_shell *shell, char **av)
-{
-	init_shell_paths(shell);
-	init_shell_user_info(shell);
-	shell->shell_name = ft_strdup(av[0]);
-	shell->shell_pid = getpid();
-	if (!shell->cwd || !shell->oldpwd || !shell->home
-		|| !shell->user || !shell->shell_name)
-		return (0);
-	return (1);
 }

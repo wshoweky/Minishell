@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   path_utils.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 17:41:34 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 17:41:36 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static char	*search_in_path(t_shell *shell, char *cmd, char **path_dirs);
@@ -44,12 +56,14 @@ char	*find_executable(t_shell *shell, char *cmd)
 **   cmd   - Command with path separator
 **
 ** RETURN VALUE:
-**   Returns duplicated path if file exists, NULL otherwise
-**   (Permission check is done later in exe_external_cmd)
+**   Returns duplicated path if file/directory exists, NULL otherwise
+**   (File type and permission checks are done later in exe_external_cmd)
 */
 static char	*handle_absolute_path(t_shell *shell, char *cmd)
 {
-	if (is_regular_file(cmd))
+	t_stat	file_stat;
+
+	if (stat(cmd, &file_stat) == 0)
 		return (ar_strdup(shell->arena, cmd));
 	return (NULL);
 }

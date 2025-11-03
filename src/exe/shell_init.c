@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   shell_init.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 17:43:42 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 17:43:44 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	init_shell_env(t_shell *shell, char **env);
@@ -99,4 +111,54 @@ static void	init_shell_paths(t_shell *shell)
 		shell->oldpwd = ft_strdup(env_value);
 	else
 		shell->oldpwd = ft_strdup("");
+}
+
+/*
+** is_directory - Check if path is a directory
+**
+** DESCRIPTION:
+**   Checks if path exists and is a directory.
+**
+** PARAMETERS:
+**   path - Path to check
+**
+** RETURN VALUE:
+**   Returns 1 if path is a directory, 0 otherwise
+*/
+int	is_directory(char *path)
+{
+	t_stat	file_stat;
+
+	if (!path)
+		return (0);
+	if (stat(path, &file_stat) != 0)
+		return (0);
+	if (S_ISDIR(file_stat.st_mode))
+		return (1);
+	return (0);
+}
+
+/*
+** is_non_forkable_builtin - Check if builtin must not fork
+**
+** DESCRIPTION:
+**   Checks if a builtin command affects parent shell state.
+**
+** PARAMETERS:
+**   cmd_name - Command name to check
+**
+** RETURN VALUE:
+**   Returns 1 if command must not fork, 0 otherwise
+*/
+int	is_non_forkable_builtin(char *cmd_name)
+{
+	if (ft_strcmp(cmd_name, "cd") == 0)
+		return (1);
+	if (ft_strcmp(cmd_name, "exit") == 0)
+		return (1);
+	if (ft_strcmp(cmd_name, "export") == 0)
+		return (1);
+	if (ft_strcmp(cmd_name, "unset") == 0)
+		return (1);
+	return (0);
 }

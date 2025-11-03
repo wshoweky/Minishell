@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   pipe_utils.c                                       :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 17:41:44 by wshoweky          #+#    #+#             */
+/*   Updated: 2025/11/03 17:42:27 by wshoweky         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static int	find_last_valid_cmd(t_shell *shell, int cmd_count);
@@ -156,11 +168,7 @@ static void	process_child_exit_status(t_shell *shell, int status)
 	if (WIFEXITED(status))
 		shell->last_exit_status = WEXITSTATUS(status);
 	else if (WIFSIGNALED(status))
-	{
-		// if (WTERMSIG(status) == SIGINT)
-		// 	write(STDOUT_FILENO, "\n", 1);
 		shell->last_exit_status = 128 + WTERMSIG(status);
-	}
 	else
 		shell->last_exit_status = 1;
 }

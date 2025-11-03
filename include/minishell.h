@@ -128,7 +128,8 @@ int				build_output(t_arena *arena, char **output, char c);
 int				ensure_output_not_null(t_arena *arena, char **output);
 
 // Parsing functions
-t_cmd_table		*register_to_table(t_shell *shell, t_tokens *list_of_toks);
+int				register_to_table(t_shell *shell, t_tokens *list_of_toks,
+					t_cmd_table *table);
 t_cmd			*new_cmd_alloc(t_arena *arena);
 void			*err_msg_n_return_null(char *msg);
 int				err_msg_n_return_value(char *msg, int value);

@@ -52,31 +52,30 @@ Builds a command table where:
 - Redirections (<, >, >>, <<) set redirection type and capture filename
 - Regular word tokens are added as command arguments
 */
-t_cmd_table	*register_to_table(t_shell *shell, t_tokens *list_of_toks)
+int	register_to_table(t_shell *shell, t_tokens *list_of_toks,
+				t_cmd_table *table)
 {
-	t_cmd_table	*table;
 	t_tokens	*current_tok;
 	t_cmd		*current_cmd;
+	int			check;
 
 	if (list_of_toks == NULL)
-		return (NULL);
+		return (-1);
 	current_tok = list_of_toks;
-	table = ar_alloc(shell->arena, sizeof(t_cmd_table));
-	if (!table)
-		return (err_msg_n_return_null("Memory alloc failed for t_cmd_table\n"));
 	current_cmd = new_cmd_alloc(shell->arena);
 	if (!current_cmd)
-		return (err_msg_n_return_null("Memory alloc failed for t_cmd\n"));
+		return (err_msg_n_return_value("Memory alloc failed for t_cmd\n", -1));
 	table->list_of_cmds = current_cmd;
 	table->cmd_count = 1;
 	while (current_tok)
 	{
-		if (check_current_token(shell, current_tok, &current_cmd, table) == -1)
-			return (NULL);
+		check = check_current_token(shell, current_tok, &current_cmd, table);
+		if (check == -1 || check == 2)
+			return (check);
 		current_tok = current_tok->next;
 	}
 	// print_cmd_table(table); ft_printf ("------------\n\n");
-	return (table);
+	return (0);
 }
 
 /* Create space with ar_alloc() for a t_cmd struct
@@ -109,7 +108,7 @@ int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
 	{
 		if (!((*current_cmd)->cmd_av || (*current_cmd)->redirections)
 			|| !token->next)
-			return (err_msg_n_return_value("Syntax error around pipe\n", -1));
+			return (err_msg_n_return_value("Syntax error around pipe\n", 2));
 		(*current_cmd)->next_cmd = new_cmd_alloc(shell->arena);
 		if (!(*current_cmd)->next_cmd)
 			return (err_msg_n_return_value("Memory allocation failed for "
@@ -122,7 +121,7 @@ int	check_current_token(t_shell *shell, t_tokens *token, t_cmd **current_cmd,
 	{
 		if (!token->next || token->next->type != TOKEN_WORD)
 			return (err_msg_n_return_value("Syntax error around redirection\n",
-					-1));
+					2));
 		if (make_redir(shell, token, *current_cmd) == -1)
 			return (-1);
 		return (0);

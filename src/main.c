@@ -62,12 +62,21 @@ static int	process_input(t_shell *shell, char *input)
 {
 	t_tokens	*tokens;
 	t_cmd_table	*cmd_table;
+	int			possible_error;
 
 	tokens = tokenize_input(shell->arena, input);
 	if (!tokens)
 		return (1);
+	cmd_table = ar_alloc(shell->arena, sizeof(t_cmd_table));
+	if (!cmd_table)
+		return (err_msg_n_return_value("Memalloc failed for t_cmd_table\n", 1));
 	// print_tokens(tokens); // Debug print of tokens
-	cmd_table = register_to_table(shell, tokens);
+	possible_error = register_to_table(shell, tokens, cmd_table);
+	if (possible_error == 2)
+	{
+		shell->last_exit_status = 2;
+		return (2);
+	}
 	if (cmd_table)
 	{
 		exe_cmd(shell, cmd_table);

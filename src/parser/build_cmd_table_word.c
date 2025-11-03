@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   build_cmd_table_word.c                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 23:47:59 by gita              #+#    #+#             */
+/*   Updated: 2025/11/03 23:55:34 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /* Process word token and build the current command
@@ -51,7 +63,14 @@ int	expand_variable_name(t_shell *shell, char **original_string, int in_redir)
 	return (0);
 }
 
+/* For redirection file name, check if variable (signaled by $) 
+is outside double quotes or not. Needed for checking ambiguous redirect
+when expanding variable name
 
+Return:
+1 as soon as seeing variable is inside double quotes,
+0 for being outside of double quotes
+*/
 int	var_in_redir_outside_2xquotes(char *tok_value)
 {
 	int		i;

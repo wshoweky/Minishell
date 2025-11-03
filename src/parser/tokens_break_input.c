@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/10/04 16:59:39 by gita              #+#    #+#             */
-/*   Updated: 2025/11/03 22:37:37 by gita             ###   ########.fr       */
+/*   Updated: 2025/11/04 00:20:05 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -81,11 +81,8 @@ int	char_outside_quotes(t_shell *shell, char **string, char current_char,
 	}
 	else if (current_char == '"' || current_char == '\'')
 	{
-		if (*string && (!ft_strcmp(*string, "<") || !ft_strcmp(*string, "<<")
-			|| !ft_strcmp(*string, ">") || !ft_strcmp(*string, ">>")))
-			return (1);
-		if (char_is_quote(shell->arena, string, current_char, in_quotes) == -1)
-			return (-1);
+		return (see_quote_while_not_in_quotes(shell, string, current_char,
+				in_quotes));
 	}
 	else if (current_char == ' ' || current_char == '\t'
 		|| current_char == '\n')
@@ -100,19 +97,23 @@ int	char_outside_quotes(t_shell *shell, char **string, char current_char,
 }
 
 /* When not in quote mode and seeing a quote:
+- Check if there is already a string that matches one of the redirections
 - Set in_quotes value to indicate whether in double or single quote
 - Add the quote to the string
 
- Return: 0 on success, -1 on errors
+ Return: 1 to break parsing process, 0 on success, -1 on errors
 */
-int	char_is_quote(t_arena *arena, char **string, char current_char,
-		int *in_quotes)
+int	see_quote_while_not_in_quotes(t_shell *shell, char **string,
+	char current_char, int *in_quotes)
 {
+	if (*string && (!ft_strcmp(*string, "<") || !ft_strcmp(*string, "<<")
+			|| !ft_strcmp(*string, ">") || !ft_strcmp(*string, ">>")))
+		return (1);
 	if (current_char == '"')
 		*in_quotes = 2;
 	else if (current_char == '\'')
 		*in_quotes = 1;
-	*string = ar_add_char_to_str(arena, *string, current_char);
+	*string = ar_add_char_to_str(shell->arena, *string, current_char);
 	if (!*string)
 		return (err_msg_n_return_value("Memory alloc fail for quote\n", -1));
 	return (0);

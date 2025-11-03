@@ -1,49 +1,16 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   build_cmd_table.c                                  :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 23:57:38 by gita              #+#    #+#             */
+/*   Updated: 2025/11/03 23:57:39 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
-
-// static void    print_cmd_table(t_cmd_table *table) //for debugging purpose
-// {
-// 	if (!table)
-// 	{
-// 		ft_printf("Command table not found\n");
-// 		return ;
-// 	}
-// 	ft_printf("\nPrinting command table\n");
-// 	ft_printf("Number of commands: %i\n", table->cmd_count);
-// 	t_cmd *current_cmd = table->list_of_cmds;
-// 	int cmd_index = 1;
-	
-// 	while (current_cmd)
-// 	{
-// 		printf("------------\n");
-// 		printf("COMMAND #%d:\n", cmd_index);
-		
-// 		// Print arguments
-// 		printf("cmd_av: [");
-// 		if (current_cmd->cmd_av)
-// 		{
-// 			for (int i = 0; current_cmd->cmd_av[i] != NULL; i++)
-// 			{
-// 				printf("\"%s\"", current_cmd->cmd_av[i]);
-// 				if (current_cmd->cmd_av[i + 1] != NULL)
-// 					printf(", ");
-// 			}
-// 		}
-// 		printf("]\n");
-// 		if (current_cmd->redirections)
-// 		{
-// 			t_redir *redir_ptr = current_cmd->redirections;  // Use local pointer!
-// 			while (redir_ptr)  // Traverse without modifying original
-// 			{
-// 				printf("Redirection: %s\n", get_token_type_name(redir_ptr->tok_type));
-// 				printf("filename saved: %s\n", redir_ptr->filename);
-// 				redir_ptr = redir_ptr->next;  // Move local pointer
-// 			}
-// 		}
-// 		current_cmd = current_cmd->next_cmd;
-// 		cmd_index++;
-// 	}
-// }
-
 
 /* Parses a linked list of tokens into a command table structure.
 
@@ -77,7 +44,6 @@ int	register_to_table(t_shell *shell, t_tokens *list_of_toks,
 		}
 		current_tok = current_tok->next;
 	}
-	// print_cmd_table(table); ft_printf ("------------\n\n");
 	return (0);
 }
 

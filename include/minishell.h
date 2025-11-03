@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 20:55:10 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 22:40:15 by gita             ###   ########.fr       */
+/*   Updated: 2025/11/04 00:20:46 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,8 +119,8 @@ int				char_in_quotes(t_shell *shell, char **string,
 					char current_char, int *in_quotes);
 int				char_outside_quotes(t_shell *shell, char **string,
 					char current_char, int *in_quotes);
-int				char_is_quote(t_arena *arena, char **string, char current_char,
-					int *in_quotes);
+int				see_quote_while_not_in_quotes(t_shell *shell, char **string,
+					char current_char, int *in_quotes);
 int				char_normal_outside_quotes(t_arena *arena, char **string,
 					char current_char);
 

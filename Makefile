@@ -79,7 +79,6 @@ $(O_DIR):
 	mkdir -p $(O_DIR)/src
 	mkdir -p $(O_DIR)/src/parser
 	mkdir -p $(O_DIR)/src/exe
-#	mkdir -p $(O_DIR)/src/playground
 
 $(O_DIR)/%.o: %.c include/minishell.h | $(O_DIR)
 	$(CC) $(CFLAG) -I$(LIBFT_DIR) -Iinclude -c $< -o $@

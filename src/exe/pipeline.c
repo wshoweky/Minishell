@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   pipeline.c                                         :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:42:34 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:42:46 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 13:45:29 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -188,6 +188,8 @@ static void	fork_all_children(t_shell *shell, t_cmd_table *cmd_table)
 static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
 		int cmd_count)
 {
+	int	code;
+
 	shell->pipe_pids[i] = fork();
 	if (shell->pipe_pids[i] == 0)
 	{
@@ -196,7 +198,10 @@ static void	fork_pipeline_child(t_shell *shell, t_cmd *cmd, int i,
 		if (i < cmd_count - 1)
 			dup2(shell->pipe_array[i][1], STDOUT_FILENO);
 		close_unused_pipes(shell, cmd_count - 1);
-		exit(exe_single_cmd(shell, cmd));
+		code = exe_single_cmd(shell, cmd);
+		rl_clear_history();
+		free_shell(shell);
+		exit(code);
 	}
 	else if (shell->pipe_pids[i] < 0)
 	{

@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exe.h                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 20:55:02 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/04 09:07:18 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:23:37 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@ int		exe_single_cmd(t_shell *shell, t_cmd *cmd);
 int		exe_builtin_with_fork(t_cmd *cmd, t_shell *shell);
 int		is_non_forkable_builtin(char *cmd_name);
 int		exe_external_cmd(t_shell *shell, t_cmd *cmd);
-int		exe_redirection_only(t_cmd *cmd);
+int		exe_redirection_only(t_shell *shell, t_cmd *cmd);
 int		dispatch_builtin(t_cmd *cmd, t_shell *shell);
 
 // Built-in command detection and dispatch

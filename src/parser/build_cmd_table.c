@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 23:57:38 by gita              #+#    #+#             */
-/*   Updated: 2025/11/03 23:57:39 by gita             ###   ########.fr       */
+/*   Updated: 2025/11/04 14:06:56 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -18,6 +18,8 @@ Builds a command table where:
 - Pipes (|) separate commands and increment the command count
 - Redirections (<, >, >>, <<) set redirection type and capture filename
 - Regular word tokens are added as command arguments
+
+Return: 0 on success, -1 on errors, 2 on syntax error
 */
 int	register_to_table(t_shell *shell, t_tokens *list_of_toks,
 				t_cmd_table *table)
@@ -38,10 +40,7 @@ int	register_to_table(t_shell *shell, t_tokens *list_of_toks,
 	{
 		check = check_current_token(shell, current_tok, &current_cmd, table);
 		if (check == -1 || check == 2)
-		{
-			table = NULL;
 			return (check);
-		}
 		current_tok = current_tok->next;
 	}
 	return (0);

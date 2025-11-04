@@ -6,7 +6,7 @@
 /*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 20:55:10 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/04 00:20:46 by gita             ###   ########.fr       */
+/*   Updated: 2025/11/04 15:10:33 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -101,7 +101,6 @@ typedef struct s_shell
 }	t_shell;
 
 // Tokenization functions
-// char			*get_token_type_name(t_token_type type);
 t_tokens		*tokenize_input(t_shell *shell, char *input);
 void			skip_whitespace(char *input, int *i);
 t_tokens		*process_single_token(t_shell *shell, char *input, int *i,

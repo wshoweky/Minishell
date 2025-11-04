@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:38:24 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:38:29 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 09:08:03 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -162,7 +162,7 @@ int	exe_builtin(t_cmd *cmd, t_shell *shell)
 	else if (ft_strcmp(cmd_name, "env") == 0)
 		return (builtin_env(shell));
 	else if (ft_strcmp(cmd_name, "exit") == 0)
-		return (builtin_exit(cmd));
+		return (builtin_exit(shell, cmd));
 	else if (ft_strcmp(cmd_name, "export") == 0)
 		return (builtin_export(shell, cmd));
 	else if (ft_strcmp(cmd_name, "unset") == 0)

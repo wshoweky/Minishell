@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 20:55:02 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 20:55:03 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 09:07:18 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -42,7 +42,7 @@ int		builtin_cd(t_shell *shell, t_cmd *cmd);
 int		builtin_env(t_shell *shell);
 int		builtin_export(t_shell *shell, t_cmd *cmd);
 int		builtin_unset(t_shell *shell, t_cmd *cmd);
-int		builtin_exit(t_cmd *cmd);
+int		builtin_exit(t_shell *shell, t_cmd *cmd);
 
 // Export helper functions
 int		copy_vars_fr_env_to_export_list(t_shell *shell);

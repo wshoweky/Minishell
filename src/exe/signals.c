@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:44:36 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:44:38 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 08:51:18 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -108,6 +108,8 @@ void	handle_sigint(int signum)
 **   Configures SIGINT and SIGQUIT handlers for the main shell loop.
 **   Uses sigaction for more reliable signal handling than signal().
 **   Also disables terminal echoing of control characters.
+**   SIGPIPE is ignored to prevent shell termination when writing to
+**   closed pipes (e.g., pipelines with head, grep -q, etc.).
 **
 ** RETURN VALUE:
 **   Returns 0 on success, -1 on error
@@ -126,6 +128,8 @@ int	setup_signal_handlers(void)
 	sigemptyset(&sa_quit.sa_mask);
 	sa_quit.sa_flags = 0;
 	if (sigaction(SIGQUIT, &sa_quit, NULL) == -1)
+		return (-1);
+	if (sigaction(SIGPIPE, &sa_quit, NULL) == -1)
 		return (-1);
 	return (0);
 }

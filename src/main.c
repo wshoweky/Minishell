@@ -4,17 +4,6 @@ static const char	*get_colored_prompt(void);
 static void			shell_loop(t_shell *shell);
 static int			process_input(t_shell *shell, char *input);
 
-// static void	print_tokens(t_tokens *head)
-// {
-// 	while (head)
-// 	{
-// 		ft_printf("Token: '%s' | Type: %s", head->value,
-// 			get_token_type_name(head->type));
-// 		ft_printf("\n");
-// 		head = head->next;
-// 	}
-// }
-
 int	main(int ac, char **av, char **env)
 {
 	t_shell	*shell;
@@ -50,6 +39,7 @@ static void	shell_loop(t_shell *shell)
 	{
 		ft_printf("exit\n");
 		exit_status = shell->last_exit_status;
+		rl_clear_history();
 		free_shell(shell);
 		exit(exit_status);
 	}
@@ -73,7 +63,6 @@ static int	process_input(t_shell *shell, char *input)
 	cmd_table = ar_alloc(shell->arena, sizeof(t_cmd_table));
 	if (!cmd_table)
 		return (err_msg_n_return_value("Memalloc failed for t_cmd_table\n", 1));
-	// print_tokens(tokens); // Debug print of tokens
 	possible_error = register_to_table(shell, tokens, cmd_table);
 	if (possible_error == 2)
 	{
@@ -81,11 +70,7 @@ static int	process_input(t_shell *shell, char *input)
 		return (2);
 	}
 	if (cmd_table)
-	{
 		exe_cmd(shell, cmd_table);
-		// ft_printf("Command executed with exit status: %d\n",
-		// 	shell->last_exit_status); // For debugging
-	}
 	return (0);
 }
 

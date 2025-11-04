@@ -6,7 +6,7 @@
 /*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:38:04 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:38:05 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 09:28:04 by wshoweky         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -119,47 +119,4 @@ int	builtin_env(t_shell *shell)
 		i++;
 	}
 	return (0);
-}
-
-/*
-** builtin_exit - Implementation of exit command
-**
-** DESCRIPTION:
-**   Exits the shell with optional exit code.
-**   Validates arguments:
-**   - Too many arguments: returns error without exiting
-**   - Non-numeric argument: exits with code 2
-**   - Valid number: exits with code % 256
-**
-** RETURN VALUE:
-**   Does not return on success - exits the program
-**   Returns 1 if too many arguments
-*/
-int	builtin_exit(t_cmd *cmd)
-{
-	unsigned int	exit_code;
-	long			long_code;
-
-	if (!cmd || !cmd->cmd_av || !cmd->cmd_av[1])
-	{
-		ft_printf("exit\n");
-		exit(0);
-	}
-	if (cmd->cmd_av[2])
-	{
-		print_error("minishell", "exit", "too many arguments");
-		return (1);
-	}
-	if (!ft_isnumeric(cmd->cmd_av[1]))
-	{
-		ft_printf("exit\n");
-		ft_putstr_fd("minishell: exit: ", 2);
-		ft_putstr_fd(cmd->cmd_av[1], 2);
-		ft_putstr_fd(": numeric argument required\n", 2);
-		exit(2);
-	}
-	long_code = ft_atoi(cmd->cmd_av[1]);
-	exit_code = (unsigned int)(long_code % 256);
-	ft_printf("exit\n");
-	exit(exit_code);
 }

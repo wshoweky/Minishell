@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   tokens_quote_check.c                               :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 23:47:28 by gita              #+#    #+#             */
+/*   Updated: 2025/11/03 23:47:29 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /* Check for quotes in the string
@@ -86,7 +98,7 @@ int	remove_quotes_for_plain_string(t_arena *arena, char *str, char **output,
 		else
 		{
 			if (build_output(arena, output, str[*i]) == -1)
-				return (-1);			
+				return (-1);
 		}
 		(*i)++;
 	}
@@ -119,7 +131,7 @@ int	ensure_output_not_null(t_arena *arena, char **output)
 		*output = ar_alloc(arena, 1);
 		if (!*output)
 			return (err_msg_n_return_value("Failed to allocate empty string\n",
-				-1));
+					-1));
 		(*output)[0] = '\0';
 	}
 	return (0);

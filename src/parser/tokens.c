@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   tokens.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:57:06 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:57:09 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/03 22:40:33 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,7 +27,7 @@
 ** RETURN VALUE:
 **   Returns a linked list of tokens (t_tokens *) or NULL on error
 */
-t_tokens	*tokenize_input(t_arena *arena, char *input)
+t_tokens	*tokenize_input(t_shell *shell, char *input)
 {
 	t_tokens	*head;
 	int			i;
@@ -41,7 +41,7 @@ t_tokens	*tokenize_input(t_arena *arena, char *input)
 		skip_whitespace(input, &i);
 		if (!input[i])
 			break ;
-		if (!process_single_token(arena, input, &i, &head))
+		if (!process_single_token(shell, input, &i, &head))
 			return (NULL);
 	}
 	return (head);
@@ -69,7 +69,7 @@ void	skip_whitespace(char *input, int *i)
 ** RETURN VALUE:
 **   Returns head of token list or NULL on error
 */
-t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
+t_tokens	*process_single_token(t_shell *shell, char *input, int *i,
 		t_tokens **head)
 {
 	t_tokens	*new_token;
@@ -79,16 +79,18 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 
 	start_i = *i;
 	new_token = NULL;
-	token_value = extract_next_token(arena, input, i);
+	token_value = extract_next_token(shell, input, i);
 	if (!token_value)
 		return (NULL);
-	new_token = create_token(arena, token_value);
+	new_token = create_token(shell->arena, token_value);
 	if (!new_token)
 		return (NULL);
 	pre_process_value = ft_substr(input, start_i, *i - start_i);
 	if (pre_process_value)
 	{
 		new_token->was_quoted = has_quotes(pre_process_value);
+		if (new_token->type != TOKEN_WORD && new_token->was_quoted)
+			new_token->type = TOKEN_WORD;
 		free(pre_process_value);
 	}
 	add_to_end(head, new_token);
@@ -110,14 +112,14 @@ t_tokens	*process_single_token(t_arena *arena, char *input, int *i,
 ** RETURN VALUE:
 **   Returns allocated string containing the token value or NULL on error
 */
-char	*extract_next_token(t_arena *arena, char *input, int *i)
+char	*extract_next_token(t_shell *shell, char *input, int *i)
 {
 	char	*string;
 
 	string = NULL;
-	if (chop_up_input(arena, input, i, &string) == -1)
+	if (chop_up_input(shell, input, i, &string) == -1)
 		return (NULL);
-	return (check_for_quoted_string(arena, string));
+	return (check_for_quoted_string(shell->arena, string));
 }
 
 /*

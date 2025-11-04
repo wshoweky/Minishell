@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   build_cmd_table_redir.c                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 23:45:26 by gita              #+#    #+#             */
+/*   Updated: 2025/11/03 23:46:21 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /* Check if token is a redirectional token.
@@ -31,7 +43,7 @@ static int	setup_redir_filename(t_shell *shell, t_tokens *tok,
 			new->filename = ar_strdup(shell->arena, tok->value);
 			if (!new->filename)
 				return (err_msg_n_return_value("strdup failed for heredoc eof "
-					"with no expansion\n", -1));
+						"with no expansion\n", -1));
 		}
 	}
 	else
@@ -40,7 +52,8 @@ static int	setup_redir_filename(t_shell *shell, t_tokens *tok,
 			return (-1);
 	}
 	if (!new->filename || new->filename[0] == 0)
-		return (err_msg_n_return_value("Minishell: No such file or directory\n", -1));
+		return (err_msg_n_return_value("Minishell: No such file or directory\n",
+				-1));
 	return (0);
 }
 
@@ -104,7 +117,6 @@ int	work_on_filename(t_shell *shell, t_tokens *tok_name, char **name)
 		if (expand_variable_name(shell, &tok_name->value, 1) == -1)
 			return (-1);
 	}
-	// Empty filename check is done in setup_redir_filename()
 	*name = ar_strdup(shell->arena, tok_name->value);
 	if (!*name)
 		return (err_msg_n_return_value("strdup failed for redir filename\n",

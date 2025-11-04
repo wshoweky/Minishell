@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   extract_tokens.c                                   :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/03 23:57:57 by gita              #+#    #+#             */
+/*   Updated: 2025/11/03 23:57:57 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 /*
@@ -13,16 +25,16 @@
 **   current - Current character being processed
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on error
+**   Returns 0 on success, -1 on errors
 */
-int	extract_special_token(t_arena *arena, char **string, char current)
+int	extract_special_token(t_shell *shell, char **string, char current)
 {
 	if (current == '|')
-		return (extract_pipe_token(arena, string));
+		return (extract_pipe_token(shell, string));
 	else if (current == '<')
-		return (extract_redirect_in_token(arena, string));
+		return (extract_redirect_in_token(shell, string));
 	else if (current == '>')
-		return (extract_redirect_out_token(arena, string));
+		return (extract_redirect_out_token(shell, string));
 	else
 		return (err_msg_n_return_value("Not one of special tokens\n", -1));
 }
@@ -39,13 +51,16 @@ int	extract_special_token(t_arena *arena, char **string, char current)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on errors
+**   Returns 0 on success, -1 on errors, 2 for syntax error
 */
-int	extract_pipe_token(t_arena *arena, char **string)
+int	extract_pipe_token(t_shell *shell, char **string)
 {
 	if (*string != NULL)
-		return (err_msg_n_return_value("Syntax error near |\n", -1));
-	*string = ar_strdup(arena, "|");
+	{
+		shell->last_exit_status = 2;
+		return (err_msg_n_return_value("Syntax error near |\n", 2));
+	}
+	*string = ar_strdup(shell->arena, "|");
 	if (!*string)
 		return (err_msg_n_return_value("strdup failed for |\n", -1));
 	return (0);
@@ -63,26 +78,29 @@ int	extract_pipe_token(t_arena *arena, char **string)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on errors
+**   Returns 0 on success, -1 on errors, 2 for syntax error
 */
-int	extract_redirect_in_token(t_arena *arena, char **string)
+int	extract_redirect_in_token(t_shell *shell, char **string)
 {
 	if (!*string)
 	{
-		*string = ar_strdup(arena, "<");
+		*string = ar_strdup(shell->arena, "<");
 		if (!*string)
 			return (err_msg_n_return_value("strdup failed for <\n", -1));
 		return (0);
 	}
 	else if (*string && !ft_strcmp(*string, "<"))
 	{
-		*string = ar_add_char_to_str(arena, *string, '<');
+		*string = ar_add_char_to_str(shell->arena, *string, '<');
 		if (!*string)
 			return (err_msg_n_return_value("Failed to add <\n", -1));
 		return (0);
 	}
 	else
-		return (err_msg_n_return_value("Arrows do not match\n", -1));
+	{
+		shell->last_exit_status = 2;
+		return (err_msg_n_return_value("Syntax error near <\n", 2));
+	}
 }
 
 /*
@@ -97,24 +115,27 @@ int	extract_redirect_in_token(t_arena *arena, char **string)
 **   string - Pointer to string pointer (modified by reference)
 **
 ** RETURN VALUE:
-**   Returns 0 on success, -1 on errors
+**   Returns 0 on success, -1 on errors, 2 for syntax error
 */
-int	extract_redirect_out_token(t_arena *arena, char **string)
+int	extract_redirect_out_token(t_shell *shell, char **string)
 {
 	if (!*string)
 	{
-		*string = ar_strdup(arena, ">");
+		*string = ar_strdup(shell->arena, ">");
 		if (!*string)
 			return (err_msg_n_return_value("strdup failed for >\n", -1));
 		return (0);
 	}
 	else if (*string && !ft_strcmp(*string, ">"))
 	{
-		*string = ar_add_char_to_str(arena, *string, '>');
+		*string = ar_add_char_to_str(shell->arena, *string, '>');
 		if (!*string)
 			return (err_msg_n_return_value("Failed to add >\n", -1));
 		return (0);
 	}
 	else
-		return (err_msg_n_return_value("Arrows do not match\n", -1));
+	{
+		shell->last_exit_status = 2;
+		return (err_msg_n_return_value("Syntax error near >\n", 2));
+	}
 }

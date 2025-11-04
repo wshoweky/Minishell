@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exe_utils.c                                        :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:38:43 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/03 17:38:49 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:22:57 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -28,10 +28,16 @@ void	execute_child_process(t_shell *shell, t_cmd *cmd, char *path)
 {
 	reset_signals_for_child();
 	if (setup_redirections(cmd) != 0)
+	{
+		rl_clear_history();
+		free_shell(shell);
 		exit(1);
+	}
 	if (execve(path, cmd->cmd_av, shell->env) == -1)
 	{
 		perror("minishell: execve");
+		rl_clear_history();
+		free_shell(shell);
 		exit(126);
 	}
 }
@@ -121,6 +127,7 @@ int	exe_external_cmd(t_shell *shell, t_cmd *cmd)
 int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 {
 	pid_t	pid;
+	int		code;
 
 	pid = fork();
 	if (pid < 0)
@@ -132,8 +139,15 @@ int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 	{
 		reset_signals_for_child();
 		if (setup_redirections(cmd) != 0)
+		{
+			rl_clear_history();
+			free_shell(shell);
 			exit(1);
-		exit(exe_builtin(cmd, shell));
+		}
+		code = exe_builtin(cmd, shell);
+		rl_clear_history();
+		free_shell(shell);
+		exit(code);
 	}
 	return (wait_and_get_status(pid));
 }
@@ -151,7 +165,7 @@ int	exe_builtin_with_fork(t_cmd *cmd, t_shell *shell)
 ** RETURN VALUE:
 **   Returns 0 on success, 1 on failure
 */
-int	exe_redirection_only(t_cmd *cmd)
+int	exe_redirection_only(t_shell *shell, t_cmd *cmd)
 {
 	pid_t	pid;
 
@@ -166,7 +180,13 @@ int	exe_redirection_only(t_cmd *cmd)
 	if (pid == 0)
 	{
 		if (setup_redirections(cmd) != 0)
+		{
+			rl_clear_history();
+			free_shell(shell);
 			exit(1);
+		}
+		rl_clear_history();
+		free_shell(shell);
 		exit(0);
 	}
 	return (wait_and_get_status(pid));

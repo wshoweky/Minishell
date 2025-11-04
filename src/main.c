@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   main.c                                             :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2025/11/04 14:28:08 by gita              #+#    #+#             */
+/*   Updated: 2025/11/04 14:28:09 by gita             ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #include "minishell.h"
 
 static const char	*get_colored_prompt(void);
@@ -68,6 +80,11 @@ static int	process_input(t_shell *shell, char *input)
 	{
 		shell->last_exit_status = 2;
 		return (2);
+	}
+	if (possible_error == -1)
+	{
+		shell->last_exit_status = 1;
+		return (1);
 	}
 	if (cmd_table)
 		exe_cmd(shell, cmd_table);

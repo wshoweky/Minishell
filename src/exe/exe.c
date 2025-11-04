@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   exe.c                                              :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: wshoweky <wshoweky@student.hive.fi>        +#+  +:+       +#+        */
+/*   By: gita <gita@student.hive.fi>                +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2025/11/03 17:38:24 by wshoweky          #+#    #+#             */
-/*   Updated: 2025/11/04 09:08:03 by wshoweky         ###   ########.fr       */
+/*   Updated: 2025/11/04 14:23:05 by gita             ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -94,7 +94,7 @@ int	exe_single_cmd(t_shell *shell, t_cmd *cmd)
 	if (!cmd || !shell)
 		return (0);
 	if (!cmd->cmd_av || !cmd->cmd_av[0])
-		return (exe_redirection_only(cmd));
+		return (exe_redirection_only(shell, cmd));
 	if (is_builtin(cmd->cmd_av[0]))
 		return (dispatch_builtin(cmd, shell));
 	return (exe_external_cmd(shell, cmd));
